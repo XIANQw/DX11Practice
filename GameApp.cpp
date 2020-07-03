@@ -37,8 +37,18 @@ void GameApp::OnResize() {
 
 void GameApp::UpdateScene(float dt) {
 	static float phi = 0.0f, theta = 0.0f;
+	static float x = 1.0f, y = 1.0f, z = 1.0f, dx = -0.0001f, dy = -0.0001f, dz=-0.0001f;
 	phi += 0.0001f, theta += 0.00015f;
-	m_CBuffer.world = XMMatrixTranspose(XMMatrixRotationX(phi) * XMMatrixRotationY(theta));
+	if (x == 1.0f) {
+		dx = -0.0001f, dy = -0.0001f, dz = -0.0001f;
+	}
+	else if(x < 0.1f){
+		dx = 0.0001f, dy = 0.0001f, dz = 0.0001f;
+	}
+	x += dx, y += dy, z += dz;
+	// 世界空间变换，旋转和缩放
+	m_CBuffer.world = XMMatrixTranspose(XMMatrixRotationX(phi) * XMMatrixRotationY(theta) * XMMatrixScaling(x, y, z));
+	
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
 	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
 	memcpy_s(mappedRes.pData, sizeof(m_CBuffer), &m_CBuffer, sizeof(m_CBuffer));
