@@ -3,10 +3,15 @@
 #include "DXTrace.h"
 using namespace DirectX;
 
-
-GameApp::GameApp(HINSTANCE hInstance) :
-	D3DApp(hInstance), 
-	m_IndexCount(), m_PSConstantBuffer(), m_VSConstantBuffer(), m_DirLight(), m_IsWireframeMode(false){
+GameApp::GameApp(HINSTANCE hInstance)
+	: D3DApp(hInstance), 
+	m_IndexCount(), 
+	m_VSConstantBuffer(), 
+	m_PSConstantBuffer(), 
+	m_DirLight(), 
+	m_PointLight(), 
+	m_SpotLight(),
+	m_IsWireframeMode(false){   
 
 }
 
@@ -66,6 +71,23 @@ void GameApp::UpdateScene(float dt) {
 		theta += dt * 2;
 	if (keyState.IsKeyDown(Keyboard::D))
 		theta -= dt * 2;
+	if (keyState.IsKeyDown(Keyboard::D1)) {
+		m_PSConstantBuffer.dirLight = m_DirLight;
+		m_PSConstantBuffer.pointLight = PointLight();
+		m_PSConstantBuffer.spotLight = SpotLight();
+	}
+	if (keyState.IsKeyDown(Keyboard::D2)) {
+		m_PSConstantBuffer.dirLight = DirectionalLight();
+		m_PSConstantBuffer.pointLight = m_PointLight;
+		m_PSConstantBuffer.spotLight = SpotLight();
+	}
+	if (keyState.IsKeyDown(Keyboard::D3)) {
+		m_PSConstantBuffer.dirLight = DirectionalLight();
+		m_PSConstantBuffer.pointLight = PointLight();
+		m_PSConstantBuffer.spotLight = m_SpotLight;
+	}
+
+
 	
 	// 切换光栅化状态
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::R))
@@ -88,6 +110,54 @@ void GameApp::UpdateScene(float dt) {
 	m_pd3dImmediateContext->Unmap(m_pConstantBuffer[1].Get(), 0);
 
 }
+
+//void GameApp::UpdateScene(float dt)
+//{
+//	static float phi = 0.0f, theta = 0.0f;
+//	phi += 0.0001f, theta += 0.00015f;
+//	XMMATRIX W = XMMatrixRotationX(phi) * XMMatrixRotationY(theta);
+//	m_VSConstantBuffer.world = XMMatrixTranspose(W);
+//	m_VSConstantBuffer.worldInvTranspose = XMMatrixInverse(nullptr, W);	// 两次转置可以抵消
+//
+//	// 键盘切换灯光类型
+//	Keyboard::State state = m_pKeyboard->GetState();
+//	m_KeyboardTracker.Update(state);
+//	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1))
+//	{
+//		m_PSConstantBuffer.dirLight = m_DirLight;
+//		m_PSConstantBuffer.pointLight = PointLight();
+//		m_PSConstantBuffer.spotLight = SpotLight();
+//	}
+//	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2))
+//	{
+//		m_PSConstantBuffer.dirLight = DirectionalLight();
+//		m_PSConstantBuffer.pointLight = m_PointLight;
+//		m_PSConstantBuffer.spotLight = SpotLight();
+//	}
+//	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D3))
+//	{
+//		m_PSConstantBuffer.dirLight = DirectionalLight();
+//		m_PSConstantBuffer.pointLight = PointLight();
+//		m_PSConstantBuffer.spotLight = m_SpotLight;
+//	}
+//
+//	// 键盘切换光栅化状态
+//	if (m_KeyboardTracker.IsKeyPressed(Keyboard::S))
+//	{
+//		m_IsWireframeMode = !m_IsWireframeMode;
+//		m_pd3dImmediateContext->RSSetState(m_IsWireframeMode ? m_pRSWireframe.Get() : nullptr);
+//	}
+//
+//	// 更新常量缓冲区，让立方体转起来
+//	D3D11_MAPPED_SUBRESOURCE mappedData;
+//	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+//	memcpy_s(mappedData.pData, sizeof(VSConstantBuffer), &m_VSConstantBuffer, sizeof(VSConstantBuffer));
+//	m_pd3dImmediateContext->Unmap(m_pConstantBuffer[0].Get(), 0);
+//
+//	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+//	memcpy_s(mappedData.pData, sizeof(PSConstantBuffer), &m_PSConstantBuffer, sizeof(PSConstantBuffer));
+//	m_pd3dImmediateContext->Unmap(m_pConstantBuffer[1].Get(), 0);
+//}
 
 void GameApp::DrawScene() {
 	assert(m_pd3dImmediateContext);
@@ -115,6 +185,7 @@ bool GameApp::InitEffect() {
 
 	return true;
 }
+
 
 bool GameApp::InitResource() {
 	// ******************
@@ -144,8 +215,21 @@ bool GameApp::InitResource() {
 	m_DirLight.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	m_DirLight.direction = XMFLOAT3(-0.577f, -0.577f, 0.577f);
 	// 点光
-
+	m_PointLight.position = XMFLOAT3(0.0f, 0.0f, -10.0f);
+	m_PointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	m_PointLight.diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+	m_PointLight.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	m_PointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
+	m_PointLight.range = 25.0f;
 	// 聚光
+	m_SpotLight.position = XMFLOAT3(0.0f, 0.0f, -5.0f);
+	m_SpotLight.direction = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	m_SpotLight.ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+	m_SpotLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_SpotLight.specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_SpotLight.att = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	m_SpotLight.spot = 12.0f;
+	m_SpotLight.range = 10000.0f;
 
 	/************
 	* 常量缓冲区 *
@@ -213,9 +297,9 @@ bool GameApp::InitResource() {
 	// PS 常量缓冲区对应HLSL寄存于b1 register
 	m_pd3dImmediateContext->PSSetConstantBuffers(1, 1, m_pConstantBuffer[1].GetAddressOf());
 
-
 	return true;
 }
+
 
 bool GameApp::ResetMesh(const Geometry::MeshData<VertexPosNormalColor>& meshData) {
 	// 1.清空顶点和索引缓冲区

@@ -17,6 +17,8 @@ public:
 
     struct PSConstantBuffer {
         DirectionalLight dirLight;
+        PointLight pointLight;
+        SpotLight spotLight;
         Material material;
         DirectX::XMFLOAT4 eyePos;
     };
@@ -49,6 +51,8 @@ private:
     
     // 光照模型
     DirectionalLight m_DirLight;
+    PointLight m_PointLight;
+    SpotLight m_SpotLight;
     ComPtr<ID3D11RasterizerState> m_pRSWireframe; //光栅化状态，切换线框模式
     bool m_IsWireframeMode;
     

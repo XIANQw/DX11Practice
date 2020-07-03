@@ -88,10 +88,10 @@
     <FxCompile Include="PixelShader.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
-    <FxCompile Include="..\03 Rendering a Cube\HLSL\Cube_PS.hlsl">
+    <FxCompile Include="..\07 Lighting\HLSL\Light_PS.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
-    <FxCompile Include="..\03 Rendering a Cube\HLSL\Cube_VS.hlsl">
+    <FxCompile Include="..\07 Lighting\HLSL\Light_VS.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
@@ -99,9 +99,12 @@
     <None Include="Shape.hlsli">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\03 Rendering a Cube\HLSL\Cube.hlsli">
+    <None Include=".gitignore" />
+    <None Include="..\07 Lighting\HLSL\Light.hlsli">
       <Filter>shader</Filter>
     </None>
-    <None Include=".gitignore" />
+    <None Include="..\07 Lighting\HLSL\LightHelper.hlsli">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
