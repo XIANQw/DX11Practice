@@ -68,7 +68,7 @@ void GameApp::UpdateScene(float dt) {
 		theta -= dt * 2;
 	
 	// 切换光栅化状态
-	if (m_KeyboardTracker.IsKeyPressed(Keyboard::S))
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::R))
 	{
 		m_IsWireframeMode = !m_IsWireframeMode;
 		m_pd3dImmediateContext->RSSetState(m_IsWireframeMode ? m_pRSWireframe.Get() : nullptr);
@@ -95,7 +95,7 @@ void GameApp::DrawScene() {
 	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&DirectX::Colors::Black));
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	m_pd3dImmediateContext->DrawIndexed(54, 0, 0);
+	m_pd3dImmediateContext->DrawIndexed(m_IndexCount, 0, 0);
 	HR(m_pSwapChain->Present(0, 0));
 }
 
