@@ -98,7 +98,9 @@ void GameApp::UpdateScene(float dt) {
 
 
 	// 世界空间变换，旋转和缩放
-	m_VSConstantBuffer.world = XMMatrixTranspose(XMMatrixRotationY(theta) * XMMatrixRotationX(phi) * scaling);
+	XMMATRIX transform = XMMatrixRotationY(theta) * XMMatrixRotationX(phi) * scaling;
+	m_VSConstantBuffer.world = XMMatrixTranspose(transform);
+	m_VSConstantBuffer.worldInvTranspose = XMMatrixInverse(nullptr, transform);
 	
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
 	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
@@ -111,53 +113,6 @@ void GameApp::UpdateScene(float dt) {
 
 }
 
-//void GameApp::UpdateScene(float dt)
-//{
-//	static float phi = 0.0f, theta = 0.0f;
-//	phi += 0.0001f, theta += 0.00015f;
-//	XMMATRIX W = XMMatrixRotationX(phi) * XMMatrixRotationY(theta);
-//	m_VSConstantBuffer.world = XMMatrixTranspose(W);
-//	m_VSConstantBuffer.worldInvTranspose = XMMatrixInverse(nullptr, W);	// 两次转置可以抵消
-//
-//	// 键盘切换灯光类型
-//	Keyboard::State state = m_pKeyboard->GetState();
-//	m_KeyboardTracker.Update(state);
-//	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1))
-//	{
-//		m_PSConstantBuffer.dirLight = m_DirLight;
-//		m_PSConstantBuffer.pointLight = PointLight();
-//		m_PSConstantBuffer.spotLight = SpotLight();
-//	}
-//	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2))
-//	{
-//		m_PSConstantBuffer.dirLight = DirectionalLight();
-//		m_PSConstantBuffer.pointLight = m_PointLight;
-//		m_PSConstantBuffer.spotLight = SpotLight();
-//	}
-//	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D3))
-//	{
-//		m_PSConstantBuffer.dirLight = DirectionalLight();
-//		m_PSConstantBuffer.pointLight = PointLight();
-//		m_PSConstantBuffer.spotLight = m_SpotLight;
-//	}
-//
-//	// 键盘切换光栅化状态
-//	if (m_KeyboardTracker.IsKeyPressed(Keyboard::S))
-//	{
-//		m_IsWireframeMode = !m_IsWireframeMode;
-//		m_pd3dImmediateContext->RSSetState(m_IsWireframeMode ? m_pRSWireframe.Get() : nullptr);
-//	}
-//
-//	// 更新常量缓冲区，让立方体转起来
-//	D3D11_MAPPED_SUBRESOURCE mappedData;
-//	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
-//	memcpy_s(mappedData.pData, sizeof(VSConstantBuffer), &m_VSConstantBuffer, sizeof(VSConstantBuffer));
-//	m_pd3dImmediateContext->Unmap(m_pConstantBuffer[0].Get(), 0);
-//
-//	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
-//	memcpy_s(mappedData.pData, sizeof(PSConstantBuffer), &m_PSConstantBuffer, sizeof(PSConstantBuffer));
-//	m_pd3dImmediateContext->Unmap(m_pConstantBuffer[1].Get(), 0);
-//}
 
 void GameApp::DrawScene() {
 	assert(m_pd3dImmediateContext);
