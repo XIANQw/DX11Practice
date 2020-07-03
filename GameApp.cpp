@@ -28,6 +28,10 @@ bool GameApp::Init() {
 	if (!InitResource()) {
 		return false;
 	}
+
+	m_pMouse->SetWindow(m_hMainWnd);
+	m_pMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
+
 	return true;
 }
 
@@ -36,18 +40,33 @@ void GameApp::OnResize() {
 }
 
 void GameApp::UpdateScene(float dt) {
+	
+	// 获取鼠标状态
+	Mouse::State mouseState = m_pMouse->GetState();
+	Mouse::State lastMouseState = m_MouseTracker.GetLastState();
+	// 获取键盘状态
+	Keyboard::State keyState = m_pKeyboard->GetState();
+	Keyboard::State lastKeyState = m_KeyboardTracker.GetLastState();
 	static float phi = 0.0f, theta = 0.0f;
-	static float x = 1.0f, y = 1.0f, z = 1.0f, dx = -0.0001f, dy = -0.0001f, dz=-0.0001f;
-	phi += 0.0001f, theta += 0.00015f;
-	if (x == 1.0f) {
-		dx = -0.0001f, dy = -0.0001f, dz = -0.0001f;
+	
+	m_MouseTracker.Update(mouseState);
+	m_KeyboardTracker.Update(keyState);
+	if (mouseState.leftButton == true && m_MouseTracker.leftButton == m_MouseTracker.HELD)
+	{
+		int dx = (mouseState.x - lastMouseState.x), dy = mouseState.y - lastMouseState.y;
+		theta -= dx * 0.01f;
+		phi -= dy * 0.01f;
 	}
-	else if(x < 0.1f){
-		dx = 0.0001f, dy = 0.0001f, dz = 0.0001f;
-	}
-	x += dx, y += dy, z += dz;
+	if (keyState.IsKeyDown(Keyboard::W))
+		phi += dt * 2;
+	if (keyState.IsKeyDown(Keyboard::S))
+		phi -= dt * 2;
+	if (keyState.IsKeyDown(Keyboard::A))
+		theta += dt * 2;
+	if (keyState.IsKeyDown(Keyboard::D))
+		theta -= dt * 2;
 	// 世界空间变换，旋转和缩放
-	m_CBuffer.world = XMMatrixTranspose(XMMatrixRotationX(phi) * XMMatrixRotationY(theta) * XMMatrixScaling(x, y, z));
+	m_CBuffer.world = XMMatrixTranspose(XMMatrixRotationY(theta) * XMMatrixRotationX(phi));
 	
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
 	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));

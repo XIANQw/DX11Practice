@@ -38,7 +38,11 @@ private:
     ComPtr<ID3D11VertexShader> m_pVertexShader;	// 顶点着色器
     ComPtr<ID3D11PixelShader> m_pPixelShader;	// 像素着色器
 
-    ConstantBuffer m_CBuffer;
+    ConstantBuffer m_CBuffer; // 储存了各种变换矩阵
+    
+    
+
+
 };
 
 #endif
