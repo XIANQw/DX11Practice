@@ -90,5 +90,6 @@
     <None Include="..\03 Rendering a Cube\HLSL\Cube.hlsli">
       <Filter>shader</Filter>
     </None>
+    <None Include=".gitignore" />
   </ItemGroup>
 </Project>

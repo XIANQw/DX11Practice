@@ -47,10 +47,15 @@ void GameApp::UpdateScene(float dt) {
 	// 获取键盘状态
 	Keyboard::State keyState = m_pKeyboard->GetState();
 	Keyboard::State lastKeyState = m_KeyboardTracker.GetLastState();
-	static float phi = 0.0f, theta = 0.0f;
+	static float phi = 0.0f, theta = 0.0f, objSize = 1.0f;
 	
 	m_MouseTracker.Update(mouseState);
 	m_KeyboardTracker.Update(keyState);
+	int deltaScrollWhellValue = mouseState.scrollWheelValue - lastMouseState.scrollWheelValue;
+	objSize += deltaScrollWhellValue * 0.0001f;
+
+	XMMATRIX scalling = XMMatrixScaling(objSize, objSize, objSize);
+
 	if (mouseState.leftButton == true && m_MouseTracker.leftButton == m_MouseTracker.HELD)
 	{
 		int dx = (mouseState.x - lastMouseState.x), dy = mouseState.y - lastMouseState.y;
@@ -66,7 +71,7 @@ void GameApp::UpdateScene(float dt) {
 	if (keyState.IsKeyDown(Keyboard::D))
 		theta -= dt * 2;
 	// 世界空间变换，旋转和缩放
-	m_CBuffer.world = XMMatrixTranspose(XMMatrixRotationY(theta) * XMMatrixRotationX(phi));
+	m_CBuffer.world = XMMatrixTranspose(XMMatrixRotationY(theta) * XMMatrixRotationX(phi) * scalling);
 	
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
 	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));

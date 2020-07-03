@@ -243,6 +243,7 @@
     <None Include="..\03 Rendering a Cube\HLSL\Cube.hlsli">
       <FileType>Document</FileType>
     </None>
+    <None Include=".gitignore" />
     <None Include="Shape.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
