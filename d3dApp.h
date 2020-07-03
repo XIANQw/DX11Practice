@@ -5,7 +5,10 @@
 #include <string>
 #include <d3d11_1.h>
 #include <DirectXMath.h>
+#include <memory>
 #include "GameTimer.h"
+#include "Mouse.h"
+#include "Keyboard.h"
 
 // 添加所有要引用的库
 #pragma comment(lib, "d3d11.lib")
@@ -74,6 +77,12 @@ protected:
 	std::wstring m_MainWndCaption;                        // 主窗口标题
 	int m_ClientWidth;                                    // 视口宽度
 	int m_ClientHeight;                                   // 视口高度
+
+	std::unique_ptr<DirectX::Mouse> m_pMouse;
+	DirectX::Mouse::ButtonStateTracker m_MouseTracker;				// 鼠标状态追踪器
+	std::unique_ptr<DirectX::Keyboard> m_pKeyboard;
+	DirectX::Keyboard::KeyboardStateTracker m_KeyboardTracker;
+
 };
 
 #endif // D3DAPP_H
