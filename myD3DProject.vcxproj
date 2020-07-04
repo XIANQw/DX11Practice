@@ -151,6 +151,7 @@
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="DXTrace.h" />
     <ClInclude Include="Ex7Light.h" />
+    <ClInclude Include="Ex8Tex.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Keyboard.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="DXTrace.cpp" />
     <ClCompile Include="Ex7Light.cpp" />
+    <ClCompile Include="Ex8Tex.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />

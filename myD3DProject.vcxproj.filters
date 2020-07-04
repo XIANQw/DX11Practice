@@ -51,6 +51,9 @@
     <ClInclude Include="Ex7Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Ex8Tex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Keyboard.cpp">
@@ -78,6 +81,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Ex7Light.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex8Tex.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
