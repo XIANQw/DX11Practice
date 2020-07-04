@@ -1,9 +1,9 @@
-﻿#include "GameApp.h"
+﻿#include "Ex7Light.h"
 #include "d3dUtil.h"
 #include "DXTrace.h"
 using namespace DirectX;
 
-GameApp::GameApp(HINSTANCE hInstance)
+Ex7Light::Ex7Light(HINSTANCE hInstance)
 	: D3DApp(hInstance), 
 	m_IndexCount(), 
 	m_VSConstantBuffer(), 
@@ -15,11 +15,11 @@ GameApp::GameApp(HINSTANCE hInstance)
 
 }
 
-GameApp::~GameApp() {
+Ex7Light::~Ex7Light() {
 
 }
 
-bool GameApp::Init() {
+bool Ex7Light::Init() {
 	if (!D3DApp::Init()) {
 		return false;
 	}
@@ -36,11 +36,11 @@ bool GameApp::Init() {
 	return true;
 }
 
-void GameApp::OnResize() {
+void Ex7Light::OnResize() {
 	D3DApp::OnResize();
 }
 
-void GameApp::UpdateScene(float dt) {
+void Ex7Light::UpdateScene(float dt) {
 	
 	// 获取鼠标状态
 	Mouse::State mouseState = m_pMouse->GetState();
@@ -114,7 +114,7 @@ void GameApp::UpdateScene(float dt) {
 
 }
 
-void GameApp::DrawScene() {
+void Ex7Light::DrawScene() {
 	assert(m_pd3dImmediateContext);
 	assert(m_pSwapChain);
 	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&DirectX::Colors::Black));
@@ -124,7 +124,7 @@ void GameApp::DrawScene() {
 	HR(m_pSwapChain->Present(0, 0));
 }
 
-bool GameApp::InitEffect() {
+bool Ex7Light::InitEffect() {
 	//创建顶点着色器
 	ComPtr<ID3DBlob> blob;
 	// 将HLSL文件转成二进制码
@@ -141,7 +141,7 @@ bool GameApp::InitEffect() {
 	return true;
 }
 
-bool GameApp::InitResource() {
+bool Ex7Light::InitResource() {
 	// ******************
 	// 设置立方体顶点
 	//    5________ 6
@@ -227,7 +227,7 @@ bool GameApp::InitResource() {
 	* 初始化光栅化状态 *
 	******************/
 	D3D11_RASTERIZER_DESC rasterizerDesc;
-	ZeroMemory(&rasterizerDesc, sizeof(rasterizerDesc));
+	ZeroMemory(&rasterizerDesc, sizeof(rasterizerDesc)); // 记住使用结构体前要初始化0
 	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.FrontCounterClockwise = false;
@@ -256,7 +256,7 @@ bool GameApp::InitResource() {
 }
 
 
-bool GameApp::ResetMesh(const Geometry::MeshData<VertexPosNormalColor>& meshData) {
+bool Ex7Light::ResetMesh(const Geometry::MeshData<VertexPosNormalColor>& meshData) {
 	// 1.清空顶点和索引缓冲区
 	m_pVertexBuffer.Reset();
 	m_pIndexBuffer.Reset();

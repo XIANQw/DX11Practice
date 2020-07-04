@@ -1,4 +1,4 @@
-#include "GameApp.h"
+#include "Ex7Light.h"
  
 
 
@@ -14,12 +14,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	GameApp theApp(hInstance);
+	D3DApp * theApp = new Ex7Light(hInstance);
 	
-	if( !theApp.Init() )
+	if( !theApp->Init() )
 		return 0;
 	
-	return theApp.Run();
+	theApp->Run();
+	delete theApp;
+	return 0;
 }
 
 

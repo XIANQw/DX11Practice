@@ -1,11 +1,11 @@
-﻿#ifndef GAMEAPP_H
-#define GAMEAPP_H
+﻿#ifndef Ex7Light_H
+#define Ex7Light_H
 
 #include "d3dApp.h"
 #include "light.h"
 #include "Geometry.h"
 
-class GameApp : public D3DApp {
+class Ex7Light : public D3DApp {
 public:
 
     struct VSConstantBuffer {
@@ -24,8 +24,8 @@ public:
     };
 
 public:
-    GameApp(HINSTANCE hInstance);
-    ~GameApp();
+    Ex7Light(HINSTANCE hInstance);
+    ~Ex7Light();
 
     bool Init();
     void OnResize();

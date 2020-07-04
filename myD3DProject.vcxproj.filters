@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameApp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Keyboard.h">
       <Filter>generic</Filter>
     </ClInclude>
@@ -51,11 +48,11 @@
     <ClInclude Include="light.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Ex7Light.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GameApp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Keyboard.cpp">
       <Filter>generic</Filter>
     </ClCompile>
@@ -80,6 +77,9 @@
     <ClCompile Include="Vertex.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Ex7Light.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">
@@ -88,23 +88,11 @@
     <FxCompile Include="PixelShader.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
-    <FxCompile Include="..\07 Lighting\HLSL\Light_PS.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="..\07 Lighting\HLSL\Light_VS.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shape.hlsli">
       <Filter>shader</Filter>
     </None>
     <None Include=".gitignore" />
-    <None Include="..\07 Lighting\HLSL\Light.hlsli">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\07 Lighting\HLSL\LightHelper.hlsli">
-      <Filter>shader</Filter>
-    </None>
   </ItemGroup>
 </Project>
