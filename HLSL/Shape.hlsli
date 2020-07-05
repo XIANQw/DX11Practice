@@ -1,1 +1,194 @@
-ï»¿
+struct Material {
+	float4 Ambient;
+	float4 Diffuse;
+	float4 Specular;
+	float4 Reflect;
+};
+
+// Æ½ÐÐ¹âÄ£ÐÍ
+struct DirectionalLight
+{
+	float4 Ambient;
+	float4 Diffuse;
+	float4 Specular;
+	float3 Direction;
+	float Pad;
+};
+
+void ComputeDirectionalLight(Material mat, DirectionalLight light, 
+	float3 normal, float3 view, 
+	out float4 ambient, out float4 diffuse, out float4 specular) {
+	ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	// ¹âÏòÁ¿ÊÇ¹âÔ´ÕÕÉä·½ÏòµÄ·´·½Ïò
+	float3 lightVector = -light.Direction;
+	ambient = mat.Ambient * light.Ambient;
+	float diffuseFactor = dot(lightVector, normal);
+	[flatten]
+	if (diffuseFactor > 0.0f) {
+		float v = reflect(-lightVector, normal);
+		float specularFactor = pow(max(dot(v, view), 0.0f), mat.Specular.w);
+
+		diffuse = diffuseFactor * mat.Diffuse * light.Diffuse;
+		specular = specularFactor * mat.Specular * light.Specular;
+	}
+}
+
+// µã¹â
+struct PointLight
+{
+	float4 Ambient;
+	float4 Diffuse;
+	float4 Specular;
+
+	float3 Position;
+	float Range;
+
+	float3 Att;
+	float Pad;
+};
+
+void ComputePointLight(Material mat, PointLight L, float3 pos, float3 normal, float3 toEye,
+	out float4 ambient, out float4 diffuse, out float4 spec)
+{
+	// ³õÊ¼»¯Êä³ö
+	ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// ´Ó±íÃæµ½¹âÔ´µÄÏòÁ¿
+	float3 lightVec = L.Position - pos;
+
+	// ±íÃæµ½¹âÏßµÄ¾àÀë
+	float d = length(lightVec);
+
+	// µÆ¹â·¶Î§²âÊÔ
+	if (d > L.Range)
+		return;
+
+	// ±ê×¼»¯¹âÏòÁ¿
+	lightVec /= d;
+
+	// »·¾³¹â¼ÆËã
+	ambient = mat.Ambient * L.Ambient;
+
+	// Âþ·´ÉäºÍ¾µÃæ¼ÆËã
+	float diffuseFactor = dot(lightVec, normal);
+
+	// Õ¹¿ªÒÔ±ÜÃâ¶¯Ì¬·ÖÖ§
+	[flatten]
+	if (diffuseFactor > 0.0f)
+	{
+		float3 v = reflect(-lightVec, normal);
+		float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
+
+		diffuse = diffuseFactor * mat.Diffuse * L.Diffuse;
+		spec = specFactor * mat.Specular * L.Specular;
+	}
+
+	// ¹âµÄË¥Èõ
+	float att = 1.0f / dot(L.Att, float3(1.0f, d, d * d));
+
+	diffuse *= att;
+	spec *= att;
+}
+
+struct SpotLight
+{
+	float4 Ambient;
+	float4 Diffuse;
+	float4 Specular;
+
+	float3 Position;
+	float Range;
+
+	float3 Direction;
+	float Spot;
+
+	float3 Att;
+	float Pad;
+};
+
+
+void ComputeSpotLight(Material mat, SpotLight L, float3 pos, float3 normal, float3 toEye,
+	out float4 ambient, out float4 diffuse, out float4 spec)
+{
+	// ³õÊ¼»¯Êä³ö
+	ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// // ´Ó±íÃæµ½¹âÔ´µÄÏòÁ¿
+	float3 lightVec = L.Position - pos;
+
+	// ±íÃæµ½¹âÔ´µÄ¾àÀë
+	float d = length(lightVec);
+
+	// ·¶Î§²âÊÔ
+	if (d > L.Range)
+		return;
+
+	// ±ê×¼»¯¹âÏòÁ¿
+	lightVec /= d;
+
+	// ¼ÆËã»·¾³¹â²¿·Ö
+	ambient = mat.Ambient * L.Ambient;
+
+
+	// ¼ÆËãÂþ·´Éä¹âºÍ¾µÃæ·´Éä¹â²¿·Ö
+	float diffuseFactor = dot(lightVec, normal);
+
+	// Õ¹¿ªÒÔ±ÜÃâ¶¯Ì¬·ÖÖ§
+	[flatten]
+	if (diffuseFactor > 0.0f)
+	{
+		float3 v = reflect(-lightVec, normal);
+		float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
+
+		diffuse = diffuseFactor * mat.Diffuse * L.Diffuse;
+		spec = specFactor * mat.Specular * L.Specular;
+	}
+
+	// ¼ÆËã»ã¾ÛÒò×ÓºÍË¥ÈõÏµÊý
+	float spot = pow(max(dot(-lightVec, L.Direction), 0.0f), L.Spot);
+	float att = spot / dot(L.Att, float3(1.0f, d, d * d));
+
+	ambient *= spot;
+	diffuse *= att;
+	spec *= att;
+}
+
+
+
+// VS³£Á¿»º³å´æÓÚ ¼Ä´æÆ÷b0
+cbuffer VSConstantBuffer: register(b0) {
+	matrix g_World;
+	matrix g_View;
+	matrix g_Proj;
+	matrix g_WorldInvTranspose;
+}
+
+// PS³£Á¿»º³å´æÓÚ ¼Ä´æÆ÷b1
+cbuffer PSConstantBuffer: register(b1) {
+	DirectionalLight g_DirLight;
+	PointLight g_PointLight;
+	SpotLight g_SpotLight;
+	Material g_Material;
+	float3 g_EyePosW;
+	float g_Pad;
+}
+
+
+struct VS_IN {
+	float3 pos: POSITION;
+	float3 normal : NORMAL;
+	float4 color: COLOR;
+};
+
+struct VS_OUT {
+	float4 posH:SV_POSITION;
+	float3 posW: POSITION; // ÊÀ½ç×ø±ê
+	float3 normalW: NORMAL; //·¨ÏòÁ¿ÔÚÊÀ½ç¿Õ¼äµÄ·½Ïò 
+	float4 color: COLOR;
+};

@@ -1,5 +1,5 @@
 #include "Ex9Tex.h"
- 
+#include "Ex7Light.h"
 
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
@@ -15,7 +15,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
 #endif
 
 	D3DApp * theApp = new Ex9Tex(hInstance);
-	
+
 	if( !theApp->Init() )
 		return 0;
 	
