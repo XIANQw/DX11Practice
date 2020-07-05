@@ -10,7 +10,7 @@
 class Ex9Tex : public D3DApp {
 
     enum class ShowMode {
-        WoodCrafte, FireAnim
+        WoodCrate, FireAnim
     };
 
 public:
@@ -56,7 +56,7 @@ protected:
     
     ComPtr<ID3D11Buffer> m_pVertexBuffer;		// 顶点缓冲区
     ComPtr<ID3D11Buffer> m_pIndexBuffer;        // 索引缓冲区
-    ComPtr<ID3D11Buffer> m_pConstantBuffer[2];     // 常量缓冲区
+    ComPtr<ID3D11Buffer> m_pConstantBuffers[2];     // 常量缓冲区
     UINT m_IndexCount;
     UINT m_CurrFrame;
     ShowMode m_CurrMode;
@@ -77,7 +77,7 @@ protected:
     ComPtr<ID3D11RasterizerState> m_pRSWireframe; //光栅化状态，切换线框模式
 
     // 纹理资源
-    ComPtr<ID3D11ShaderResourceView> m_pWoodCraft;
+    ComPtr<ID3D11ShaderResourceView> m_pWoodCrate;
     std::vector<ComPtr<ID3D11ShaderResourceView>> m_pFireAnims;
 
 };

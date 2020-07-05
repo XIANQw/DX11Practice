@@ -10,7 +10,7 @@ Ex9Tex::Ex9Tex(HINSTANCE hInstance)
 	:D3DApp(hInstance),
 	m_IndexCount(),
 	m_CurrFrame(),
-	m_CurrMode(ShowMode::WoodCrafte),
+	m_CurrMode(ShowMode::WoodCrate),
 	m_VSConstantBuffer(),
 	m_PSConstantBuffer(),
 	m_PointLight()
@@ -50,21 +50,26 @@ void Ex9Tex::UpdateScene(float dt)
 	m_KeyboardTracker.Update(keyState);
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1)) {
-		m_CurrMode = ShowMode::WoodCrafte;
+		m_CurrMode = ShowMode::WoodCrate;
 		m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout3D.Get());
 		auto meshData = Geometry::CreateBox<VertexPosNormalTex>();
 		ResetMesh(meshData);
 		m_pd3dImmediateContext->VSSetShader(m_pVertexShader3D.Get(), nullptr, 0);
 		m_pd3dImmediateContext->PSSetShader(m_pPixelShader3D.Get(), nullptr, 0);
-		m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pWoodCraft.GetAddressOf());
+		m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pWoodCrate.GetAddressOf());
 	}
-	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2)) {
-	/*	m_CurrMode = ShowMode::FireAnim;
+	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2) && m_CurrMode != ShowMode::FireAnim) {
+		m_CurrMode = ShowMode::FireAnim;
 		m_CurrFrame = 0;
-		m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout2D.Get());*/
+		m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout2D.Get());
+		auto meshData = Geometry::Create2DShow();
+		ResetMesh(meshData);
+		m_pd3dImmediateContext->VSSetShader(m_pVertexShader2D.Get(), nullptr, 0);
+		m_pd3dImmediateContext->PSSetShader(m_pPixelShader2D.Get(), nullptr, 0);
+		m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pFireAnims[0].GetAddressOf());
 	}
 
-	if (m_CurrMode == ShowMode::WoodCrafte) {
+	if (m_CurrMode == ShowMode::WoodCrate) {
 		int deltaScrollWhellValue = mouseState.scrollWheelValue - lastMouseState.scrollWheelValue;
 		objSize += deltaScrollWhellValue * 0.0001f;
 		XMMATRIX scaling = XMMatrixScaling(objSize, objSize, objSize);
@@ -90,10 +95,22 @@ void Ex9Tex::UpdateScene(float dt)
 		m_VSConstantBuffer.worldInvTranspose = XMMatrixInverse(nullptr, transform);
 
 		D3D11_MAPPED_SUBRESOURCE mappedRes;
-		HR(m_pd3dImmediateContext->Map(m_pConstantBuffer[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
+		HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
 		memcpy_s(mappedRes.pData, sizeof(m_VSConstantBuffer), &m_VSConstantBuffer, sizeof(m_VSConstantBuffer));
-		m_pd3dImmediateContext->Unmap(m_pConstantBuffer[0].Get(), 0);
+		m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
 	}
+	else if (m_CurrMode == ShowMode::FireAnim) {
+		// 规定fps60
+		static float totDeltaTime = 0;
+		totDeltaTime += dt;
+		if (totDeltaTime > 1.0f / 60){
+			totDeltaTime -= 1.0f / 60;
+			m_CurrFrame = (m_CurrFrame + 1) % 120;
+			m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pFireAnims[m_CurrFrame].GetAddressOf());
+		}
+	}
+
+
 
 }
 
@@ -148,7 +165,7 @@ bool Ex9Tex::InitResource()
 		初始化纹理
 	********************/
 	// 读取木箱
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, m_pWoodCraft.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, m_pWoodCrate.GetAddressOf()));
 	// 读取火焰
 	m_pFireAnims.resize(120);
 	WCHAR filename[40];
@@ -192,9 +209,9 @@ bool Ex9Tex::InitResource()
 	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	// 新建VS和PS常量缓冲区
-	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffer[0].GetAddressOf()));
+	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffers[0].GetAddressOf()));
 	cbd.ByteWidth = sizeof(PSConstantBuffer);
-	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffer[1].GetAddressOf()));
+	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffers[1].GetAddressOf()));
 
 	// 初始化VS常量缓冲区
 	m_VSConstantBuffer.world = XMMatrixIdentity();
@@ -221,9 +238,9 @@ bool Ex9Tex::InitResource()
 
 	// 更新Context的PS常量缓冲
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
-	HR(m_pd3dImmediateContext->Map(m_pConstantBuffer[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
+	HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
 	memcpy_s(mappedRes.pData, sizeof(PSConstantBuffer), &m_PSConstantBuffer, sizeof(PSConstantBuffer));
-	m_pd3dImmediateContext->Unmap(m_pConstantBuffer[1].Get(), 0);
+	m_pd3dImmediateContext->Unmap(m_pConstantBuffers[1].Get(), 0);
 
 	/***************
 	* 绑定资源到管线 *
@@ -239,9 +256,9 @@ bool Ex9Tex::InitResource()
 	m_pd3dImmediateContext->PSSetShader(m_pPixelShader3D.Get(), nullptr, 0);
 
 	// VS 常量缓冲区对应HLSL寄存于b0 register
-	m_pd3dImmediateContext->VSSetConstantBuffers(0, 1, m_pConstantBuffer[0].GetAddressOf());
+	m_pd3dImmediateContext->VSSetConstantBuffers(0, 1, m_pConstantBuffers[0].GetAddressOf());
 	// PS常量缓冲区对应HLSL寄存于b1 register
-	m_pd3dImmediateContext->PSSetConstantBuffers(1, 1, m_pConstantBuffer[1].GetAddressOf());
+	m_pd3dImmediateContext->PSSetConstantBuffers(1, 1, m_pConstantBuffers[1].GetAddressOf());
 	
 
 	/**************                  设置着色器资源                 *********************
@@ -251,8 +268,8 @@ bool Ex9Tex::InitResource()
 		ID3D11ShaderResourceView * const *ppShaderResourceViews	// [In]着色器资源视图数组
 	);
 	***********************************************************************************/
+	m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pWoodCrate.GetAddressOf());
 	m_pd3dImmediateContext->PSSetSamplers(0, 1, m_pSamplerState.GetAddressOf());
-	m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pWoodCraft.GetAddressOf());
 
 
 	return true;
