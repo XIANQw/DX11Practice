@@ -110,6 +110,9 @@
     <None Include="HLSL\LightHelper.hlsli">
       <Filter>shader</Filter>
     </None>
+    <None Include="HLSL\Shape.hlsli">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
@@ -122,6 +125,12 @@
       <Filter>shader</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\Basic_VS_2D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\PixelShader.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\VertexShader.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
