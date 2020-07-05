@@ -51,7 +51,16 @@
     <ClInclude Include="Ex7Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Ex8Tex.h">
+    <ClInclude Include="Ex9Tex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>generic</Filter>
+    </ClInclude>
+    <ClInclude Include="WICTextureLoader.h">
+      <Filter>generic</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,22 +92,42 @@
     <ClCompile Include="Ex7Light.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Ex8Tex.cpp">
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>generic</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader.cpp">
+      <Filter>generic</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex9Tex.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
+    <None Include=".gitignore" />
+    <None Include="HLSL\Basic.hlsli">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="HLSL\LightHelper.hlsli">
+      <Filter>shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
-    <FxCompile Include="PixelShader.hlsl">
+    <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_PS_2D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_VS_2D.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shape.hlsli">
-      <Filter>shader</Filter>
-    </None>
-    <None Include=".gitignore" />
+    <ResourceCompile Include="myD3DProject.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -30,9 +30,6 @@ bool Ex7Light::Init() {
 		return false;
 	}
 
-	m_pMouse->SetWindow(m_hMainWnd);
-	m_pMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
-
 	return true;
 }
 

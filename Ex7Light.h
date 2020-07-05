@@ -25,7 +25,7 @@ public:
 
 public:
     Ex7Light(HINSTANCE hInstance);
-    ~Ex7Light();
+    virtual ~Ex7Light();
 
     bool Init();
     void OnResize();
@@ -33,7 +33,7 @@ public:
     void DrawScene();
 
 
-private:
+protected:
     bool InitEffect();
     bool InitResource();
     bool ResetMesh(const Geometry::MeshData<VertexPosNormalColor>& meshData);

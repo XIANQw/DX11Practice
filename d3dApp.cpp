@@ -112,6 +112,9 @@ bool D3DApp::Init()
 	if (!InitDirect3D())
 		return false;
 
+	m_pMouse->SetWindow(m_hMainWnd);
+	m_pMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
+
 	return true;
 }
 
