@@ -1,4 +1,4 @@
-#include "Basic.hlsli"
+#include "CBuffer.hlsli"
 
 /**********************************
     像素着色器(2D), 用来渲染火焰bmp

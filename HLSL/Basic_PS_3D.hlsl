@@ -1,4 +1,4 @@
-#include "Basic.hlsli"
+#include "CBuffer.hlsli"
 
 /**************************************
     像素着色器(3D)
