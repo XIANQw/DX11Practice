@@ -2,29 +2,29 @@
 
 using namespace DirectX;
 
-XMFLOAT3 Transform::GetScale() {
+XMFLOAT3 Transform::GetScale() const {
 	return m_Scale;
 }
 
-XMVECTOR Transform::GetScaleXM() {
+XMVECTOR Transform::GetScaleXM() const {
 	return XMLoadFloat3(&m_Scale);
 }
 
-XMFLOAT3 Transform::GetRotation() {
+XMFLOAT3 Transform::GetRotation() const {
 	return m_Rotation;
 }
 
 
-XMVECTOR Transform::GetRotationXM() {
+XMVECTOR Transform::GetRotationXM() const {
 	return XMLoadFloat3(&m_Rotation);
 }
 
 
-XMFLOAT3 Transform::GetPosition() {
+XMFLOAT3 Transform::GetPosition() const {
 	return m_Position;
 }
 
-XMVECTOR Transform::GetPositionXM() {
+XMVECTOR Transform::GetPositionXM() const {
 	return XMLoadFloat3(&m_Position);
 }
 
@@ -35,6 +35,11 @@ XMFLOAT3 Transform::GetRightAxis() const {
 	return right;
 }
 
+XMVECTOR Transform::GetRightAxisXM() const {
+	XMMATRIX tmp = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&m_Rotation));
+	return tmp.r[0];
+}
+
 XMFLOAT3 Transform::GetUpAxis() const {
 	XMMATRIX tmp = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&m_Rotation));
 	XMFLOAT3 up;
@@ -42,11 +47,21 @@ XMFLOAT3 Transform::GetUpAxis() const {
 	return up;
 }
 
+XMVECTOR Transform::GetUpAxisXM() const {
+	XMMATRIX tmp = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&m_Rotation));
+	return tmp.r[1];
+}
+
 XMFLOAT3 Transform::GetForwardAxis() const {
 	XMMATRIX tmp = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&m_Rotation));
 	XMFLOAT3 forward;
 	XMStoreFloat3(&forward, tmp.r[2]);
 	return forward;
+}
+
+XMVECTOR Transform::GetForwardAxisXM() const {
+	XMMATRIX tmp = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&m_Rotation));
+	return tmp.r[2];
 }
 
 XMFLOAT4X4 Transform::GetLocalToWorldMatrix() const {
@@ -63,7 +78,7 @@ XMMATRIX Transform::GetLocalToWorldMatrixXM() const {
 	return res;
 }
 
-XMFLOAT4X4 Transform::GetWorldToLocalMatrx() const {
+XMFLOAT4X4 Transform::GetWorldToLocalMatrix() const {
 	XMFLOAT4X4 res;
 	XMStoreFloat4x4(&res, GetWorldToLocalMatrixXM());
 	return res;
@@ -74,7 +89,7 @@ XMMATRIX Transform::GetWorldToLocalMatrixXM() const {
 	return w2l;
 }
 
-void Transform::SetScale(XMFLOAT3& scale) {
+void Transform::SetScale(const XMFLOAT3& scale) {
 	m_Scale = scale;
 }
 
@@ -82,7 +97,7 @@ void Transform::SetScale(float x, float y, float z) {
 	m_Scale = XMFLOAT3(x, y, z);
 }
 
-void Transform::SetRotation(XMFLOAT3& eulerAnglesInRadian) {
+void Transform::SetRotation(const XMFLOAT3& eulerAnglesInRadian) {
 	m_Rotation = eulerAnglesInRadian;
 }
 
@@ -90,7 +105,7 @@ void Transform::SetRotation(float x, float y, float z) {
 	m_Rotation = XMFLOAT3(x, y, z);
 }
 
-void Transform::SetPosition(XMFLOAT3& position) {
+void Transform::SetPosition(const XMFLOAT3& position) {
 	m_Position = position;
 }
 

@@ -10,16 +10,16 @@ public:
 	~Transform() = default;
 
 	// 获取缩放矩阵
-	DirectX::XMFLOAT3 GetScale();
-	DirectX::XMVECTOR GetScaleXM();
+	DirectX::XMFLOAT3 GetScale() const;
+	DirectX::XMVECTOR GetScaleXM() const;
 
 	// 获取旋转欧拉角
-	DirectX::XMFLOAT3 GetRotation();
-	DirectX::XMVECTOR GetRotationXM();
+	DirectX::XMFLOAT3 GetRotation() const;
+	DirectX::XMVECTOR GetRotationXM() const;
 
 	// 获取对象位置
-	DirectX::XMFLOAT3 GetPosition();
-	DirectX::XMVECTOR GetPositionXM();
+	DirectX::XMFLOAT3 GetPosition() const;
+	DirectX::XMVECTOR GetPositionXM() const;
 
 	// 获取右方向轴
 	DirectX::XMFLOAT3 GetRightAxis() const;
@@ -39,19 +39,19 @@ public:
 	DirectX::XMMATRIX GetLocalToWorldMatrixXM() const;
 
 	// 获取世界变换逆矩阵
-	DirectX::XMFLOAT4X4 GetWorldToLocalMatrx() const;
+	DirectX::XMFLOAT4X4 GetWorldToLocalMatrix() const;
 	DirectX::XMMATRIX GetWorldToLocalMatrixXM() const;
 
 	// 设置缩放矩阵
-	void SetScale(DirectX::XMFLOAT3& scale);
+	void SetScale(const DirectX::XMFLOAT3& scale);
 	void SetScale(float x, float y, float z);
 
 	// 设置对象欧拉角(弧度制), 对象以z-x-y轴顺序旋转，为了避免 "万向节死锁"
-	void SetRotation(DirectX::XMFLOAT3& eulerAnglesInRadian);
+	void SetRotation(const DirectX::XMFLOAT3& eulerAnglesInRadian);
 	void SetRotation(float x, float y, float z);
 
 	// 设置对象位置
-	void SetPosition(DirectX::XMFLOAT3& position);
+	void SetPosition(const DirectX::XMFLOAT3& position);
 	void SetPosition(float x, float y, float z);
 
 	// 按欧拉角旋转对象
