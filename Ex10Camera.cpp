@@ -142,7 +142,7 @@ void Ex10Camera::UpdateScene(float dt)
 	m_MouseTracker.Update(mouseState);
 	m_KeyboardTracker.Update(keyState);
 
-	Transform woodCrateTransform = m_WoodCrate.GetTransform();
+	Transform& woodCrateTransform = m_WoodCrate.GetTransform();
 
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
 	auto cam3rd = std::dynamic_pointer_cast<TPSCamera>(m_pCamera);
@@ -151,22 +151,22 @@ void Ex10Camera::UpdateScene(float dt)
 		// FPS mode
 		if (keyState.IsKeyDown(Keyboard::W)) {
 			if (m_CameraMode == CameraMode::FPS) {
-				cam1st->Walk(dt * 3.0f);
+				cam1st->Walk(dt * 5.0f);
 			}
 			else {
-				cam1st->MoveForward(dt * 3.0f);
+				cam1st->MoveForward(dt * 5.0f);
 			}
 		}
 		if (keyState.IsKeyDown(Keyboard::S)) {
 			if (m_CameraMode == CameraMode::FPS) {
-				cam1st->Walk(-dt * 3.0f);
+				cam1st->Walk(-dt * 5.0f);
 			}
 			else {
-				cam1st->MoveForward(-dt * 3.0f);
+				cam1st->MoveForward(-dt * 5.0f);
 			}
 		}
-		if (keyState.IsKeyDown(Keyboard::D)) cam1st->Strafe(dt * 3.0f);
-		if (keyState.IsKeyDown(Keyboard::A)) cam1st->Strafe(-dt * 3.0f);
+		if (keyState.IsKeyDown(Keyboard::D)) cam1st->Strafe(dt * 5.0f);
+		if (keyState.IsKeyDown(Keyboard::A)) cam1st->Strafe(-dt * 5.0f);
 		
 		// 限制摄像机在固定范围内 x(-8.9, 8.9), z(-8.9, 8.9), y(0, 8.9) y不能为负
 		XMFLOAT3 adjustPos;
@@ -246,10 +246,14 @@ void Ex10Camera::UpdateScene(float dt)
 
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
 	HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
-	memcpy_s(mappedRes.pData, sizeof(m_CBFrame), &m_CBFrame, sizeof(m_CBFrame));
+	memcpy_s(mappedRes.pData, sizeof(CBChangesEveryFrame), &m_CBFrame, sizeof(CBChangesEveryFrame));
 	m_pd3dImmediateContext->Unmap(m_pConstantBuffers[1].Get(), 0);
 
 }
+
+
+
+
 
 
 void Ex10Camera::DrawScene()
