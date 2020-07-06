@@ -75,7 +75,7 @@ void Ex10Camera::GameObject::SetTexture(ID3D11ShaderResourceView* texture) {
 
 void Ex10Camera::GameObject::Draw(ID3D11DeviceContext* deviceContext) {
 	// 在上下文装配顶点缓冲区
-	UINT stride = sizeof(m_VertexStride);
+	UINT stride = m_VertexStride;
 	UINT offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
 	// 在上下文上装配索引缓冲区
@@ -473,4 +473,5 @@ bool Ex10Camera::InitResource()
 
 	return true;
 }
+
 
