@@ -350,7 +350,7 @@ bool Ex10Camera::InitResource()
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\brick.dds", nullptr, texture.GetAddressOf()));
 	for (int i = 0; i < m_Walls.size(); i++) {
 		m_Walls[i].SetBuffer<VertexPosNormalTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f)));
-		Transform transform = m_Walls[i].GetTransform();
+		Transform & transform = m_Walls[i].GetTransform();
 		transform.SetRotation(-XM_PIDIV2, XM_PIDIV2 * i, 0.0f);
 		transform.SetPosition(i % 2 ? -10.0f * (i - 2) : 0.0f, 3.0f, i % 2 == 0 ? -10.0f * (i - 1) : 0.0f);
 		m_Walls[i].SetTexture(texture.Get());
