@@ -19,6 +19,18 @@
     <Filter Include="generic">
       <UniqueIdentifier>{f33e2e88-1f31-4072-8a4e-713879572c66}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shader\Ex9">
+      <UniqueIdentifier>{cbb3d261-a07d-485b-a583-bb68bd6d897c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader\Ex7">
+      <UniqueIdentifier>{689441a6-1206-4910-9477-4e64cdf2e8b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Generic">
+      <UniqueIdentifier>{1507d38d-a0b7-4441-a30f-4d65d5930162}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Generic">
+      <UniqueIdentifier>{db80c48f-a449-407c-b411-5894ac85cd48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h">
@@ -26,27 +38,6 @@
     </ClInclude>
     <ClInclude Include="Mouse.h">
       <Filter>generic</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dApp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="DXTrace.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GameTimer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dUtil.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Geometry.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="light.h">
-      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Ex7Light.h">
       <Filter>头文件</Filter>
@@ -60,13 +51,37 @@
     <ClInclude Include="WICTextureLoader.h">
       <Filter>generic</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dApp.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dUtil.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="DXTrace.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>头文件\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="CBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -76,24 +91,6 @@
     </ClCompile>
     <ClCompile Include="Mouse.cpp">
       <Filter>generic</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dApp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="DXTrace.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dUtil.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Vertex.cpp">
-      <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Ex7Light.cpp">
       <Filter>源文件</Filter>
@@ -113,37 +110,58 @@
     <ClCompile Include="Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="d3dApp.cpp">
+      <Filter>源文件\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="d3dUtil.cpp">
+      <Filter>源文件\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="DXTrace.cpp">
+      <Filter>源文件\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>源文件\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>源文件\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="Vertex.cpp">
+      <Filter>源文件\Generic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="HLSL\Basic.hlsli">
-      <Filter>shader</Filter>
+      <Filter>shader\Ex9</Filter>
     </None>
     <None Include="HLSL\LightHelper.hlsli">
-      <Filter>shader</Filter>
+      <Filter>shader\Ex9</Filter>
     </None>
     <None Include="HLSL\Shape.hlsli">
+      <Filter>shader\Ex7</Filter>
+    </None>
+    <None Include="CBuffer.hlsli">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
     <FxCompile Include="HLSL\Basic_PS_2D.hlsl">
-      <Filter>shader</Filter>
+      <Filter>shader\Ex9</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
+      <Filter>shader\Ex9</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\Basic_VS_2D.hlsl">
-      <Filter>shader</Filter>
+      <Filter>shader\Ex9</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
+      <Filter>shader\Ex9</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\PixelShader.hlsl">
-      <Filter>shader</Filter>
+      <Filter>shader\Ex7</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\VertexShader.hlsl">
-      <Filter>shader</Filter>
+      <Filter>shader\Ex7</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
