@@ -63,6 +63,9 @@
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Keyboard.cpp">
@@ -99,6 +102,9 @@
       <Filter>generic</Filter>
     </ClCompile>
     <ClCompile Include="Ex9Tex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
