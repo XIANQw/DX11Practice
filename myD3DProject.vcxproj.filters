@@ -84,6 +84,9 @@
     <ClInclude Include="CBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Ex10Camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Keyboard.cpp">
@@ -127,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="Vertex.cpp">
       <Filter>源文件\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex10Camera.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
-#include "Ex9Tex.h"
 #include "Ex7Light.h"
+#include "Ex9Tex.h"
+#include "Ex10Camera.h"
 
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
@@ -14,7 +15,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	D3DApp * theApp = new Ex9Tex(hInstance);
+	D3DApp * theApp = new Ex10Camera(hInstance);
 
 	if( !theApp->Init() )
 		return 0;

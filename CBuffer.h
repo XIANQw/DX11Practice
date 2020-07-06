@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 #include <DirectXMath.h>
 #include "light.h"
 
 /*******************************************************************************************
 *                                    CBuffer.h                                             *
-*���ڲ����������࣬ÿ�����������������������ֻΪ���޸�һ�����������¶�ȡ�����������о��ܿ���      *
-*�������ڰ���Щ��������ˢ��Ƶ�ʷֳ��ĸ��ȼ���ÿ�λ��Ƹ��£�ÿ֡���£�ÿ�θı䴰�ڴ�С���ºͲ��������� *
+*由于参数不断增多，每个常量缓冲区都在增大，如果只为了修改一个变量而重新读取整个缓冲区感觉很亏，      *
+*所以现在把这些变量按照刷新频率分成四个等级，每次绘制更新，每帧更新，每次改变窗口大小更新和不经常更新 *
 ********************************************************************************************/
 
 
@@ -16,7 +16,7 @@ struct CBChangesEveryDrawing {
 
 struct CBChangesEveryFrame {
 	DirectX::XMMATRIX view;
-	DirectX::XMMATRIX eysPos;
+	DirectX::XMFLOAT4 eysPos;
 };
 
 struct CBChangesOnResize {

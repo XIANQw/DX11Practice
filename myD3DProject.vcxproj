@@ -152,6 +152,7 @@
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DXTrace.h" />
+    <ClInclude Include="Ex10Camera.h" />
     <ClInclude Include="Ex7Light.h" />
     <ClInclude Include="Ex9Tex.h" />
     <ClInclude Include="GameTimer.h" />
@@ -171,6 +172,7 @@
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DXTrace.cpp" />
+    <ClCompile Include="Ex10Camera.cpp" />
     <ClCompile Include="Ex7Light.cpp" />
     <ClCompile Include="Ex9Tex.cpp" />
     <ClCompile Include="GameTimer.cpp" />
