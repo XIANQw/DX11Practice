@@ -88,8 +88,8 @@ void Ex9Tex::UpdateScene(float dt)
 			theta += dt * 2;
 		if (keyState.IsKeyDown(Keyboard::D))
 			theta -= dt * 2;
-		// 世界空间变换，旋转和缩放
-		XMMATRIX transform = XMMatrixRotationY(theta) * XMMatrixRotationX(phi) * scaling;
+		// 世界空间变换: 缩放与旋转
+		XMMATRIX transform = scaling * XMMatrixRotationY(theta) * XMMatrixRotationX(phi);
 		m_VSConstantBuffer.world = XMMatrixTranspose(transform);
 		// 转置逆矩阵
 		m_VSConstantBuffer.worldInvTranspose = XMMatrixInverse(nullptr, transform);
