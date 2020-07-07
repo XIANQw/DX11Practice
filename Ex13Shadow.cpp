@@ -7,9 +7,10 @@
 using namespace DirectX;
 
 
+
 Ex13Shadow::Ex13Shadow(HINSTANCE hInstance)
 	:D3DApp(hInstance),
-	m_CameraMode(CameraMode::FPS),
+	m_CameraMode(CameraMode::TPS),
 	m_ShadowMat(),
 	m_WoodCrateMat(){
 }
@@ -18,7 +19,6 @@ Ex13Shadow::Ex13Shadow(HINSTANCE hInstance)
 Ex13Shadow::~Ex13Shadow() {
 
 }
-
 
 bool Ex13Shadow::Init() {
 	if (!D3DApp::Init()) return false;
@@ -37,6 +37,19 @@ bool Ex13Shadow::Init() {
 }
 
 
+
+void Ex13Shadow::OnResize() {
+	D3DApp::OnResize();
+
+	if (m_pCamera != nullptr) {
+		m_pCamera->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
+		m_pCamera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
+		m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
+	}
+}
+
+
+
 void Ex13Shadow::UpdateScene(float dt)
 {
 	// 获取鼠标状态
@@ -48,8 +61,6 @@ void Ex13Shadow::UpdateScene(float dt)
 
 	m_MouseTracker.Update(mouseState);
 	m_KeyboardTracker.Update(keyState);
-
-	Transform& woodCrateTransform = m_WoodCrate.GetTransform();
 
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
 	auto cam3rd = std::dynamic_pointer_cast<TPSCamera>(m_pCamera);
@@ -82,7 +93,7 @@ void Ex13Shadow::UpdateScene(float dt)
 		cam1st->SetPosition(adjustPos);
 
 		// 只有第一人称才是摄像机和箱子都移动
-		if (m_CameraMode == CameraMode::FPS) woodCrateTransform.SetPosition(adjustPos);
+		if (m_CameraMode == CameraMode::FPS) m_WoodCrate.GetTransform().SetPosition(adjustPos);
 
 		if (mouseState.positionMode == Mouse::MODE_RELATIVE) {
 			cam1st->Pitch(mouseState.y * dt * 2.5f);
@@ -91,7 +102,7 @@ void Ex13Shadow::UpdateScene(float dt)
 	}
 	else if (m_CameraMode == CameraMode::Observe) {
 		// 更新摄像机目标位置
-		cam3rd->SetTarget(woodCrateTransform.GetPosition());
+		cam3rd->SetTarget(m_WoodCrate.GetTransform().GetPosition());
 		// 摄像机绕目标旋转
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
 		cam3rd->RotateY(mouseState.x * dt * 2.5f);
@@ -99,16 +110,16 @@ void Ex13Shadow::UpdateScene(float dt)
 	}
 	else if (m_CameraMode == CameraMode::TPS) {
 		if (keyState.IsKeyDown(Keyboard::W)) {
-			woodCrateTransform.Translate(woodCrateTransform.GetForwardAxis(), dt * 5.0f);
+			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetForwardAxis(), dt * 5.0f);
 		}
 		if (keyState.IsKeyDown(Keyboard::S)) {
-			woodCrateTransform.Translate(woodCrateTransform.GetForwardAxis(), -dt * 5.0f);
+			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetForwardAxis(), -dt * 5.0f);
 		}
 		if (keyState.IsKeyDown(Keyboard::D))
-			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), dt * 5.0f);
+			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetRightAxis(), dt * 5.0f);
 		if (keyState.IsKeyDown(Keyboard::A))
-			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), -dt * 5.0f);
-		cam3rd->SetTarget(woodCrateTransform.GetPosition());
+			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetRightAxis(), -dt * 5.0f);
+		cam3rd->SetTarget(m_WoodCrate.GetTransform().GetPosition());
 		// 摄像机绕目标旋转
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
 		cam3rd->RotateY(mouseState.x * dt * 2.5f);
@@ -130,7 +141,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			m_pCamera = cam1st;
 		}
 
-		cam1st->LookTo(woodCrateTransform.GetPosition(),
+		cam1st->LookTo(m_WoodCrate.GetTransform().GetPosition(),
 			XMFLOAT3(0.0f, 0.0f, 1.0f),
 			XMFLOAT3(0.0f, 1.0f, 0.0f));
 		m_CameraMode = CameraMode::FPS;
@@ -142,7 +153,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam3rd;
 		}
-		XMFLOAT3 target = woodCrateTransform.GetPosition();
+		XMFLOAT3 target = m_WoodCrate.GetTransform().GetPosition();
 		cam3rd->SetTarget(target);
 		cam3rd->SetDistance(8.0f);
 		cam3rd->SetDistMinMax(3.0f, 20.0f);
@@ -156,7 +167,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			cam1st->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam1st;
 		}
-		XMFLOAT3 pos = woodCrateTransform.GetPosition();
+		XMFLOAT3 pos = m_WoodCrate.GetTransform().GetPosition();
 		XMFLOAT3 to = XMFLOAT3(0.0f, 0.0f, 1.0f);
 		XMFLOAT3 up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		pos.y += 3;
@@ -169,7 +180,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam3rd;
 		}
-		XMFLOAT3 target = woodCrateTransform.GetPosition();
+		XMFLOAT3 target = m_WoodCrate.GetTransform().GetPosition();
 		cam3rd->SetTarget(target);
 		cam3rd->SetDistance(8.0f);
 		cam3rd->SetDistMinMax(3.0f, 20.0f);
@@ -182,6 +193,7 @@ void Ex13Shadow::UpdateScene(float dt)
 	}
 
 }
+
 
 
 void Ex13Shadow::DrawScene()
@@ -212,6 +224,10 @@ void Ex13Shadow::DrawScene()
 	
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
+	// 恢复到原来的状态
+	m_BasicEffect.SetShadowState(false);
+	m_WoodCrate.SetMaterial(m_WoodCrateMat);
+
 	m_BasicEffect.SetReflectionState(false);
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 
@@ -236,18 +252,6 @@ void Ex13Shadow::DrawScene()
 
 	HR(m_pSwapChain->Present(0, 0));
 }
-
-
-void Ex13Shadow::OnResize() {
-	D3DApp::OnResize();
-
-	if (m_pCamera != nullptr) {
-		m_pCamera->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
-		m_pCamera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
-		m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
-	}
-}
-
 
 
 bool Ex13Shadow::InitResource()
@@ -300,13 +304,15 @@ bool Ex13Shadow::InitResource()
 	m_Walls.resize(4);
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\brick.dds", nullptr, texture.GetAddressOf()));
 	for (int i = 0; i < m_Walls.size(); i++) {
-		m_Walls[i].SetBuffer<VertexPosNormalTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f)));
+		m_Walls[i].SetMaterial(material);
+		m_Walls[i].SetTexture(texture.Get());
+		m_Walls[i].SetBuffer(m_pd3dDevice.Get(),
+			Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f)));
 		Transform& transform = m_Walls[i].GetTransform();
 		transform.SetRotation(-XM_PIDIV2, XM_PIDIV2 * i, 0.0f);
 		transform.SetPosition(i % 2 ? -10.0f * (i - 2) : 0.0f, 3.0f, i % 2 == 0 ? -10.0f * (i - 1) : 0.0f);
 		m_Walls[i].SetTexture(texture.Get());
 	}
-
 	/**************
 		初始化摄像机	
 	***************/	
@@ -321,6 +327,11 @@ bool Ex13Shadow::InitResource()
 	m_BasicEffect.SetEyePos(m_pCamera->GetPositionXM());
 	m_pCamera->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 	m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
+
+	m_BasicEffect.SetReflectionMatrix(XMMatrixReflect(XMVectorSet(0.0f, 0.0f, -1.0f, 10.0f)));
+	// 稍微高一点位置以显示阴影
+	m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, -10.0f, 1.0f)));
+	m_BasicEffect.SetRefShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, 30.0f, 1.0f)));
 
 
 	/******************
@@ -345,5 +356,3 @@ bool Ex13Shadow::InitResource()
 
 	return true;
 }
-
-
