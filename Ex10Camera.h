@@ -39,7 +39,7 @@ public:
 	};
 
     // 摄像机模式
-    enum class CameraMode { FPS, TPS, Free };
+    enum class CameraMode { FPS, TPS, Free, Observe };
 
 
 public:

@@ -182,8 +182,25 @@ void Ex10Camera::UpdateScene(float dt)
 			cam1st->RotateY(mouseState.x * dt * 2.5f);
 		}
 	}
-	else if (m_CameraMode==CameraMode::TPS) {
+	else if (m_CameraMode==CameraMode::Observe) {
 		// 更新摄像机目标位置
+		cam3rd->SetTarget(woodCrateTransform.GetPosition());
+		// 摄像机绕目标旋转
+		cam3rd->RotateX(mouseState.y * dt * 2.5f);
+		cam3rd->RotateY(mouseState.x * dt * 2.5f);
+		cam3rd->Approach(mouseState.scrollWheelValue / 120 * 1.0f);
+	}
+	else if (m_CameraMode == CameraMode::TPS) {
+		if (keyState.IsKeyDown(Keyboard::W)) {
+			woodCrateTransform.Translate(woodCrateTransform.GetForwardAxis(), dt * 5.0f);
+		}
+		if (keyState.IsKeyDown(Keyboard::S)) {
+			woodCrateTransform.Translate(woodCrateTransform.GetForwardAxis(), -dt * 5.0f);
+		}
+		if (keyState.IsKeyDown(Keyboard::D)) 
+			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), dt * 5.0f);
+		if (keyState.IsKeyDown(Keyboard::A))
+			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), -dt * 5.0f);
 		cam3rd->SetTarget(woodCrateTransform.GetPosition());
 		// 摄像机绕目标旋转
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
@@ -212,7 +229,7 @@ void Ex10Camera::UpdateScene(float dt)
 		m_CameraMode = CameraMode::FPS;
 	}
 	// 切换到TPS模式
-	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2) && m_CameraMode != CameraMode::TPS) {
+	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2) && m_CameraMode != CameraMode::Observe) {
 		if (!cam3rd) {
 			cam3rd.reset(new TPSCamera);
 			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
@@ -223,7 +240,7 @@ void Ex10Camera::UpdateScene(float dt)
 		cam3rd->SetDistance(8.0f);
 		cam3rd->SetDistMinMax(3.0f, 20.0f);
 
-		m_CameraMode = CameraMode::TPS;
+		m_CameraMode = CameraMode::Observe;
 	}
 	
 	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D3) && m_CameraMode != CameraMode::Free) {
@@ -238,6 +255,19 @@ void Ex10Camera::UpdateScene(float dt)
 		pos.y += 3;
 		cam1st->LookTo(pos, to, up);
 		m_CameraMode = CameraMode::Free;
+	}
+	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D4) && m_CameraMode != CameraMode::TPS) {
+		if (!cam3rd) {
+			cam3rd.reset(new TPSCamera);
+			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
+			m_pCamera = cam3rd;
+		}
+		XMFLOAT3 target = woodCrateTransform.GetPosition();
+		cam3rd->SetTarget(target);
+		cam3rd->SetDistance(8.0f);
+		cam3rd->SetDistMinMax(3.0f, 20.0f);
+
+		m_CameraMode = CameraMode::TPS;
 	}
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
