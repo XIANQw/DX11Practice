@@ -31,6 +31,9 @@
     <Filter Include="源文件\Generic">
       <UniqueIdentifier>{db80c48f-a449-407c-b411-5894ac85cd48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shader\Ex10">
+      <UniqueIdentifier>{97ecd07f-497b-4b2e-a891-e4c9e8573432}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h">
@@ -140,34 +143,34 @@
     <None Include="HLSL\Basic.hlsli">
       <Filter>shader\Ex9</Filter>
     </None>
-    <None Include="HLSL\LightHelper.hlsli">
-      <Filter>shader\Ex9</Filter>
-    </None>
     <None Include="HLSL\Shape.hlsli">
       <Filter>shader\Ex7</Filter>
     </None>
-    <None Include="CBuffer.hlsli">
+    <None Include="HLSL\LightHelper.hlsli">
       <Filter>shader</Filter>
+    </None>
+    <None Include="CBuffer.hlsli">
+      <Filter>shader\Ex10</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="HLSL\Basic_PS_2D.hlsl">
-      <Filter>shader\Ex9</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
-      <Filter>shader\Ex9</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_VS_2D.hlsl">
-      <Filter>shader\Ex9</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
-      <Filter>shader\Ex9</Filter>
-    </FxCompile>
     <FxCompile Include="HLSL\PixelShader.hlsl">
       <Filter>shader\Ex7</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\VertexShader.hlsl">
       <Filter>shader\Ex7</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_PS_2D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_VS_2D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
+      <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

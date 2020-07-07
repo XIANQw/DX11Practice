@@ -282,10 +282,6 @@ void Ex10Camera::UpdateScene(float dt)
 }
 
 
-
-
-
-
 void Ex10Camera::DrawScene()
 {
 	assert(m_pd3dImmediateContext);

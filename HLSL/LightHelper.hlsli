@@ -71,8 +71,6 @@ void ComputeDirectionalLight(Material mat, DirectionalLight L,
 	// 添加漫反射光和镜面光
     float diffuseFactor = dot(lightVec, normal);
 
-	// 展开，避免动态分支
-	[flatten]
     if (diffuseFactor > 0.0f)
     {
         float3 v = reflect(-lightVec, normal);
@@ -111,8 +109,6 @@ void ComputePointLight(Material mat, PointLight L, float3 pos, float3 normal, fl
 	// 漫反射和镜面计算
     float diffuseFactor = dot(lightVec, normal);
 
-	// 展开以避免动态分支
-	[flatten]
     if (diffuseFactor > 0.0f)
     {
         float3 v = reflect(-lightVec, normal);
@@ -158,8 +154,6 @@ void ComputeSpotLight(Material mat, SpotLight L, float3 pos, float3 normal, floa
     // 计算漫反射光和镜面反射光部分
     float diffuseFactor = dot(lightVec, normal);
 
-	// 展开以避免动态分支
-	[flatten]
     if (diffuseFactor > 0.0f)
     {
         float3 v = reflect(-lightVec, normal);

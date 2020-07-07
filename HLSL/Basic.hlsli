@@ -1,10 +1,14 @@
 #include "LightHelper.hlsli"
 
-/**/
+/*
+  用于Ex7和Ex9的常量缓冲区
+*/
 Texture2D g_Tex : register(t0);
 SamplerState g_SamLinear : register(s0);
 
-
+/********************************************
+存放了世界变换，观察空间，投影空间和世界转置逆矩阵
+*********************************************/
 cbuffer VSConstantBuffer : register(b0)
 {
     matrix g_World; 
@@ -22,10 +26,10 @@ cbuffer PSConstantBuffer : register(b1)
 	int g_NumDirLight;
 	int g_NumPointLight;
 	int g_NumSpotLight;
-    float g_Pad1;
+    float g_Pad1;       // 填充变量，使结构体能16字节对齐
 
     float3 g_EyePosW;
-    float g_Pad2;
+    float g_Pad2;   // 填充变量，使结构体能16字节对齐
 }
 
 
