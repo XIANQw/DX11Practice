@@ -179,14 +179,14 @@
     <None Include="HLSL\Shape.hlsli">
       <Filter>shader\Ex7</Filter>
     </None>
-    <None Include="HLSL\LightHelper.hlsli">
-      <Filter>shader</Filter>
-    </None>
     <None Include="CBuffer.hlsli">
       <Filter>shader\Ex10</Filter>
     </None>
     <None Include="HLSL\Ex13_CBuffers.hlsli">
       <Filter>shader\Ex13</Filter>
+    </None>
+    <None Include="HLSL\LightHelper.hlsli">
+      <Filter>shader\Ex10</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -195,18 +195,6 @@
     </FxCompile>
     <FxCompile Include="HLSL\VertexShader.hlsl">
       <Filter>shader\Ex7</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_PS_2D.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_VS_2D.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
-      <Filter>shader</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\Ex13_PS3D.hlsl">
       <Filter>shader\Ex13</Filter>
@@ -219,6 +207,18 @@
     </FxCompile>
     <FxCompile Include="HLSL\Ex13_VS2D.hlsl">
       <Filter>shader\Ex13</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_PS_2D.hlsl">
+      <Filter>shader\Ex10</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_PS_3D.hlsl">
+      <Filter>shader\Ex10</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_VS_2D.hlsl">
+      <Filter>shader\Ex10</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
+      <Filter>shader\Ex10</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,13 @@
 #include "CBuffer.h"
 #include "Camera.h"
 #include "GameObject.h"
+
+/*************************
+    Ex13 实现了阴影
+**************************/
+
+
+
 class Ex13Shadow :
     public D3DApp
 {

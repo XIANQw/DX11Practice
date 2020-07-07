@@ -62,6 +62,8 @@ void Ex13Shadow::UpdateScene(float dt)
 	m_MouseTracker.Update(mouseState);
 	m_KeyboardTracker.Update(keyState);
 
+	Transform& woodCrateTransform = m_WoodCrate.GetTransform();
+
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
 	auto cam3rd = std::dynamic_pointer_cast<TPSCamera>(m_pCamera);
 
@@ -93,7 +95,7 @@ void Ex13Shadow::UpdateScene(float dt)
 		cam1st->SetPosition(adjustPos);
 
 		// 只有第一人称才是摄像机和箱子都移动
-		if (m_CameraMode == CameraMode::FPS) m_WoodCrate.GetTransform().SetPosition(adjustPos);
+		if (m_CameraMode == CameraMode::FPS) woodCrateTransform.SetPosition(adjustPos);
 
 		if (mouseState.positionMode == Mouse::MODE_RELATIVE) {
 			cam1st->Pitch(mouseState.y * dt * 2.5f);
@@ -102,7 +104,7 @@ void Ex13Shadow::UpdateScene(float dt)
 	}
 	else if (m_CameraMode == CameraMode::Observe) {
 		// 更新摄像机目标位置
-		cam3rd->SetTarget(m_WoodCrate.GetTransform().GetPosition());
+		cam3rd->SetTarget(woodCrateTransform.GetPosition());
 		// 摄像机绕目标旋转
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
 		cam3rd->RotateY(mouseState.x * dt * 2.5f);
@@ -110,20 +112,26 @@ void Ex13Shadow::UpdateScene(float dt)
 	}
 	else if (m_CameraMode == CameraMode::TPS) {
 		if (keyState.IsKeyDown(Keyboard::W)) {
-			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetForwardAxis(), dt * 5.0f);
+			woodCrateTransform.Translate(woodCrateTransform.GetForwardAxis(), dt * 5.0f);
 		}
 		if (keyState.IsKeyDown(Keyboard::S)) {
-			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetForwardAxis(), -dt * 5.0f);
+			woodCrateTransform.Translate(woodCrateTransform.GetForwardAxis(), -dt * 5.0f);
 		}
 		if (keyState.IsKeyDown(Keyboard::D))
-			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetRightAxis(), dt * 5.0f);
+			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), dt * 5.0f);
 		if (keyState.IsKeyDown(Keyboard::A))
-			m_WoodCrate.GetTransform().Translate(m_WoodCrate.GetTransform().GetRightAxis(), -dt * 5.0f);
-		cam3rd->SetTarget(m_WoodCrate.GetTransform().GetPosition());
+			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), -dt * 5.0f);
+		XMFLOAT3 adjustPos;
+		XMStoreFloat3(&adjustPos, XMVectorClamp(woodCrateTransform.GetPositionXM(), XMVectorSet(-8.9f, 0.0f, -8.9f, 0.0f), XMVectorReplicate(8.9f)));
+		woodCrateTransform.SetPosition(adjustPos);
+
+		cam3rd->SetTarget(woodCrateTransform.GetPosition());
 		// 摄像机绕目标旋转
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
 		cam3rd->RotateY(mouseState.x * dt * 2.5f);
 		cam3rd->Approach(mouseState.scrollWheelValue / 120 * 1.0f);
+	
+	
 	}
 
 	// 更新观察矩阵
@@ -141,7 +149,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			m_pCamera = cam1st;
 		}
 
-		cam1st->LookTo(m_WoodCrate.GetTransform().GetPosition(),
+		cam1st->LookTo(woodCrateTransform.GetPosition(),
 			XMFLOAT3(0.0f, 0.0f, 1.0f),
 			XMFLOAT3(0.0f, 1.0f, 0.0f));
 		m_CameraMode = CameraMode::FPS;
@@ -153,7 +161,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam3rd;
 		}
-		XMFLOAT3 target = m_WoodCrate.GetTransform().GetPosition();
+		XMFLOAT3 target = woodCrateTransform.GetPosition();
 		cam3rd->SetTarget(target);
 		cam3rd->SetDistance(8.0f);
 		cam3rd->SetDistMinMax(3.0f, 20.0f);
@@ -167,7 +175,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			cam1st->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam1st;
 		}
-		XMFLOAT3 pos = m_WoodCrate.GetTransform().GetPosition();
+		XMFLOAT3 pos = woodCrateTransform.GetPosition();
 		XMFLOAT3 to = XMFLOAT3(0.0f, 0.0f, 1.0f);
 		XMFLOAT3 up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		pos.y += 3;
@@ -180,7 +188,7 @@ void Ex13Shadow::UpdateScene(float dt)
 			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam3rd;
 		}
-		XMFLOAT3 target = m_WoodCrate.GetTransform().GetPosition();
+		XMFLOAT3 target = woodCrateTransform.GetPosition();
 		cam3rd->SetTarget(target);
 		cam3rd->SetDistance(8.0f);
 		cam3rd->SetDistMinMax(3.0f, 20.0f);
@@ -204,7 +212,7 @@ void Ex13Shadow::DrawScene()
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	/***********************
-		绘制不透明的反射物体
+	2. 绘制不透明的反射物体
 	************************/
 	m_BasicEffect.SetReflectionState(true);
 	m_BasicEffect.SetRenderDefaultWithStencil(m_pd3dImmediateContext.Get(), 1);
@@ -216,7 +224,7 @@ void Ex13Shadow::DrawScene()
 	}
 
 	/***************************
-		绘制不透明反射物体的阴影
+	3. 绘制不透明反射物体的阴影
 	****************************/
 	m_WoodCrate.SetMaterial(m_ShadowMat);
 	m_BasicEffect.SetShadowState(true);
@@ -224,13 +232,16 @@ void Ex13Shadow::DrawScene()
 	
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
-	// 恢复到原来的状态
+	// 关闭阴影模式和反射模式
 	m_BasicEffect.SetShadowState(false);
+	m_BasicEffect.SetReflectionState(false);
 	m_WoodCrate.SetMaterial(m_WoodCrateMat);
 
-	m_BasicEffect.SetReflectionState(false);
+	
+	/************************
+	5. 绘制不透明正常物体的
+	*************************/
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
-
 	for (auto& wall : m_Walls)
 		wall.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_Floor.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
@@ -271,15 +282,15 @@ bool Ex13Shadow::InitResource()
 	m_ShadowMat.diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
 	m_ShadowMat.specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 16.0f);
 
-	// 读取木箱
+	// 读取木箱贴图，设置木箱的材质和贴图以及所处的世界空间位置
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
 	m_WoodCrate.SetBuffer<VertexPosNormalTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreateBox());
-	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 5.0f);
+	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 0.0f);
 	m_WoodCrate.SetTexture(texture.Get());
 	m_WoodCrate.SetMaterial(material);
 
 
-	// 初始化地板
+	// 读取地板贴图，设置地板的材质和贴图，以及地板的位置
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\floor.dds", nullptr, texture.GetAddressOf()));
 	m_Floor.SetBuffer(m_pd3dDevice.Get(), 
 		Geometry::CreatePlane(XMFLOAT2(20.0f, 20.0f), XMFLOAT2(5.0f, 5.0f)));
@@ -311,25 +322,31 @@ bool Ex13Shadow::InitResource()
 		Transform& transform = m_Walls[i].GetTransform();
 		transform.SetRotation(-XM_PIDIV2, XM_PIDIV2 * i, 0.0f);
 		transform.SetPosition(i % 2 ? -10.0f * (i - 2) : 0.0f, 3.0f, i % 2 == 0 ? -10.0f * (i - 1) : 0.0f);
-		m_Walls[i].SetTexture(texture.Get());
 	}
-	/**************
-		初始化摄像机	
-	***************/	
+	/*******************************
+		初始化摄像机, 默认第三人称视角	
+	********************************/	
 	m_CameraMode = CameraMode::TPS;
 	auto camera = std::shared_ptr<TPSCamera>(new TPSCamera);
 	m_pCamera = camera;
 	camera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
 	camera->SetDistance(5.0f);
 	camera->SetDistMinMax(2.0f, 14.0f);
+	camera->SetRotationX(XM_PIDIV2);
 
+	/**********************************************
+		设置观察矩阵和观察位置，设置平截头体和投影矩阵
+	***********************************************/
 	m_BasicEffect.SetViewMatrix(m_pCamera->GetViewXM());
 	m_BasicEffect.SetEyePos(m_pCamera->GetPositionXM());
 	m_pCamera->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 	m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
 
 	m_BasicEffect.SetReflectionMatrix(XMMatrixReflect(XMVectorSet(0.0f, 0.0f, -1.0f, 10.0f)));
-	// 稍微高一点位置以显示阴影
+	/*
+		设置阴影矩阵
+		稍微高一点位置以显示阴影
+	*/ 
 	m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, -10.0f, 1.0f)));
 	m_BasicEffect.SetRefShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, 30.0f, 1.0f)));
 
@@ -346,10 +363,10 @@ bool Ex13Shadow::InitResource()
 	m_BasicEffect.SetDirLight(0, dirLight);
 	// 灯光
 	PointLight pointLight;
-	pointLight.position = XMFLOAT3(0.0f, 10.0f, 0.0f);
-	pointLight.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	pointLight.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	pointLight.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	pointLight.position = XMFLOAT3(0.0f, 10.0f, 20.0f);
+	pointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
 	pointLight.range = 25.0f;
 	m_BasicEffect.SetPointLight(0, pointLight);

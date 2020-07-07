@@ -3,6 +3,12 @@
 #include <wrl/client.h>
 #include <d3d11_1.h>
 
+/******************************
+*		RenderStates.h        *
+*	该类保存了所有的渲染配置	  *
+*******************************/
+
+
 class RenderStates
 {
 public:
@@ -12,7 +18,7 @@ public:
 	static bool IsInit();
 
 	static void InitAll(ID3D11Device* device);
-	// 使用ComPtr无需手工释放
+	// 使用ComPtr智能指针无需手工释放
 
 public:
 	static ComPtr<ID3D11RasterizerState> RSWireframe;		    // 光栅化器状态：线框模式

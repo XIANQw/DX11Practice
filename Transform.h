@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include <DirectXMath.h>
-
+/*****************************************
+*	Transform.h							 *
+* Transform类用于实现摄像机的转向和移动		 *
+******************************************/
 
 class Transform
 {
