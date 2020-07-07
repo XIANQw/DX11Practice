@@ -9,34 +9,34 @@ class Ex10Camera :
 {
 public:
 
-	class GameObject
-	{
-	public:
-		GameObject();
-        
+    class GameObject
+    {
+    public:
+        GameObject();
+
         // 获取物体变换
         Transform& GetTransform();
         // 获取物体变换
         const Transform& GetTransform() const;
 
-		// 设置缓冲区
-		template<class VertexType, class IndexType>
-		void SetBuffer(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData);
+        // 设置缓冲区
+        template<class VertexType, class IndexType>
+        void SetBuffer(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData);
 
         // 设置纹理
         void SetTexture(ID3D11ShaderResourceView* texture);
 
-		// 绘制
-		void Draw(ID3D11DeviceContext* deviceContext);
+        // 绘制
+        void Draw(ID3D11DeviceContext* deviceContext);
 
-	private:
-		Transform m_Transform;                          // 世界矩阵
-		ComPtr<ID3D11ShaderResourceView> m_pTexture;        // 纹理
-		ComPtr<ID3D11Buffer> m_pVertexBuffer;               // 顶点缓冲区
-		ComPtr<ID3D11Buffer> m_pIndexBuffer;                // 索引缓冲区
-		UINT m_VertexStride;                                // 顶点字节大小
-		UINT m_IndexCount;                                  // 索引数目   
-	};
+    private:
+        Transform m_Transform;                          // 世界矩阵
+        ComPtr<ID3D11ShaderResourceView> m_pTexture;        // 纹理
+        ComPtr<ID3D11Buffer> m_pVertexBuffer;               // 顶点缓冲区
+        ComPtr<ID3D11Buffer> m_pIndexBuffer;                // 索引缓冲区
+        UINT m_VertexStride;                                // 顶点字节大小
+        UINT m_IndexCount;                                  // 索引数目   
+    };
 
     // 摄像机模式
     enum class CameraMode { FPS, TPS, Free, Observe };
