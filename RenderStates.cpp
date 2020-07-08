@@ -4,22 +4,22 @@
 #include "DXTrace.h"
 using namespace Microsoft::WRL;
 
-ComPtr<ID3D11RasterizerState> RenderStates::RSNoCull = nullptr;
-ComPtr<ID3D11RasterizerState> RenderStates::RSWireframe = nullptr;
-ComPtr<ID3D11RasterizerState> RenderStates::RSCullClockWise = nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSNoCull = nullptr;		  // 背面剔除
+ComPtr<ID3D11RasterizerState> RenderStates::RSWireframe = nullptr;    // 线框模式
+ComPtr<ID3D11RasterizerState> RenderStates::RSCullClockWise = nullptr;// 顺时针剔除
 
-ComPtr<ID3D11SamplerState> RenderStates::SSAnistropicWrap = nullptr;
-ComPtr<ID3D11SamplerState> RenderStates::SSLinearWrap = nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSAnistropicWrap = nullptr;  // 各异向性过滤
+ComPtr<ID3D11SamplerState> RenderStates::SSLinearWrap = nullptr;      // 线性过滤
 
-ComPtr<ID3D11BlendState> RenderStates::BSAlphaToCoverage = nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSNoColorWrite = nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSTransparent = nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSAlphaToCoverage = nullptr;   // 
+ComPtr<ID3D11BlendState> RenderStates::BSNoColorWrite = nullptr;      // 不写入颜色
+ComPtr<ID3D11BlendState> RenderStates::BSTransparent = nullptr;       // 透明混合
 
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSWriteStencil = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSDrawWithStencil = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDoubleBlend = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTest = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWrite = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSWriteStencil = nullptr; // 写入模板值
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSDrawWithStencil = nullptr; // 对指定模板区域绘制
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDoubleBlend = nullptr;  // 无二次混合区域
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTest = nullptr;    // 无深度测试
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWrite = nullptr;   // 不写入深度值
 
 bool RenderStates::IsInit()
 {

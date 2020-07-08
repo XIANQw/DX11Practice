@@ -318,7 +318,7 @@ bool Ex13Shadow::InitResource()
 	//m_BasicEffect.SetReflectionMatrix(XMMatrixReflect(XMVectorSet(0.0f, 0.0f, -1.0f, 10.0f)));
 
 	/******************
-	* 初始化默认光照	  *
+	*  初始化默认光照	  *
 	*******************/
 	// 环境光
 	DirectionalLight dirLight;
@@ -327,7 +327,7 @@ bool Ex13Shadow::InitResource()
 	dirLight.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	dirLight.direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	m_BasicEffect.SetDirLight(0, dirLight);
-	// 灯光
+	// 灯光，range会阴影光圈的范围
 	PointLight pointLight;
 	pointLight.position = XMFLOAT3(0.0f, 10.0f, 20.0f);
 	pointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);

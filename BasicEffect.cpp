@@ -187,6 +187,14 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 	return true;
 }
 
+/*********************
+	默认渲染配置
+	1. 图元类型：TriangleList
+	2. 光栅化：无
+	3. 采样器：线性过滤
+	4. 无深度模板
+	5. 无混合状态
+**********************/
 void BasicEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -199,6 +207,15 @@ void BasicEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext)
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 }
 
+
+/*********************
+	alpha混合配置
+	1. 图元类型：TriangleList
+	2. 光栅化：无背面剔除
+	3. 采样器：线性过滤
+	4. 无深度模板
+	5. 混合状态：透明混合
+**********************/
 void BasicEffect::SetRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -211,6 +228,15 @@ void BasicEffect::SetRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
 }
 
+
+/*********************
+	无二次混合
+	1. 图元类型：TriangleList
+	2. 光栅化：无背面剔除
+	3. 采样器：线性过滤
+	4. 深度模板：无二次混合
+	5. 混合状态：透明混合
+**********************/
 void BasicEffect::SetRenderNoDoubleBlend(ID3D11DeviceContext* deviceContext, UINT stencilRef)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -223,6 +249,15 @@ void BasicEffect::SetRenderNoDoubleBlend(ID3D11DeviceContext* deviceContext, UIN
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
 }
 
+
+/*********************
+	仅写入深度值
+	1. 图元类型：TriangleList
+	2. 光栅化：无
+	3. 采样器：线性过滤
+	4. 深度模板：写入模板值
+	5. 混合状态：无颜色混合
+**********************/
 void BasicEffect::SetWriteStencilOnly(ID3D11DeviceContext* deviceContext, UINT stencilRef)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -235,6 +270,15 @@ void BasicEffect::SetWriteStencilOnly(ID3D11DeviceContext* deviceContext, UINT s
 	deviceContext->OMSetBlendState(RenderStates::BSNoColorWrite.Get(), nullptr, 0xFFFFFFFF);
 }
 
+
+/*****************************************************
+	按照模板值默认渲染
+	1. 图元类型：TriangleList
+	2. 光栅化：顺时针剔除
+	3. 采样器：线性过滤
+	4. 深度模板：对指定模板值进行绘制的深度/模板状态，对满足模板值条件的区域才进行绘制，并更新深度
+	5. 混合状态：无颜色混合
+******************************************************/
 void BasicEffect::SetRenderDefaultWithStencil(ID3D11DeviceContext* deviceContext, UINT stencilRef)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -247,6 +291,14 @@ void BasicEffect::SetRenderDefaultWithStencil(ID3D11DeviceContext* deviceContext
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 }
 
+/*****************************************************
+	按照模板值进行Alpha混合渲染
+	1. 图元类型：TriangleList
+	2. 光栅化：无背面剔除
+	3. 采样器：线性过滤
+	4. 深度模板：对指定模板值进行绘制的深度/模板状态，对满足模板值条件的区域才进行绘制，并更新深度
+	5. 混合状态：透明混合
+******************************************************/
 void BasicEffect::SetRenderAlphaBlendWithStencil(ID3D11DeviceContext* deviceContext, UINT stencilRef)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -259,6 +311,15 @@ void BasicEffect::SetRenderAlphaBlendWithStencil(ID3D11DeviceContext* deviceCont
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
 }
 
+
+/*****************************************************
+	默认2D渲染
+	1. 图元类型：TriangleList
+	2. 光栅化：无
+	3. 采样器：线性过滤
+	4. 深度模板：无
+	5. 混合状态：无
+******************************************************/
 void BasicEffect::Set2DRenderDefault(ID3D11DeviceContext* deviceContext)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -271,6 +332,14 @@ void BasicEffect::Set2DRenderDefault(ID3D11DeviceContext* deviceContext)
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 }
 
+/*****************************************************
+	2D alpha混合渲染
+	1. 图元类型：TriangleList
+	2. 光栅化：无背面剔除
+	3. 采样器：线性过滤
+	4. 深度模板：无
+	5. 混合状态：透明混合
+******************************************************/
 void BasicEffect::Set2DRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -283,6 +352,9 @@ void BasicEffect::Set2DRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
 }
 
+/*
+	改变世界矩阵
+*/
 void XM_CALLCONV BasicEffect::SetWorldMatrix(DirectX::FXMMATRIX W)
 {
 	auto& cBuffer = pImpl->m_CBDrawing;
