@@ -18,12 +18,13 @@ const Transform& GameObject::GetTransform() const {
 
 // 设置纹理
 void GameObject::SetTexture(ID3D11ShaderResourceView* texture) {
-	m_pTexture = texture;
+	m_Model.modelParts[0].texDiffuse = texture;
 }
 
 // 设置材质
 void GameObject::SetMaterial(const Material& material) {
-	m_Material = material;
+	for(auto &part : m_Model.modelParts)
+		part.material = material;
 }
 
 BoundingBox GameObject::GetLocalBoundingBox() const {
@@ -88,12 +89,8 @@ void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 		// 更新Context的drawing常量缓冲
 		effect.SetWorldMatrix(m_Transform.GetLocalToWorldMatrixXM());
 		effect.SetTexture(part.texDiffuse.Get());
-		if (effect.isShadow) {
-			effect.SetMaterial(m_Material);
-		}
-		else {
-			effect.SetMaterial(part.material);
-		}
+		effect.SetMaterial(part.material);
+		
 		effect.Apply(deviceContext);
 
 		// 开始绘制

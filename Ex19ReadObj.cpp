@@ -50,7 +50,6 @@ void Ex19ReadObj::OnResize() {
 }
 
 
-/*
 void Ex19ReadObj::UpdateScene(float dt)
 {
 	// 获取鼠标状态
@@ -63,7 +62,7 @@ void Ex19ReadObj::UpdateScene(float dt)
 	m_MouseTracker.Update(mouseState);
 	m_KeyboardTracker.Update(keyState);
 
-	//Transform& woodCrateTransform = m_WoodCrate.GetTransform();
+	Transform& woodCrateTransform = m_WoodCrate.GetTransform();
 
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
 	auto cam3rd = std::dynamic_pointer_cast<TPSCamera>(m_pCamera);
@@ -122,16 +121,15 @@ void Ex19ReadObj::UpdateScene(float dt)
 			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), dt * 5.0f);
 		if (keyState.IsKeyDown(Keyboard::A))
 			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), -dt * 5.0f);
-		//XMFLOAT3 adjustPos;
-		//XMStoreFloat3(&adjustPos, XMVectorClamp(woodCrateTransform.GetPositionXM(), XMVectorSet(-8.9f, 0.0f, -8.9f, 0.0f), XMVectorReplicate(8.9f)));
-		//woodCrateTransform.SetPosition(adjustPos);
+		XMFLOAT3 adjustPos;
+		XMStoreFloat3(&adjustPos, XMVectorClamp(woodCrateTransform.GetPositionXM(), XMVectorSet(-8.9f, 0.0f, -8.9f, 0.0f), XMVectorReplicate(8.9f)));
+		woodCrateTransform.SetPosition(adjustPos);
 
 		cam3rd->SetTarget(woodCrateTransform.GetPosition());
 		// 摄像机绕目标旋转
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
 		cam3rd->RotateY(mouseState.x * dt * 2.5f);
 		cam3rd->Approach(mouseState.scrollWheelValue / 120 * 1.0f);
-
 
 	}
 
@@ -202,44 +200,6 @@ void Ex19ReadObj::UpdateScene(float dt)
 	}
 
 }
-*/
-
-void Ex19ReadObj::UpdateScene(float dt)
-{
-
-	// 更新鼠标事件，获取相对偏移量
-	Mouse::State mouseState = m_pMouse->GetState();
-	Mouse::State lastMouseState = m_MouseTracker.GetLastState();
-	m_MouseTracker.Update(mouseState);
-
-	Keyboard::State keyState = m_pKeyboard->GetState();
-	m_KeyboardTracker.Update(keyState);
-
-	// 获取子类
-	auto cam3rd = std::dynamic_pointer_cast<TPSCamera>(m_pCamera);
-
-	// ******************
-	// 第三人称摄像机的操作
-	//
-
-	// 绕物体旋转
-	// 在鼠标没进入窗口前仍为ABSOLUTE模式
-	if (mouseState.positionMode == Mouse::MODE_RELATIVE)
-	{
-		cam3rd->RotateX(mouseState.y * dt * 1.25f);
-		cam3rd->RotateY(mouseState.x * dt * 1.25f);
-		cam3rd->Approach(-mouseState.scrollWheelValue / 120 * 1.0f);
-	}
-
-	m_BasicEffect.SetViewMatrix(m_pCamera->GetViewXM());
-	m_BasicEffect.SetEyePos(m_pCamera->GetPositionXM());
-	// 重置滚轮值
-	m_pMouse->ResetScrollWheelValue();
-
-	// 退出程序，这里应向窗口发送销毁信息
-	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape))
-		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
-}
 
 
 void Ex19ReadObj::DrawScene()
@@ -258,20 +218,22 @@ void Ex19ReadObj::DrawScene()
 
 	m_Ground.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	//m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	/************************
 	2. 绘制阴影
 	*************************/
-	//m_WoodCrate.SetMaterial(m_ShadowMat);
+	m_WoodCrate.SetMaterial(m_ShadowMat);
 	m_House.SetMaterial(m_ShadowMat);
 	m_BasicEffect.SetShadowState(true);	// 阴影开启
 	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
-	//m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	m_BasicEffect.SetShadowState(false);		// 阴影关闭
 	m_WoodCrate.SetMaterial(m_Material);
+	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_House.SetMaterial(m_Material);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	HR(m_pSwapChain->Present(0, 0));
@@ -307,11 +269,13 @@ bool Ex19ReadObj::InitResource()
 	m_House.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
 	// 读取木箱贴图，设置木箱的材质和贴图以及所处的世界空间位置
-	/*HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
-	m_WoodCrate.SetBuffer(m_pd3dDevice.Get(), Geometry::CreateBox());
-	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 10.0f);
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
+	m_WoodCrate.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateBox()));
+	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 7.0f);
 	m_WoodCrate.SetTexture(texture.Get());
-	m_WoodCrate.SetMaterial(material);*/
+	m_WoodCrate.SetMaterial(material);
+
+
 
 	// 获取房屋包围盒
 	XMMATRIX S = XMMatrixScaling(0.015f, 0.015f, 0.015f);
