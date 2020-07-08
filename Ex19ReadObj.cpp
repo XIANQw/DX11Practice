@@ -265,13 +265,13 @@ void Ex19ReadObj::DrawScene()
 	*************************/
 	//m_WoodCrate.SetMaterial(m_ShadowMat);
 	m_House.SetMaterial(m_ShadowMat);
-	m_BasicEffect.SetShadowState(true);	// 反射关闭，阴影开启
+	m_BasicEffect.SetShadowState(true);	// 阴影开启
 	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
 	//m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	m_BasicEffect.SetShadowState(false);		// 阴影关闭
-	//m_WoodCrate.SetMaterial(m_Material);
+	m_WoodCrate.SetMaterial(m_Material);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	HR(m_pSwapChain->Present(0, 0));

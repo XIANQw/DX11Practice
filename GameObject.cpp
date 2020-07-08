@@ -88,7 +88,12 @@ void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 		// 更新Context的drawing常量缓冲
 		effect.SetWorldMatrix(m_Transform.GetLocalToWorldMatrixXM());
 		effect.SetTexture(part.texDiffuse.Get());
-		effect.SetMaterial(part.material);
+		if (effect.isShadow) {
+			effect.SetMaterial(m_Material);
+		}
+		else {
+			effect.SetMaterial(part.material);
+		}
 		effect.Apply(deviceContext);
 
 		// 开始绘制

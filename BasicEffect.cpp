@@ -447,6 +447,7 @@ void BasicEffect::SetReflectionState(bool isOn)
 
 void BasicEffect::SetShadowState(bool isOn)
 {
+	isShadow = isOn;
 	auto& cBuffer = pImpl->m_CBStates;
 	cBuffer.data.isShadow = isOn;
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
