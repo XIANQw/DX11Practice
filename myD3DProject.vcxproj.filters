@@ -179,13 +179,13 @@
     <None Include="HLSL\Shape.hlsli">
       <Filter>shader\Ex7</Filter>
     </None>
-    <None Include="CBuffer.hlsli">
-      <Filter>shader\Ex10</Filter>
-    </None>
     <None Include="HLSL\Ex13_CBuffers.hlsli">
       <Filter>shader\Ex13</Filter>
     </None>
     <None Include="HLSL\LightHelper.hlsli">
+      <Filter>shader\Ex10</Filter>
+    </None>
+    <None Include="HLSL\CBuffer.hlsli">
       <Filter>shader\Ex10</Filter>
     </None>
   </ItemGroup>

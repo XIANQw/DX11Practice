@@ -208,12 +208,12 @@ void Ex13Shadow::DrawScene()
 {
 	assert(m_pd3dImmediateContext);
 	assert(m_pSwapChain);
-	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&DirectX::Colors::Black));
+	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&DirectX::Colors::White));
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	
 	/************************
-	1. 绘制不透明正常物体
+	1. 绘制物体
 	*************************/
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 	for (auto& wall : m_Walls)
@@ -221,9 +221,9 @@ void Ex13Shadow::DrawScene()
 	m_Floor.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
-	///************************
-	//2. 绘制不透明正常物体的阴影
-	//*************************/
+	/************************
+	2. 绘制阴影
+	*************************/
 	m_WoodCrate.SetMaterial(m_ShadowMat);
 	m_BasicEffect.SetShadowState(true);	// 反射关闭，阴影开启
 	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
@@ -243,11 +243,13 @@ bool Ex13Shadow::InitResource()
 		初始化纹理
 	********************/
 	ComPtr<ID3D11ShaderResourceView> texture;
+	// 初始材质
 	Material material{};
 	material.ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
 	material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	material.specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 16.0f);
 
+	// 阴影材质，形成阴影效果
 	m_WoodCrateMat = material;
 	m_ShadowMat.ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	m_ShadowMat.diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
@@ -255,7 +257,7 @@ bool Ex13Shadow::InitResource()
 
 	// 读取木箱贴图，设置木箱的材质和贴图以及所处的世界空间位置
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
-	m_WoodCrate.SetBuffer<VertexPosNormalTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreateBox());
+	m_WoodCrate.SetBuffer(m_pd3dDevice.Get(), Geometry::CreateBox());
 	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 0.0f);
 	m_WoodCrate.SetTexture(texture.Get());
 	m_WoodCrate.SetMaterial(material);
@@ -313,14 +315,7 @@ bool Ex13Shadow::InitResource()
 	m_pCamera->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 	m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
 
-	m_BasicEffect.SetReflectionMatrix(XMMatrixReflect(XMVectorSet(0.0f, 0.0f, -1.0f, 10.0f)));
-	/*
-		设置阴影矩阵
-		稍微高一点位置以显示阴影
-	*/ 
-	m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, -10.0f, 1.0f)));
-	m_BasicEffect.SetRefShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, 30.0f, 1.0f)));
-
+	//m_BasicEffect.SetReflectionMatrix(XMMatrixReflect(XMVectorSet(0.0f, 0.0f, -1.0f, 10.0f)));
 
 	/******************
 	* 初始化默认光照	  *
@@ -339,8 +334,18 @@ bool Ex13Shadow::InitResource()
 	pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
 	pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
-	pointLight.range = 25.0f;
+	pointLight.range = 100.0f;
 	m_BasicEffect.SetPointLight(0, pointLight);
+
+	/*
+		设置阴影矩阵
+		稍微高一点位置以显示阴影
+	*/
+	m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), 
+		XMVectorSet(pointLight.position.x, pointLight.position.y, pointLight.position.z, 1.0f)));
+	//m_BasicEffect.SetRefShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, 30.0f, 1.0f)));
+
+
 
 	return true;
 }

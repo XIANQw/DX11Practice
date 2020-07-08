@@ -194,8 +194,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="CBuffer.hlsli" />
     <None Include="HLSL\Basic.hlsli" />
+    <None Include="HLSL\CBuffer.hlsli" />
     <None Include="HLSL\Ex13_CBuffers.hlsli" />
     <None Include="HLSL\LightHelper.hlsli" />
     <None Include="HLSL\Shape.hlsli" />
