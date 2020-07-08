@@ -216,6 +216,8 @@ void Ex19ReadObj::DrawScene()
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 	m_BasicEffect.Apply(m_pd3dImmediateContext.Get());
 
+	for (auto& wall : m_Walls)
+		wall.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_Ground.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
@@ -223,11 +225,11 @@ void Ex19ReadObj::DrawScene()
 	/************************
 	2. 绘制阴影
 	*************************/
-	m_WoodCrate.SetMaterial(m_ShadowMat);
-	m_House.SetMaterial(m_ShadowMat);
 	m_BasicEffect.SetShadowState(true);	// 阴影开启
 	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
+	m_WoodCrate.SetMaterial(m_ShadowMat);
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_House.SetMaterial(m_ShadowMat);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	m_BasicEffect.SetShadowState(false);		// 阴影关闭
@@ -271,9 +273,35 @@ bool Ex19ReadObj::InitResource()
 	// 读取木箱贴图，设置木箱的材质和贴图以及所处的世界空间位置
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
 	m_WoodCrate.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateBox()));
-	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 7.0f);
+	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, -7.0f);
 	m_WoodCrate.SetTexture(texture.Get());
 	m_WoodCrate.SetMaterial(material);
+
+	/*************************************
+						g_Walls[0]
+					初始化墙壁 (0, 3, 10)
+				   ________________
+				 / |             / |
+				/  |		    /  |
+			   /___|___________/   |
+			   |   |_ _ _ _ _ _|_ _|
+			   |  /		       |  / g_Walls[1]
+	(-10, 3, 0)| /			   | / (10, 3, 0)
+	g_Walls[3] |/______________|/
+				   (0, 3, -10)
+				  width g_Walls[2]
+	 *************************************/
+	m_Walls.resize(4);
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\brick.dds", nullptr, texture.GetAddressOf()));
+	for (int i = 0; i < m_Walls.size(); i++) {
+		m_Walls[i].SetModel(Model(m_pd3dDevice.Get(),
+			Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f))));
+		m_Walls[i].SetMaterial(material);
+		m_Walls[i].SetTexture(texture.Get());
+		Transform& transform = m_Walls[i].GetTransform();
+		transform.SetRotation(-XM_PIDIV2, XM_PIDIV2 * i, 0.0f);
+		transform.SetPosition(i % 2 ? -10.0f * (i - 2) : 0.0f, 3.0f, i % 2 == 0 ? -10.0f * (i - 1) : 0.0f);
+	}
 
 
 
@@ -296,7 +324,7 @@ bool Ex19ReadObj::InitResource()
 	m_pCamera = camera;
 	camera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
 	camera->SetDistance(5.0f);
-	camera->SetDistMinMax(6.0f, 100.0f);
+	camera->SetDistMinMax(5.0f, 100.0f);
 	camera->SetRotationX(XM_PIDIV4);
 	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 1000.0f);
 
@@ -304,7 +332,7 @@ bool Ex19ReadObj::InitResource()
 		设置观察矩阵和观察位置，设置平截头体和投影矩阵
 	***********************************************/
 
-	m_BasicEffect.SetWorldMatrix(XMMatrixIdentity());
+	//m_BasicEffect.SetWorldMatrix(XMMatrixIdentity());
 	m_BasicEffect.SetViewMatrix(m_pCamera->GetViewXM());
 	m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
 	m_BasicEffect.SetEyePos(m_pCamera->GetPositionXM());
