@@ -22,11 +22,9 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
     float4 S = float4(0.0f, 0.0f, 0.0f, 0.0f);
     int i;
 
-    DirectionalLight dirLight;
     [unroll]
     for (i = 0; i < 5; ++i)
     {
-        dirLight = g_DirLight[i];
         ComputeDirectionalLight(g_Material, g_DirLight[i], pIn.NormalW, toEyeW, A, D, S);
         ambient += A;
         diffuse += D;
@@ -37,25 +35,21 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 
 
     // 若当前在绘制反射物体，需要对光照进行反射矩阵变换
-    PointLight pointLight;
     [unroll]
     for (i = 0; i < 5; ++i)
     {
-        pointLight = g_PointLight[i];
-        ComputePointLight(g_Material, pointLight, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+        ComputePointLight(g_Material, g_PointLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
         ambient += A;
         diffuse += D;
         spec += S;
     }
 
 
-    SpotLight spotLight;
     // 若当前在绘制反射物体，需要对光照进行反射矩阵变换
     [unroll]
     for (i = 0; i < 5; ++i)
     {
-        spotLight = g_SpotLight[i];
-        ComputeSpotLight(g_Material, spotLight, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+        ComputeSpotLight(g_Material, g_SpotLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
         ambient += A;
         diffuse += D;
         spec += S;

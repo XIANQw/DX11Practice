@@ -1,5 +1,5 @@
 ﻿#include "GameObject.h"
-
+using namespace DirectX;
 
 GameObject::GameObject() :
 	m_VertexStride(),
@@ -26,10 +26,34 @@ void GameObject::SetMaterial(const Material& material) {
 	m_Material = material;
 }
 
+BoundingBox GameObject::GetLocalBoundingBox() const {
+	BoundingBox box;
+	m_Model.boundingBox.Transform(box, m_Transform.GetLocalToWorldMatrixXM());
+	return box;
+}
+BoundingBox GameObject::GetBoundingBox() const {
+	return m_Model.boundingBox;
+}
+BoundingOrientedBox GameObject::GetBoundingOrientedBox() const {
+	BoundingOrientedBox box;
+	BoundingOrientedBox::CreateFromBoundingBox(box, m_Model.boundingBox);
+	box.Transform(box, m_Transform.GetLocalToWorldMatrixXM());
+	return box;
+}
+
+void GameObject::SetModel(Model& model) {
+	std::swap(m_Model, model);
+	model.modelParts.clear();
+	model.boundingBox = BoundingBox();
+}
+
+void GameObject::SetModel(const Model& model) {
+	m_Model = model;
+}
+
 /*
-				Version Ex13
 // 绘制
-void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
+void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect, bool pad) {
 	// 在上下文装配顶点缓冲区
 	UINT stride = m_VertexStride;
 	UINT offset = 0;
@@ -47,8 +71,8 @@ void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 	// 开始绘制
 	deviceContext->DrawIndexed(m_IndexCount, 0, 0);
 }
-*/
 
+*/
 
 void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 	// 在上下文装配顶点缓冲区
