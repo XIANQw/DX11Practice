@@ -30,7 +30,7 @@ public:
 	DirectX::BoundingOrientedBox GetBoundingOrientedBox() const;
 
 	// 设置模型
-	void SetModel(Model & model);
+	void SetModel(Model && model);
 	void SetModel(const Model & model);
 
 

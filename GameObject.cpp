@@ -41,7 +41,7 @@ BoundingOrientedBox GameObject::GetBoundingOrientedBox() const {
 	return box;
 }
 
-void GameObject::SetModel(Model& model) {
+void GameObject::SetModel(Model&& model) {
 	std::swap(m_Model, model);
 	model.modelParts.clear();
 	model.boundingBox = BoundingBox();
@@ -76,7 +76,7 @@ void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect, b
 
 void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 	// 在上下文装配顶点缓冲区
-	UINT stride = m_VertexStride;
+	UINT stride = m_Model.vertexStride;
 	UINT offset = 0;
 
 	for (auto& part : m_Model.modelParts) {

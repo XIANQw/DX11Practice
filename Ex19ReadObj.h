@@ -34,7 +34,7 @@ protected:
     bool InitResource();
 
     GameObject m_WoodCrate;
-    GameObject m_Groud;
+    GameObject m_Ground;
     GameObject m_House;
     std::vector<GameObject> m_Walls;
 
