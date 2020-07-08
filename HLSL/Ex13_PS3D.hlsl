@@ -27,11 +27,6 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
     for (i = 0; i < 5; ++i)
     {
         DirectionalLight dirLight = g_DirLight[i];
-        [flatten]
-        if (g_IsReflection)
-        {
-            dirLight.Direction = mul(dirLight.Direction, (float3x3) (g_Reflection));
-        }
         ComputeDirectionalLight(g_Material, g_DirLight[i], pIn.NormalW, toEyeW, A, D, S);
         ambient += A;
         diffuse += D;

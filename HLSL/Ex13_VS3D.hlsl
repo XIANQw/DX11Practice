@@ -20,7 +20,7 @@ VertexPosHWNormalTex VS_3D(VertexPosNormalTex vIn)
     [flatten]
     if (g_IsShadow)
     {
-        posW = (g_IsReflection ? mul(posW, g_RefShadow) : mul(posW, g_Shadow));
+        posW = mul(posW, g_Shadow);
     }
 
     vOut.PosH = mul(posW, viewProj);
