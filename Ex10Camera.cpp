@@ -201,6 +201,11 @@ void Ex10Camera::UpdateScene(float dt)
 			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), dt * 5.0f);
 		if (keyState.IsKeyDown(Keyboard::A))
 			woodCrateTransform.Translate(woodCrateTransform.GetRightAxis(), -dt * 5.0f);
+
+		XMFLOAT3 adjustPos;
+		XMStoreFloat3(&adjustPos, XMVectorClamp(woodCrateTransform.GetPositionXM(), XMVectorSet(-8.9f, 0.0f, -8.9f, 0.0f), XMVectorReplicate(8.9f)));
+		woodCrateTransform.SetPosition(adjustPos);
+
 		cam3rd->SetTarget(woodCrateTransform.GetPosition());
 		// 摄像机绕目标旋转
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
@@ -228,15 +233,15 @@ void Ex10Camera::UpdateScene(float dt)
 			XMFLOAT3(0.0f, 1.0f, 0.0f));
 		m_CameraMode = CameraMode::FPS;
 	}
-	// 切换到TPS模式
+	// 切换到Observe模式
 	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2) && m_CameraMode != CameraMode::Observe) {
 		if (!cam3rd) {
 			cam3rd.reset(new TPSCamera);
 			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam3rd;
 		}
-		XMFLOAT3 target = woodCrateTransform.GetPosition();
-		cam3rd->SetTarget(target);
+
+		cam3rd->SetTarget(woodCrateTransform.GetPosition());
 		cam3rd->SetDistance(8.0f);
 		cam3rd->SetDistMinMax(3.0f, 20.0f);
 
@@ -262,8 +267,8 @@ void Ex10Camera::UpdateScene(float dt)
 			cam3rd->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 1000.0f);
 			m_pCamera = cam3rd;
 		}
-		XMFLOAT3 target = woodCrateTransform.GetPosition();
-		cam3rd->SetTarget(target);
+
+		cam3rd->SetTarget(woodCrateTransform.GetPosition());
 		cam3rd->SetDistance(8.0f);
 		cam3rd->SetDistMinMax(3.0f, 20.0f);
 
