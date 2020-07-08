@@ -256,7 +256,7 @@ void Ex19ReadObj::DrawScene()
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 	m_BasicEffect.Apply(m_pd3dImmediateContext.Get());
 
-	m_Groud.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_Ground.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	//m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
@@ -300,7 +300,7 @@ bool Ex19ReadObj::InitResource()
 
 	// 读取草地模型
 	m_ObjReader.Read(L"Model\\ground.mbo", L"Model\\groud.obj");
-	m_Groud.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
+	m_Ground.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
 	// 读取房屋模型
 	m_ObjReader.Read(L"Model\\house.mbo", L"Model\\house.obj");
