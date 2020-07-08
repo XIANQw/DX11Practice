@@ -2,6 +2,7 @@
 #include "Effects.h"
 #include "Geometry.h"
 #include "Transform.h"
+#include "Model.h"
 /******************************************************
 *		GameObject.h                                  *
 *	通过该类可以管理每一个生成的物体，比如墙壁，地板和木箱，*
@@ -21,6 +22,17 @@ public:
 	Transform& GetTransform();
 	// 获取物体变换
 	const Transform& GetTransform() const;
+
+
+	// 获取包围盒
+	DirectX::BoundingBox GetLocalBoundingBox() const;
+	DirectX::BoundingBox GetBoundingBox() const;
+	DirectX::BoundingOrientedBox GetBoundingOrientedBox() const;
+
+	// 设置模型
+	void SetModel(Model & model);
+	void SetModel(const Model & model);
+
 
 	// 设置缓冲区
 	template<class VertexType, class IndexType>
@@ -43,6 +55,8 @@ private:
 	ComPtr<ID3D11Buffer> m_pIndexBuffer;                // 索引缓冲区
 	UINT m_VertexStride;                                // 顶点字节大小
 	UINT m_IndexCount;                                  // 索引数目   
+
+	Model m_Model;
 };
 
 

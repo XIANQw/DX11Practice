@@ -111,6 +111,12 @@
     <ClInclude Include="Ex13Shadow.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ObjReader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Keyboard.cpp">
@@ -168,6 +174,12 @@
       <Filter>Effect</Filter>
     </ClCompile>
     <ClCompile Include="Ex13Shadow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjReader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

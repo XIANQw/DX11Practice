@@ -4,7 +4,7 @@
 GameObject::GameObject() :
 	m_VertexStride(),
 	m_IndexCount(),
-	m_Material(){
+	m_Material() {
 }
 
 // 获取物体变换
@@ -26,11 +26,14 @@ void GameObject::SetMaterial(const Material& material) {
 	m_Material = material;
 }
 
+/*
+				Version Ex13
 // 绘制
 void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 	// 在上下文装配顶点缓冲区
 	UINT stride = m_VertexStride;
 	UINT offset = 0;
+
 	deviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
 	// 在上下文上装配索引缓冲区
 	deviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -43,4 +46,28 @@ void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 
 	// 开始绘制
 	deviceContext->DrawIndexed(m_IndexCount, 0, 0);
+}
+*/
+
+
+void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
+	// 在上下文装配顶点缓冲区
+	UINT stride = m_VertexStride;
+	UINT offset = 0;
+
+	for (auto& part : m_Model.modelParts) {
+
+		deviceContext->IASetVertexBuffers(0, 1, part.vertexBuffer.GetAddressOf(), &stride, &offset);
+		// 在上下文上装配索引缓冲区
+		deviceContext->IASetIndexBuffer(part.indexBuffer.Get(), part.indexFormat, 0);
+
+		// 更新Context的drawing常量缓冲
+		effect.SetWorldMatrix(m_Transform.GetLocalToWorldMatrixXM());
+		effect.SetTexture(part.texDiffuse.Get());
+		effect.SetMaterial(part.material);
+		effect.Apply(deviceContext);
+
+		// 开始绘制
+		deviceContext->DrawIndexed(part.indexCount, 0, 0);
+	}
 }
