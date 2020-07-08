@@ -41,6 +41,7 @@ public:
 	// 设置纹理
 	void SetTexture(ID3D11ShaderResourceView* texture);
 
+	
 	// 设置材质
 	void SetMaterial(const Material& material);
 
@@ -49,8 +50,6 @@ public:
 
 private:
 	Transform m_Transform;                          // 世界矩阵
-	Material m_Material;								// 材质
-	ComPtr<ID3D11ShaderResourceView> m_pTexture;        // 纹理
 	ComPtr<ID3D11Buffer> m_pVertexBuffer;               // 顶点缓冲区
 	ComPtr<ID3D11Buffer> m_pIndexBuffer;                // 索引缓冲区
 	UINT m_VertexStride;                                // 顶点字节大小

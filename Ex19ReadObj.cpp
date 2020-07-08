@@ -277,6 +277,7 @@ bool Ex19ReadObj::InitResource()
 	m_WoodCrate.SetTexture(texture.Get());
 	m_WoodCrate.SetMaterial(material);
 
+
 	/*************************************
 						g_Walls[0]
 					初始化墙壁 (0, 3, 10)

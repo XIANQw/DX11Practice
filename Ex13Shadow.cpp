@@ -257,7 +257,7 @@ bool Ex13Shadow::InitResource()
 
 	// 读取木箱贴图，设置木箱的材质和贴图以及所处的世界空间位置
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
-	m_WoodCrate.SetBuffer(m_pd3dDevice.Get(), Geometry::CreateBox());
+	m_WoodCrate.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateBox()));
 	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 0.0f);
 	m_WoodCrate.SetTexture(texture.Get());
 	m_WoodCrate.SetMaterial(material);
@@ -265,8 +265,8 @@ bool Ex13Shadow::InitResource()
 
 	// 读取地板贴图，设置地板的材质和贴图，以及地板的位置
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\floor.dds", nullptr, texture.GetAddressOf()));
-	m_Floor.SetBuffer(m_pd3dDevice.Get(), 
-		Geometry::CreatePlane(XMFLOAT2(20.0f, 20.0f), XMFLOAT2(5.0f, 5.0f)));
+	m_Floor.SetModel(Model(m_pd3dDevice.Get(), 
+		Geometry::CreatePlane(XMFLOAT2(20.0f, 20.0f), XMFLOAT2(5.0f, 5.0f))));
 	m_Floor.SetTexture(texture.Get());
 	m_Floor.SetMaterial(material);
 	m_Floor.GetTransform().SetPosition(0.0f, -1.0f, 0.0f);
@@ -288,10 +288,10 @@ bool Ex13Shadow::InitResource()
 	m_Walls.resize(4);
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\brick.dds", nullptr, texture.GetAddressOf()));
 	for (int i = 0; i < m_Walls.size(); i++) {
+		m_Walls[i].SetModel(Model(m_pd3dDevice.Get(),
+			Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f))));
 		m_Walls[i].SetMaterial(material);
 		m_Walls[i].SetTexture(texture.Get());
-		m_Walls[i].SetBuffer(m_pd3dDevice.Get(),
-			Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f)));
 		Transform& transform = m_Walls[i].GetTransform();
 		transform.SetRotation(-XM_PIDIV2, XM_PIDIV2 * i, 0.0f);
 		transform.SetPosition(i % 2 ? -10.0f * (i - 2) : 0.0f, 3.0f, i % 2 == 0 ? -10.0f * (i - 1) : 0.0f);
