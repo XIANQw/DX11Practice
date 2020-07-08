@@ -211,35 +211,9 @@ void Ex13Shadow::DrawScene()
 	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&DirectX::Colors::Black));
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	/***********************
-	2. 绘制不透明的反射物体
-	************************/
-	m_BasicEffect.SetReflectionState(true);
-	m_BasicEffect.SetRenderDefaultWithStencil(m_pd3dImmediateContext.Get(), 1);
-
-	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	m_Floor.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	for (auto & wall : m_Walls) {
-		wall.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	}
-
-	/***************************
-	3. 绘制不透明反射物体的阴影
-	****************************/
-	m_WoodCrate.SetMaterial(m_ShadowMat);
-	m_BasicEffect.SetShadowState(true);
-	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 1);
-	
-	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-
-	// 关闭阴影模式和反射模式
-	m_BasicEffect.SetShadowState(false);
-	m_BasicEffect.SetReflectionState(false);
-	m_WoodCrate.SetMaterial(m_WoodCrateMat);
-
 	
 	/************************
-	5. 绘制不透明正常物体的
+	1. 绘制不透明正常物体
 	*************************/
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 	for (auto& wall : m_Walls)
@@ -247,19 +221,16 @@ void Ex13Shadow::DrawScene()
 	m_Floor.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
-	/************************
-	6. 绘制不透明正常物体的阴影
-	*************************/
+	///************************
+	//2. 绘制不透明正常物体的阴影
+	//*************************/
 	m_WoodCrate.SetMaterial(m_ShadowMat);
 	m_BasicEffect.SetShadowState(true);	// 反射关闭，阴影开启
 	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
-
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	m_BasicEffect.SetShadowState(false);		// 阴影关闭
 	m_WoodCrate.SetMaterial(m_WoodCrateMat);
-
-
 
 	HR(m_pSwapChain->Present(0, 0));
 }
