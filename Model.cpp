@@ -1,7 +1,6 @@
 ﻿#include "Model.h"
 #include "DXTrace.h"
-#include "DDSTextureLoader.h"
-#include "WICTextureLoader.h"
+#include "d3dUtil.h"
 
 using namespace DirectX;
 
