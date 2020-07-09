@@ -473,7 +473,13 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 	pCBuffers[2]->BindPS(deviceContext);
 	pCBuffers[4]->BindPS(deviceContext);
 
-	// 设置纹理
+	/******************************************
+			绑定贴图到管线
+		1.StartSlot: 寄存器序号
+		2.NumViews: 贴图数量
+		3.贴图指针
+		这里可以放多个贴图，比如光照贴图和纹理贴图
+	*******************************************/
 	deviceContext->PSSetShaderResources(0, 1, pImpl->m_pTexture.GetAddressOf());
 
 	if (pImpl->m_IsDirty)

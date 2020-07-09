@@ -323,10 +323,10 @@ bool Ex19ReadObj::InitResource()
 	auto camera = std::shared_ptr<TPSCamera>(new TPSCamera);
 	m_pCamera = camera;
 	camera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
+	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 1000.0f);
 	camera->SetDistance(5.0f);
 	camera->SetDistMinMax(5.0f, 100.0f);
 	camera->SetRotationX(XM_PIDIV4);
-	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 1000.0f);
 
 	/**********************************************
 		设置观察矩阵和观察位置，设置平截头体和投影矩阵
