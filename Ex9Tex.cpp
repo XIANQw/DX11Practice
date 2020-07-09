@@ -1,8 +1,6 @@
 ﻿#include "Ex9Tex.h"
 #include "d3dUtil.h"
 #include "DXTrace.h"
-#include "DDSTextureLoader.h"
-#include "WICTextureLoader.h"
 using namespace DirectX;
 
 
@@ -11,8 +9,10 @@ Ex9Tex::Ex9Tex(HINSTANCE hInstance)
 	m_IndexCount(),
 	m_CurrFrame(),
 	m_CurrMode(ShowMode::WoodCrate),
-	m_VSConstantBuffer(),
-	m_PSConstantBuffer(),
+	m_CBDrawing(),
+	m_CBFrame(),
+	m_CBOnResize(),
+	m_CBRarely(),
 	m_PointLight()
 {
 }
@@ -27,6 +27,8 @@ bool Ex9Tex::Init()
 	if (!InitEffect()) return false;
 	if (!InitResource()) return false;
 
+	m_pMouse->SetWindow(m_hMainWnd);
+	m_pMouse->SetMode(Mouse::MODE_ABSOLUTE);
 
 	return true;
 }
@@ -90,13 +92,13 @@ void Ex9Tex::UpdateScene(float dt)
 			theta -= dt * 2;	
 		// 世界空间变换: 缩放与旋转
 		XMMATRIX transform = scaling * XMMatrixRotationY(theta) * XMMatrixRotationX(phi);
-		m_VSConstantBuffer.world = XMMatrixTranspose(transform);
+		m_CBDrawing.world = XMMatrixTranspose(transform);
 		// 转置逆矩阵
-		m_VSConstantBuffer.worldInvTranspose = XMMatrixInverse(nullptr, transform);
+		m_CBDrawing.worldInvTranspose = XMMatrixInverse(nullptr, transform);
 
 		D3D11_MAPPED_SUBRESOURCE mappedRes;
 		HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
-		memcpy_s(mappedRes.pData, sizeof(m_VSConstantBuffer), &m_VSConstantBuffer, sizeof(m_VSConstantBuffer));
+		memcpy_s(mappedRes.pData, sizeof(CBChangesEveryDrawing), &m_CBDrawing, sizeof(CBChangesEveryDrawing));
 		m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
 	}
 	else if (m_CurrMode == ShowMode::FireAnim) {
@@ -205,42 +207,61 @@ bool Ex9Tex::InitResource()
 	D3D11_BUFFER_DESC cbd;
 	ZeroMemory(&cbd, sizeof(cbd));
 	cbd.Usage = D3D11_USAGE_DYNAMIC;
-	cbd.ByteWidth = sizeof(VSConstantBuffer);
 	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	// 新建VS和PS常量缓冲区
+	// 新建4级常量缓冲区
+	cbd.ByteWidth = sizeof(CBChangesEveryDrawing);
 	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffers[0].GetAddressOf()));
-	cbd.ByteWidth = sizeof(PSConstantBuffer);
+	cbd.ByteWidth = sizeof(CBChangesEveryFrame);
 	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffers[1].GetAddressOf()));
+	cbd.ByteWidth = sizeof(CBChangesOnResize);
+	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffers[2].GetAddressOf()));
+	cbd.ByteWidth = sizeof(CBChangesRarely);
+	HR(m_pd3dDevice->CreateBuffer(&cbd, nullptr, m_pConstantBuffers[3].GetAddressOf()));
 
-	// 初始化VS常量缓冲区
-	m_VSConstantBuffer.world = XMMatrixIdentity();
-	m_VSConstantBuffer.view = XMMatrixTranspose(XMMatrixLookAtLH(
+	// 初始化 m_CBDrawing
+	m_CBDrawing.world = XMMatrixIdentity();
+	m_CBDrawing.worldInvTranspose = XMMatrixIdentity();
+	
+	// 初始化 m_CBFrame
+	m_CBFrame.view = XMMatrixTranspose(XMMatrixLookAtLH(
 		XMVectorSet(0.0f, 0.0f, -5.0f, 0.0f),
 		XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
 		XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
 	));
-	m_VSConstantBuffer.proj = XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, AspectRatio(), 1.0f, 1000.0f));
-	m_VSConstantBuffer.worldInvTranspose = XMMatrixIdentity();
-
-	// 初始化PS常量缓冲区
-	// 初始化光照模型
-	m_PSConstantBuffer.pointLight[0] = m_PointLight;
-	m_PSConstantBuffer.numDirLight = 0;
-	m_PSConstantBuffer.numPointLight = 1;
-	m_PSConstantBuffer.numSpotLight = 0;
-	// 初始化材质
-	m_PSConstantBuffer.material.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	m_PSConstantBuffer.material.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	m_PSConstantBuffer.material.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 5.0f);
 	// 初始化摄像机位置
-	m_PSConstantBuffer.eyePos = XMFLOAT4(0, 0, -5.0f, 0);
+	m_CBFrame.eysPos = XMFLOAT4(0, 0, -5.0f, 0);
+	
+	// 初始化 m_CBOnResize
+	m_CBOnResize.proj = XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, AspectRatio(), 1.0f, 1000.0f));
 
-	// 更新Context的PS常量缓冲
+	// 初始化 m_CBRarely
+	m_CBRarely.pointLight[0] = m_PointLight;
+	m_CBRarely.numDirLight = 0;
+	m_CBRarely.numPointLight = 1;
+	m_CBRarely.numSpotLight = 0;
+	// 初始化材质
+	m_CBRarely.material.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	m_CBRarely.material.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_CBRarely.material.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 5.0f);
+
+	// 更新所有
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
+	HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
+	memcpy_s(mappedRes.pData, sizeof(CBChangesEveryDrawing), &m_CBDrawing, sizeof(CBChangesEveryDrawing));
+	m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
+
 	HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
-	memcpy_s(mappedRes.pData, sizeof(PSConstantBuffer), &m_PSConstantBuffer, sizeof(PSConstantBuffer));
+	memcpy_s(mappedRes.pData, sizeof(CBChangesEveryFrame), &m_CBFrame, sizeof(CBChangesEveryFrame));
 	m_pd3dImmediateContext->Unmap(m_pConstantBuffers[1].Get(), 0);
+	
+	HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[2].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
+	memcpy_s(mappedRes.pData, sizeof(CBChangesOnResize), &m_CBOnResize, sizeof(CBChangesOnResize));
+	m_pd3dImmediateContext->Unmap(m_pConstantBuffers[2].Get(), 0);
+	
+	HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[3].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
+	memcpy_s(mappedRes.pData, sizeof(CBChangesRarely), &m_CBRarely, sizeof(CBChangesRarely));
+	m_pd3dImmediateContext->Unmap(m_pConstantBuffers[3].Get(), 0);
 
 	/***************
 	* 绑定资源到管线 *
@@ -257,9 +278,11 @@ bool Ex9Tex::InitResource()
 
 	// VS 常量缓冲区对应HLSL寄存于b0 register
 	m_pd3dImmediateContext->VSSetConstantBuffers(0, 1, m_pConstantBuffers[0].GetAddressOf());
+	m_pd3dImmediateContext->VSSetConstantBuffers(1, 1, m_pConstantBuffers[1].GetAddressOf());
+	m_pd3dImmediateContext->VSSetConstantBuffers(2, 1, m_pConstantBuffers[2].GetAddressOf());
 	// PS常量缓冲区对应HLSL寄存于b1 register
 	m_pd3dImmediateContext->PSSetConstantBuffers(1, 1, m_pConstantBuffers[1].GetAddressOf());
-	
+	m_pd3dImmediateContext->PSSetConstantBuffers(3, 1, m_pConstantBuffers[3].GetAddressOf());
 
 	/**************                  设置着色器资源                 *********************
 	void ID3D11DeviceContext::PSSetShaderResources(

@@ -18,28 +18,7 @@ class Ex9Tex : public D3DApp {
     enum class ShowMode {
         WoodCrate, FireAnim
     };
-
-public:
-
-    struct VSConstantBuffer {
-        DirectX::XMMATRIX world;
-        DirectX::XMMATRIX view;
-        DirectX::XMMATRIX proj;
-        DirectX::XMMATRIX worldInvTranspose;
-    };
-
-    struct PSConstantBuffer {
-        DirectionalLight dirLight[10];
-        PointLight pointLight[10];
-        SpotLight spotLight[10];
-        Material material;
-        int numDirLight;
-        int numPointLight;
-        int numSpotLight;
-        float pad;
-        DirectX::XMFLOAT4 eyePos;
-    };
-
+    
 public:
     Ex9Tex(HINSTANCE hInstance);
     virtual ~Ex9Tex();
@@ -62,7 +41,7 @@ protected:
     
     ComPtr<ID3D11Buffer> m_pVertexBuffer;		// 顶点缓冲区
     ComPtr<ID3D11Buffer> m_pIndexBuffer;        // 索引缓冲区
-    ComPtr<ID3D11Buffer> m_pConstantBuffers[2];     // 常量缓冲区
+    ComPtr<ID3D11Buffer> m_pConstantBuffers[4];     // 常量缓冲区
     UINT m_IndexCount;
     UINT m_CurrFrame;
     ShowMode m_CurrMode;
@@ -72,8 +51,10 @@ protected:
     ComPtr<ID3D11PixelShader> m_pPixelShader2D;	// 2D像素着色器
     ComPtr<ID3D11PixelShader> m_pPixelShader3D;	// 3D像素着色器
 
-    VSConstantBuffer m_VSConstantBuffer; // 储存了各种变换矩阵
-    PSConstantBuffer m_PSConstantBuffer;
+    CBChangesEveryDrawing m_CBDrawing;
+    CBChangesEveryFrame m_CBFrame;
+    CBChangesOnResize m_CBOnResize;
+    CBChangesRarely m_CBRarely;
 
     ComPtr<ID3D11SamplerState> m_pSamplerState;
 
