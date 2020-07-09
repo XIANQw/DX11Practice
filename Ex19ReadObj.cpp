@@ -215,12 +215,17 @@ void Ex19ReadObj::DrawScene()
 	*************************/
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 	m_BasicEffect.Apply(m_pd3dImmediateContext.Get());
-
+	
+	//m_BasicEffect.SetTextureUsed(false);
+	//m_Sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	
+	m_BasicEffect.SetTextureUsed(true);
 	for (auto& wall : m_Walls)
 		wall.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_Ground.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+
 
 	/************************
 	2. 绘制阴影
@@ -258,6 +263,18 @@ bool Ex19ReadObj::InitResource()
 	m_ShadowMat.ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	m_ShadowMat.diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
 	m_ShadowMat.specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 16.0f);
+
+	m_Sphere.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(1.0f, 30, 30)));
+	
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
+	m_Sphere.SetTexture(texture.Get());
+	Material sphereMat;
+	sphereMat.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	sphereMat.diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	sphereMat.specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
+	sphereMat.reflect = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	m_Sphere.SetMaterial(sphereMat);
+	m_Sphere.GetTransform().SetPosition(0.0f, 6.0f, 0.0f);
 
 
 	// 读取草地模型

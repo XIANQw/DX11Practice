@@ -14,12 +14,15 @@ cbuffer CBChangesEveryDrawing : register(b0)
 cbuffer CBDrawingState:register(b1) {
     int g_IsReflection;
     int g_IsShadow;
+    int g_TextureUsed;
+    float g_Pad1;
 }
 
 cbuffer CBChangesEveryFrame : register(b2)
 {
     matrix g_View;
     float3 g_EyePosW;
+    float g_Pad2;
 }
 
 cbuffer CBChangesOnResize : register(b3)

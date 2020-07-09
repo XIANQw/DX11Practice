@@ -112,7 +112,7 @@ public:
 
 	void SetReflectionState(bool isOn);
 	void SetShadowState(bool isOn);
-
+	void SetTextureUsed(bool isOn);
 
 	// 应用常量缓冲区和纹理资源的变更
 	void Apply(ID3D11DeviceContext* deviceContext);

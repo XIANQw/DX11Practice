@@ -28,7 +28,8 @@ public:
 	{
 		int isReflection;
 		int isShadow;
-		DirectX::XMINT2 pad;
+		int isTextureUsed;
+		float pad;
 	};
 
 	struct CBChangesEveryFrame
@@ -453,7 +454,12 @@ void BasicEffect::SetShadowState(bool isOn)
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
-
+void BasicEffect::SetTextureUsed(bool isOn)
+{
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.isTextureUsed = isOn;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
 
 /**********************************
  应用缓冲区，将所有缓冲区绑定到管道上

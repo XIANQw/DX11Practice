@@ -117,7 +117,7 @@ void Model::SetMesh(ID3D11Device* device,
 	ZeroMemory(&vbd, sizeof(vbd));
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;
 	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vbd.ByteWidth = vertexSize * modelParts[0].indexCount;
+	vbd.ByteWidth = vertexSize * vertexCount;
 	vbd.CPUAccessFlags = 0;
 	// 新建顶点缓冲区
 	D3D11_SUBRESOURCE_DATA InitData;

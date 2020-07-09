@@ -3,9 +3,12 @@
 // 像素着色器(3D)
 float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 {
-    // 提前进行裁剪，对不符合要求的像素可以避免后续运算
-    float4 texColor = g_Tex.Sample(g_Sam, pIn.Tex);
-    clip(texColor.a - 0.1f);
+    //float4 texColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    //if (g_TextureUsed) {
+        // 提前进行裁剪，对不符合要求的像素可以避免后续运算
+        float4 texColor = g_Tex.Sample(g_Sam, pIn.Tex);
+        clip(texColor.a - 0.1f);
+    //}
 
     // 标准化法向量
     pIn.NormalW = normalize(pIn.NormalW);

@@ -37,6 +37,7 @@ protected:
     GameObject m_Ground;
     GameObject m_House;
     GameObject m_Floor;
+    GameObject m_Sphere;
     std::vector<GameObject> m_Walls;
 
     Material m_ShadowMat;
