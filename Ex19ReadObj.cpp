@@ -216,8 +216,8 @@ void Ex19ReadObj::DrawScene()
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 	m_BasicEffect.Apply(m_pd3dImmediateContext.Get());
 	
-	//m_BasicEffect.SetTextureUsed(false);
-	//m_Sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_BasicEffect.SetTextureUsed(false);
+	m_Sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	
 	m_BasicEffect.SetTextureUsed(true);
 	for (auto& wall : m_Walls)
