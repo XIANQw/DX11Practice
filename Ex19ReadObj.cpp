@@ -261,7 +261,7 @@ bool Ex19ReadObj::InitResource()
 
 
 	// 读取草地模型
-	m_ObjReader.Read(L"Model\\ground.mbo", L"Model\\groud.obj");
+	m_ObjReader.Read(L"Model\\ground.mbo", L"Model\\ground.obj");
 	m_Ground.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
 	// 读取房屋模型
@@ -274,6 +274,7 @@ bool Ex19ReadObj::InitResource()
 	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, -7.0f);
 	m_WoodCrate.SetTexture(texture.Get());
 	m_WoodCrate.SetMaterial(material);
+
 
 
 	/*************************************
