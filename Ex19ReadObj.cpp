@@ -196,7 +196,7 @@ void Ex19ReadObj::UpdateScene(float dt)
 		m_CameraMode = CameraMode::TPS;
 	}
 
-	if (keyState.IsKeyDown(Keyboard::R)) {
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::R)) {
 		m_IsWireframeMode = !m_IsWireframeMode;
 	}
 
