@@ -353,6 +353,20 @@ void BasicEffect::Set2DRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
 }
 
+
+void BasicEffect::SetWireFrameWode(ID3D11DeviceContext* deviceContext) {
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetInputLayout(pImpl->m_pVertexLayout3D.Get());
+	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
+	deviceContext->RSSetState(RenderStates::RSWireframe.Get());
+	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
+	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+}
+
+
+
 /*
 	改变世界矩阵
 */
