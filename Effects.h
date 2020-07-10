@@ -72,7 +72,8 @@ public:
 	void Set2DRenderDefault(ID3D11DeviceContext* deviceContext);
 	// 2D混合绘制
 	void Set2DRenderAlphaBlend(ID3D11DeviceContext* deviceContext);
-
+	// 线框模式
+	void SetWireFrameWode(ID3D11DeviceContext* deviceContext);
 
 	//
 	// 矩阵设置
