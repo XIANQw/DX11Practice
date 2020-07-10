@@ -13,7 +13,8 @@ Ex19ReadObj::Ex19ReadObj(HINSTANCE hInstance)
 	m_CameraMode(CameraMode::TPS),
 	m_ShadowMat(),
 	m_Material(),
-	m_ObjReader(){
+	m_ObjReader(),
+	m_IsWireframeMode(false){
 }
 
 
@@ -195,6 +196,10 @@ void Ex19ReadObj::UpdateScene(float dt)
 		m_CameraMode = CameraMode::TPS;
 	}
 
+	if (keyState.IsKeyDown(Keyboard::R)) {
+		m_IsWireframeMode = !m_IsWireframeMode;
+	}
+
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
 	}
@@ -206,36 +211,40 @@ void Ex19ReadObj::DrawScene()
 {
 	assert(m_pd3dImmediateContext);
 	assert(m_pSwapChain);
-	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&DirectX::Colors::White));
+	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&DirectX::Colors::Black));
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 
 	/************************
 	1. 绘制物体
 	*************************/
-	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
-	m_BasicEffect.Apply(m_pd3dImmediateContext.Get());
+	if (m_IsWireframeMode) {
+		m_BasicEffect.SetWireFrameWode(m_pd3dImmediateContext.Get());
+	}
+	else {
+		m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
+	}
 	
 	m_BasicEffect.SetTextureUsed(false);
 	m_Sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	
-	m_BasicEffect.SetTextureUsed(true);
+	if(!m_IsWireframeMode)	m_BasicEffect.SetTextureUsed(true);
 	for (auto& wall : m_Walls)
 		wall.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_Ground.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
-
 	/************************
 	2. 绘制阴影
 	*************************/
-	m_BasicEffect.SetShadowState(true);	// 阴影开启
-	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
-	m_WoodCrate.SetMaterial(m_ShadowMat);
-	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	m_House.SetMaterial(m_ShadowMat);
-	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	if (!m_IsWireframeMode) {
+		m_BasicEffect.SetShadowState(true);	// 阴影开启
+		m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
+		m_WoodCrate.SetMaterial(m_ShadowMat);
+		m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+		m_House.SetMaterial(m_ShadowMat);
+		m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	}
 
 	m_BasicEffect.SetShadowState(false);		// 阴影关闭
 	m_WoodCrate.SetMaterial(m_Material);
@@ -264,8 +273,8 @@ bool Ex19ReadObj::InitResource()
 	m_ShadowMat.diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
 	m_ShadowMat.specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 16.0f);
 
-	m_Sphere.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(1.0f, 30, 30)));
 	
+	m_Sphere.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(1.0f, 30, 30)));
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
 	m_Sphere.SetTexture(texture.Get());
 	Material sphereMat;
@@ -276,12 +285,11 @@ bool Ex19ReadObj::InitResource()
 	m_Sphere.SetMaterial(sphereMat);
 	m_Sphere.GetTransform().SetPosition(0.0f, 6.0f, 0.0f);
 
-
-	// 读取草地模型
+	//// 读取草地模型
 	m_ObjReader.Read(L"Model\\ground.mbo", L"Model\\ground.obj");
 	m_Ground.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
-	// 读取房屋模型
+	//// 读取房屋模型
 	m_ObjReader.Read(L"Model\\house.mbo", L"Model\\house.obj");
 	m_House.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
@@ -320,9 +328,7 @@ bool Ex19ReadObj::InitResource()
 		transform.SetPosition(i % 2 ? -10.0f * (i - 2) : 0.0f, 3.0f, i % 2 == 0 ? -10.0f * (i - 1) : 0.0f);
 	}
 
-
-
-	// 获取房屋包围盒
+	//// 获取房屋包围盒
 	XMMATRIX S = XMMatrixScaling(0.015f, 0.015f, 0.015f);
 	BoundingBox houseBox = m_House.GetLocalBoundingBox();
 	houseBox.Transform(houseBox, S);
@@ -330,7 +336,6 @@ bool Ex19ReadObj::InitResource()
 	Transform& houseTransform = m_House.GetTransform();
 	houseTransform.SetScale(0.015f, 0.015f, 0.015f);
 	houseTransform.SetPosition(0.0f, -(houseBox.Center.y - houseBox.Extents.y + 1.0f), 0.0f);
-
 
 
 	/*******************************

@@ -38,7 +38,10 @@ protected:
     GameObject m_House;
     GameObject m_Floor;
     GameObject m_Sphere;
+    GameObject m_Scene;
     std::vector<GameObject> m_Walls;
+
+    bool m_IsWireframeMode;
 
     Material m_ShadowMat;
     Material m_Material;
