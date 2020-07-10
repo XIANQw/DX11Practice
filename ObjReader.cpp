@@ -5,7 +5,7 @@ bool ObjReader::Read(const wchar_t* mboFilename, const wchar_t* objFileName) {
 	if ((mboFilename) && ReadMbo(mboFilename)) {
 		return true;
 	}
-	else if (objFileName){
+	else if (objFileName) {
 		bool status = ReadObj(objFileName);
 		if (status && mboFilename) {
 			return WriteMbo(mboFilename);
@@ -19,7 +19,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 	// 清楚之前读取的缓存
 	objParts.clear();
 	vertexCache.clear();
-	
+
 	MtlReader mtlReader;
 
 	std::vector<XMFLOAT3> positions;
@@ -113,7 +113,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			while (iswspace(mtlName[beg])) beg++;
 			while (ed > beg && iswspace(mtlName[ed - 1])) ed--;
 			mtlName = mtlName.substr(beg, ed - beg);
-			
+
 			objParts.back().material = mtlReader.materials[mtlName];
 			objParts.back().texStrDiffuse = mtlReader.mapKdStrs[mtlName];
 		}
@@ -124,20 +124,48 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			VertexPosNormalTex vertex;
 			DWORD vpi[3], vni[3], vti[3];
 			wchar_t ignore;
-
-			// 顶点位置索引/纹理坐标索引/法向量索引
 			// 原来右手坐标系下顶点顺序是逆时针排布
 			// 现在需要转变为左手坐标系就需要将三角形顶点反过来输入
 			for (int i = 2; i >= 0; --i)
 			{
-				wfin >> vpi[i] >> ignore >> vti[i] >> ignore >> vni[i];
+				// 先读取4个字符，然后判断有没有纹理坐标索引
+				std::wstring tmp;
+				wfin >> tmp;
+				bool hasTexture = false;
+				// 顶点索引/纹理索引/法向量索引
+				size_t indexSep = tmp.find(L"//");
+				if (indexSep == std::wstring::npos) {
+					hasTexture = true;
+				}
+				// 11/20/30
+				if (hasTexture) {
+					ULONG index1 = tmp.find(L"/");
+					std::wstring svpi = tmp.substr(0, index1);
+					vpi[i] = std::stoul(svpi);
+					ULONG index2 = tmp.find(L"/", index1 + 1);
+					std::wstring svti = tmp.substr(index1 + 1, index2 - index1 -1 );
+					vti[i] = std::stoul(svti);
+					std::wstring svni = tmp.substr(index2 + 1);
+					vni[i] = std::stoul(svni);
+				}
+				else {
+					std::wstring svpi = tmp.substr(0, indexSep);
+					vpi[i] = std::stoul(svpi);
+					vti[i] = MAXDWORD;
+					std::wstring svni = tmp.substr(indexSep + 2);
+					vni[i] = std::stoul(svni);
+				}
+
 			}
 
 			for (int i = 0; i < 3; ++i)
 			{
 				vertex.pos = positions[vpi[i] - 1];
 				vertex.normal = normals[vni[i] - 1];
-				vertex.tex = texCoords[vti[i] - 1];
+				if (vti[i] != MAXDWORD)
+					vertex.tex = texCoords[vti[i] - 1];
+				else
+					vertex.tex = DirectX::XMFLOAT2(0.0f, 0.0f);
 				AddVertex(vertex, vpi[i], vti[i], vni[i]);
 			}
 
@@ -156,11 +184,11 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 				part.indices16.push_back((WORD)i);
 			}
 			part.indices32.clear();
-		}	
+		}
 	}
 	XMStoreFloat3(&vMax, vecMax);
 	XMStoreFloat3(&vMin, vecMin);
-	
+
 	return true;
 }
 
