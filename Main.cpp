@@ -1,8 +1,9 @@
-#include "Ex7Light.h"
-#include "Ex9Tex.h"
-#include "Ex10Camera.h"
-#include "Ex13Shadow.h"
-#include "Ex19ReadObj.h"
+//#include "Ex7Light.h"
+//#include "Ex9Tex.h"
+//#include "Ex10Camera.h"
+//#include "Ex13Shadow.h"
+//#include "Ex19ReadObj.h"
+#include "TestSponza.h"
 
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
@@ -17,7 +18,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	D3DApp * theApp = new Ex19ReadObj(hInstance);
+	D3DApp * theApp = new TestSponza(hInstance);
 
 	if( !theApp->Init() )
 		return 0;
