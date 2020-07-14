@@ -42,6 +42,9 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 		}
 		// o + objectName g + groupName 
 		else if (wstr == L"o" || wstr == L"g") {
+			if (objParts.size() > 0 && objParts.back().vertices.size() == 0) {
+				objParts.pop_back();
+			}
 			objParts.emplace_back(ObjPart());
 
 			// 提供默认材质
@@ -57,7 +60,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			*************************************************/
 			XMFLOAT3 pos;
 			wfin >> pos.x >> pos.y >> pos.z;
-			pos.z = -pos.z;
+ 			pos.z = -pos.z;
 			positions.push_back(pos);
 			XMVECTOR vecPos = XMLoadFloat3(&pos);
 			vecMax = XMVectorMax(vecPos, vecMax);
