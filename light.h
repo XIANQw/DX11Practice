@@ -26,6 +26,13 @@ struct PointLight {
 	PointLight() {
 		memset(this, 0, sizeof(PointLight));
 	}
+	PointLight(DirectX::XMFLOAT3 position): 
+		ambient(DirectX::XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f)),
+		diffuse(DirectX::XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f)),
+		specular(DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f)),
+		position(position),
+		att(DirectX::XMFLOAT3(0.0f, 0.1f, 0.0f)),
+		range(100.0f), pad(0.0f){}
 
 	DirectX::XMFLOAT4 ambient;
 	DirectX::XMFLOAT4 diffuse;
