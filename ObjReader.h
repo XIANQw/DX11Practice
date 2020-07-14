@@ -67,4 +67,6 @@ public:
 	std::map<std::wstring, Material> materials;
 	std::map<std::wstring, std::wstring> mapKaStrs;
 	std::map<std::wstring, std::wstring> mapKdStrs;
+	std::map<std::wstring, std::wstring> mapKsStrs;
+	std::map<std::wstring, std::wstring> mapDStrs;
 };

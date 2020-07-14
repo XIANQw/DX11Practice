@@ -434,6 +434,32 @@ bool MtlReader::ReadMtl(const wchar_t* mtlFileName)
 			materials[currMtl].ambient.w = alpha;
 			materials[currMtl].diffuse.w = alpha;
 		}
+		else if (wstr == L"map_Ka")
+		{
+			//
+			// map_Kd为漫反射使用的纹理
+			//
+			std::wstring fileName;
+			std::getline(wfin, fileName);
+			// 去掉前后空格
+			size_t beg = 0, ed = fileName.size();
+			while (iswspace(fileName[beg]))
+				beg++;
+			while (ed > beg && iswspace(fileName[ed - 1]))
+				ed--;
+			fileName = fileName.substr(beg, ed - beg);
+
+			// 追加路径
+			std::wstring dir = mtlFileName;
+			size_t pos;
+			if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
+				(pos = dir.find_last_of('\\')) == std::wstring::npos)
+				pos = 0;
+			else
+				pos += 1;
+
+			mapKaStrs[currMtl] = dir.erase(pos) + fileName;
+		}
 		else if (wstr == L"map_Kd")
 		{
 			//
@@ -459,6 +485,58 @@ bool MtlReader::ReadMtl(const wchar_t* mtlFileName)
 				pos += 1;
 
 			mapKdStrs[currMtl] = dir.erase(pos) + fileName;
+		}
+		else if (wstr == L"map_Ks")
+		{
+			//
+			// map_Ks为镜面反射使用的纹理
+			//
+			std::wstring fileName;
+			std::getline(wfin, fileName);
+			// 去掉前后空格
+			size_t beg = 0, ed = fileName.size();
+			while (iswspace(fileName[beg]))
+				beg++;
+			while (ed > beg && iswspace(fileName[ed - 1]))
+				ed--;
+			fileName = fileName.substr(beg, ed - beg);
+
+			// 追加路径
+			std::wstring dir = mtlFileName;
+			size_t pos;
+			if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
+				(pos = dir.find_last_of('\\')) == std::wstring::npos)
+				pos = 0;
+			else
+				pos += 1;
+
+			mapKsStrs[currMtl] = dir.erase(pos) + fileName;
+		}
+		else if (wstr == L"map_d")
+		{
+			//
+			// map_d
+			//
+			std::wstring fileName;
+			std::getline(wfin, fileName);
+			// 去掉前后空格
+			size_t beg = 0, ed = fileName.size();
+			while (iswspace(fileName[beg]))
+				beg++;
+			while (ed > beg && iswspace(fileName[ed - 1]))
+				ed--;
+			fileName = fileName.substr(beg, ed - beg);
+
+			// 追加路径
+			std::wstring dir = mtlFileName;
+			size_t pos;
+			if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
+				(pos = dir.find_last_of('\\')) == std::wstring::npos)
+				pos = 0;
+			else
+				pos += 1;
+
+			mapDStrs[currMtl] = dir.erase(pos) + fileName;
 		}
 	}
 
