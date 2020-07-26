@@ -9,10 +9,10 @@
 #include <d3d11.h>
 #include <sstream>
 
-#include "GameTimer.h"
-#include "Mouse.h"
-#include "Keyboard.h"
-#include "DXTrace.h"
+#include "ThridParty/GameTimer.h"
+#include "ThridParty/Mouse.h"
+#include "ThridParty/Keyboard.h"
+#include "ThridParty/DXTrace.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")

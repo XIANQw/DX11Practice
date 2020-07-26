@@ -144,20 +144,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp" />
-    <ClCompile Include="DXTrace.cpp" />
     <ClCompile Include="GameApp.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
-    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="ThridParty\DXTrace.cpp" />
+    <ClCompile Include="ThridParty\GameTimer.cpp" />
+    <ClCompile Include="ThridParty\Keyboard.cpp" />
+    <ClCompile Include="ThridParty\Mouse.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3dApp.h" />
-    <ClInclude Include="DXTrace.h" />
     <ClInclude Include="GameApp.h" />
-    <ClInclude Include="GameTimer.h" />
-    <ClInclude Include="Keyboard.h" />
-    <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ThridParty\DXTrace.h" />
+    <ClInclude Include="ThridParty\GameTimer.h" />
+    <ClInclude Include="ThridParty\Keyboard.h" />
+    <ClInclude Include="ThridParty\Mouse.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

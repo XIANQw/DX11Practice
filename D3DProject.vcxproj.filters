@@ -13,48 +13,51 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ThridParty">
+      <UniqueIdentifier>{9b70926a-21ac-4125-94ba-3c2116cb748a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Keyboard.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Mouse.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="GameApp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="ThridParty\DXTrace.cpp">
+      <Filter>ThridParty</Filter>
     </ClCompile>
-    <ClCompile Include="DXTrace.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="ThridParty\GameTimer.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Keyboard.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Mouse.cpp">
+      <Filter>ThridParty</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3dApp.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="GameTimer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Keyboard.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="GameApp.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DXTrace.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="ThridParty\Mouse.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\Keyboard.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\GameTimer.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\DXTrace.h">
+      <Filter>ThridParty</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,8 +5,10 @@ GameApp::GameApp(HINSTANCE hinstance):
 {
 }
 
+
 GameApp::~GameApp() {
 }
+
 
 bool GameApp::Init() {
 	if (!D3DApp::Init()) {
@@ -20,9 +22,11 @@ void GameApp::OnResize() {
 	D3DApp::OnResize();
 }
 
+
 void GameApp::UpdateScene(float dt) {
 
 }
+
 
 void GameApp::DrawScene() {
 	assert(m_pd3dImmediateContext);
