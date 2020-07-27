@@ -51,10 +51,8 @@ void TestSponza::UpdateScene(float dt)
 {
 	// 获取鼠标状态
 	Mouse::State mouseState = m_pMouse->GetState();
-	Mouse::State lastMouseState = m_MouseTracker.GetLastState();
 	// 获取键盘状态
 	Keyboard::State keyState = m_pKeyboard->GetState();
-	Keyboard::State lastKeyState = m_KeyboardTracker.GetLastState();
 
 	m_MouseTracker.Update(mouseState);
 	m_KeyboardTracker.Update(keyState);
@@ -79,10 +77,9 @@ void TestSponza::UpdateScene(float dt)
 		XMStoreFloat3(&adjustPos, XMVectorClamp(cam1st->GetPositionXM(), XMVectorSet(-80.0f, 0.0f, -80.0f, 0.0f), XMVectorReplicate(80.0f)));
 		cam1st->SetPosition(adjustPos);
 
-		if (mouseState.positionMode == Mouse::MODE_RELATIVE) {
-			cam1st->Pitch(mouseState.y * dt * 2.5f);
-			cam1st->RotateY(mouseState.x * dt * 2.5f);
-		}
+		cam1st->Pitch(mouseState.y * dt * 1.25f);
+		cam1st->RotateY(mouseState.x * dt * 1.25f);
+		
 	}
 
 
