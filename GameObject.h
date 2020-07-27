@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Effects.h"
-#include "Geometry.h"
+#include "ThridParty/Geometry.h"
 #include "Transform.h"
 #include "Model.h"
 /******************************************************

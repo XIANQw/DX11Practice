@@ -1,6 +1,6 @@
 ﻿#include "Model.h"
-#include "DXTrace.h"
-#include "d3dUtil.h"
+#include "ThridParty/DXTrace.h"
+#include "ThridParty/d3dUtil.h"
 
 using namespace DirectX;
 

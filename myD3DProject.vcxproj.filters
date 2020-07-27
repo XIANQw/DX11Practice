@@ -40,25 +40,16 @@
     <Filter Include="shader\Ex13">
       <UniqueIdentifier>{0fb61b82-1b34-4293-968a-07bdd88a007f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThridParty">
+      <UniqueIdentifier>{008cf6cf-8b0c-43b3-b190-9d1b64a68b57}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Keyboard.h">
-      <Filter>generic</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>generic</Filter>
-    </ClInclude>
     <ClInclude Include="Ex7Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Ex9Tex.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader.h">
-      <Filter>generic</Filter>
-    </ClInclude>
-    <ClInclude Include="WICTextureLoader.h">
-      <Filter>generic</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>头文件</Filter>
@@ -67,18 +58,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="d3dApp.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dUtil.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="DXTrace.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="GameTimer.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="Geometry.h">
       <Filter>头文件\Generic</Filter>
     </ClInclude>
     <ClInclude Include="light.h">
@@ -123,22 +102,37 @@
     <ClInclude Include="TestSponza.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Importer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\WICTextureLoader.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\Mouse.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\Keyboard.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\Geometry.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\GameTimer.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\DXTrace.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\DDSTextureLoader.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\d3dUtil.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Keyboard.cpp">
-      <Filter>generic</Filter>
-    </ClCompile>
-    <ClCompile Include="Mouse.cpp">
-      <Filter>generic</Filter>
-    </ClCompile>
     <ClCompile Include="Ex7Light.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="DDSTextureLoader.cpp">
-      <Filter>generic</Filter>
-    </ClCompile>
-    <ClCompile Include="WICTextureLoader.cpp">
-      <Filter>generic</Filter>
     </ClCompile>
     <ClCompile Include="Ex9Tex.cpp">
       <Filter>源文件</Filter>
@@ -150,15 +144,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="d3dApp.cpp">
-      <Filter>源文件\Generic</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dUtil.cpp">
-      <Filter>源文件\Generic</Filter>
-    </ClCompile>
-    <ClCompile Include="DXTrace.cpp">
-      <Filter>源文件\Generic</Filter>
-    </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
       <Filter>源文件\Generic</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
@@ -193,6 +178,33 @@
     </ClCompile>
     <ClCompile Include="TestSponza.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Importer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\WICTextureLoader.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Mouse.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Keyboard.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Geometry.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\GameTimer.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\DXTrace.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\DDSTextureLoader.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\d3dUtil.cpp">
+      <Filter>ThridParty</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

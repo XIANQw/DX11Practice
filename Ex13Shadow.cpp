@@ -1,8 +1,4 @@
 ﻿#include "Ex13Shadow.h"
-#include "d3dUtil.h"
-#include "DXTrace.h"
-#include "DDSTextureLoader.h"
-#include "WICTextureLoader.h"
 
 using namespace DirectX;
 

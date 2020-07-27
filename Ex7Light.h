@@ -3,7 +3,7 @@
 
 #include "d3dApp.h"
 #include "light.h"
-#include "Geometry.h"
+#include "ThridParty/Geometry.h"
 
 /*******************************************
     Ex7:

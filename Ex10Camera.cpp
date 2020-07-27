@@ -1,8 +1,4 @@
 ﻿#include "Ex10Camera.h"
-#include "d3dUtil.h"
-#include "DXTrace.h"
-#include "DDSTextureLoader.h"
-#include "WICTextureLoader.h"
 
 using namespace DirectX;
 

@@ -3,12 +3,17 @@
 
 #include <wrl/client.h>
 #include <string>
-#include <d3d11_1.h>
+#include <d3d11.h>
 #include <DirectXMath.h>
 #include <memory>
-#include "GameTimer.h"
-#include "Mouse.h"
-#include "Keyboard.h"
+
+#include "ThridParty/Mouse.h"
+#include "ThridParty/Keyboard.h"
+#include "ThridParty/GameTimer.h"
+#include "ThridParty/d3dUtil.h"
+#include "ThridParty/DXTrace.h"
+#include "ThridParty/Geometry.h"
+#include "ThridParty/DDSTextureLoader.h"
 
 // 添加所有要引用的库
 #pragma comment(lib, "d3d11.lib")
