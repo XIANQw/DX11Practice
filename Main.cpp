@@ -4,6 +4,7 @@
 //#include "Ex13Shadow.h"
 //#include "Ex19ReadObj.h"
 #include "TestSponza.h"
+#include "Importer.h"
 
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
