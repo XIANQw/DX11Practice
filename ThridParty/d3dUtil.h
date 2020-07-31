@@ -44,6 +44,7 @@
 template<UINT TNameLength>
 inline void D3D11SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const char(&name)[TNameLength])
 {
+	if (!resource) return;
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
 	resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
 #else

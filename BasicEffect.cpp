@@ -3,6 +3,8 @@
 #include "EffectHelper.h"	// 必须晚于Effects.h和d3dUtil.h包含
 #include "ThridParty/DXTrace.h"
 #include "Vertex.h"
+
+#include <winnt.h>
 using namespace DirectX;
 
 
@@ -122,6 +124,62 @@ BasicEffect& BasicEffect::Get()
 	return *g_pInstance;
 }
 
+#define GET_CSO_FILENAME(hlslFile, csoFile) \
+	size_t nameSize = wcslen(hlslFile);\
+	if (!(hlslFile[nameSize - 5] == L'.' &&\
+		hlslFile[nameSize - 4] == L'h' &&\
+		hlslFile[nameSize - 3] == L'l' &&\
+		hlslFile[nameSize - 2] == L's' &&\
+		hlslFile[nameSize - 1] == L'l'))\
+		return false;\
+	WCHAR FileName[64];\
+	wcsncpy_s(FileName, ARRAYSIZE(FileName), hlslFile, nameSize - 5);\
+	_snwprintf_s(csoFile, ARRAYSIZE(csoFile), ARRAYSIZE(csoFile) - 1, L"%s.cso", FileName)\
+
+
+bool BasicEffect::SetVSShader2D(ID3D11Device* device, const WCHAR* hlslFile) {
+	WCHAR csoFile[64];
+	ZeroMemory(csoFile, sizeof(csoFile));
+	GET_CSO_FILENAME(hlslFile, csoFile);
+	ComPtr<ID3DBlob> blob;
+	HR(CreateShaderFromFile(csoFile, hlslFile, "VS_2D", "vs_5_0", blob.GetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pVertexShader2D.GetAddressOf()));
+	HR(device->CreateInputLayout(VertexPosTex::inputLayout, ARRAYSIZE(VertexPosTex::inputLayout),
+		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexLayout2D.GetAddressOf()));
+	return true;
+}
+
+bool BasicEffect::SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile) {
+	WCHAR csoFile[64];
+	ZeroMemory(csoFile, sizeof(csoFile));
+	GET_CSO_FILENAME(hlslFile, csoFile);
+	ComPtr<ID3DBlob> blob;
+	HR(CreateShaderFromFile(csoFile, hlslFile, "VS_3D", "vs_5_0", blob.GetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pVertexShader3D.GetAddressOf()));
+	HR(device->CreateInputLayout(VertexPosNormalTex::inputLayout, ARRAYSIZE(VertexPosNormalTex::inputLayout),
+		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexLayout3D.GetAddressOf()));
+	return true;
+}
+
+bool BasicEffect::SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile) {
+	WCHAR csoFile[64];
+	ZeroMemory(csoFile, sizeof(csoFile));
+	GET_CSO_FILENAME(hlslFile, csoFile);
+	ComPtr<ID3DBlob> blob;
+	HR(CreateShaderFromFile(csoFile, hlslFile, "PS_2D", "ps_5_0", blob.GetAddressOf()));
+	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pPixelShader2D.GetAddressOf()));
+	return true;
+}
+
+bool BasicEffect::SetPSShader3D(ID3D11Device* device, const WCHAR* hlslFile) {
+	WCHAR csoFile[64];
+	ZeroMemory(csoFile, sizeof(csoFile));
+	GET_CSO_FILENAME(hlslFile, csoFile);
+	ComPtr<ID3DBlob> blob;
+	HR(CreateShaderFromFile(csoFile, hlslFile, "PS_3D", "ps_5_0", blob.GetAddressOf()));
+	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pPixelShader3D.GetAddressOf()));
+	return true;
+}
 
 bool BasicEffect::InitAll(ID3D11Device* device)
 {
@@ -133,31 +191,6 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 
 	if (!RenderStates::IsInit())
 		throw std::exception("RenderStates need to be initialized first!");
-
-	ComPtr<ID3DBlob> blob;
-
-	// 创建顶点着色器(2D)
-	HR(CreateShaderFromFile(L"HLSL\\Ex13_VS2D.cso", L"HLSL\\Ex13_VS2D.hlsl", "VS_2D", "vs_5_0", blob.GetAddressOf()));
-	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pVertexShader2D.GetAddressOf()));
-	// 创建顶点布局(2D)
-	HR(device->CreateInputLayout(VertexPosTex::inputLayout, ARRAYSIZE(VertexPosTex::inputLayout),
-		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexLayout2D.GetAddressOf()));
-
-	// 创建像素着色器(2D)
-	HR(CreateShaderFromFile(L"HLSL\\Ex13_PS2D.cso", L"HLSL\\Ex13_PS2D.hlsl", "PS_2D", "ps_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pPixelShader2D.GetAddressOf()));
-
-	// 创建顶点着色器(3D)
-	HR(CreateShaderFromFile(L"HLSL\\Ex13_VS3D.cso", L"HLSL\\Ex13_VS3D.hlsl", "VS_3D", "vs_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pVertexShader3D.GetAddressOf()));
-	// 创建顶点布局(3D)
-	HR(device->CreateInputLayout(VertexPosNormalTex::inputLayout, ARRAYSIZE(VertexPosNormalTex::inputLayout),
-		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexLayout3D.GetAddressOf()));
-
-	// 创建像素着色器(3D)
-	HR(CreateShaderFromFile(L"HLSL\\Ex13_PS3D.cso", L"HLSL\\Ex13_PS3D.hlsl", "PS_3D", "ps_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pPixelShader3D.GetAddressOf()));
-
 
 	pImpl->m_pCBuffers.assign({
 		&pImpl->m_CBDrawing,

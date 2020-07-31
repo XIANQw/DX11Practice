@@ -51,6 +51,10 @@ public:
 	// 初始化所需资源
 	bool InitAll(ID3D11Device* device);
 
+	bool SetVSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetPSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
 
 	//
 	// 渲染模式的变更
