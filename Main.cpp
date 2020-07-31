@@ -26,6 +26,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
 	
 	theApp->Run();
 	delete theApp;
+	/*Importer imp(L"D:\\brickData_1596014953");
+	if(!imp.Read()) 
+		return false;
+	imp.TransformData();*/
+
 	return 0;
 }
 

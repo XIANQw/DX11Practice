@@ -161,6 +161,7 @@
     <ClInclude Include="RenderStates.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TestSponza.h" />
+    <ClInclude Include="TestVLM.h" />
     <ClInclude Include="ThridParty\d3dUtil.h" />
     <ClInclude Include="ThridParty\DDSTextureLoader.h" />
     <ClInclude Include="ThridParty\DXTrace.h" />
@@ -192,6 +193,7 @@
     <ClCompile Include="ObjReader.cpp" />
     <ClCompile Include="RenderStates.cpp" />
     <ClCompile Include="TestSponza.cpp" />
+    <ClCompile Include="TestVLM.cpp" />
     <ClCompile Include="ThridParty\d3dUtil.cpp" />
     <ClCompile Include="ThridParty\DDSTextureLoader.cpp" />
     <ClCompile Include="ThridParty\DXTrace.cpp" />
