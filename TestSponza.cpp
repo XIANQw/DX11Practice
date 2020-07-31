@@ -21,6 +21,9 @@ bool TestSponza::Init() {
 
 	RenderStates::InitAll(m_pd3dDevice.Get());
 
+	if(!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\Ex13_VS3D.hlsl")) return false;
+	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\Ex13_PS3D.hlsl")) return false;;
+
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get()))
 		return false;
 
@@ -141,7 +144,6 @@ bool TestSponza::InitResource()
 	/*******************
 		初始化纹理
 	********************/
-	ComPtr<ID3D11ShaderResourceView> texture;
 	// 初始材质
 	Material material{};
 	material.ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
