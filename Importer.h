@@ -7,12 +7,11 @@
 #include <unordered_map>
 #include <algorithm>
 #include <filesystem>
-#include "Vertex.h"
-#include "light.h"
 #include <DirectXPackedVector.h>
 #include <DirectXMath.h>
 
-
+#include "Vertex.h"
+#include "light.h"
 
 /** Settings for the volumetric lightmap. */
 struct FVolumetricLightmapSettings
@@ -71,14 +70,23 @@ struct BrickData {
 	DirectX::XMINT3 IndirectionTexturePosition;
 	INT32 TreeDepth;
 	float AverageClosestGeometryDistance;
+	std::vector<DirectX::PackedVector::XMFLOAT3PK> AmbientVector;
+	std::vector<DirectX::PackedVector::XMCOLOR> SHCoefficients[6];
+	std::vector<DirectX::PackedVector::XMFLOAT3PK> LQLightColor;
+	std::vector<DirectX::PackedVector::XMCOLOR> LQLightDirection;
+	std::vector<DirectX::PackedVector::XMCOLOR> SkyBentNormal;
+	std::vector<UINT8> DirectionalLightShadowing;
+
+	BrickData() = default;
+};
+
+struct VLMBrickData {
 	Texture_t AmbientVector;
 	Texture_t SHCoefficients[6];
 	Texture_t LQLightColor;
 	Texture_t LQLightDirection;
 	Texture_t SkyBentNormal;
 	Texture_t DirectionalLightShadowing;
-
-	BrickData() = default;
 };
 
 struct VLMData {
@@ -86,7 +94,7 @@ struct VLMData {
 	Texture_t indirectionTexture;
 	
 	DirectX::XMINT3 brickDataDimension;
-	BrickData brickData;
+	VLMBrickData brickData;
 
 	void SetBrickDimension(const DirectX::XMINT3& dimension) {
 		brickDataDimension.x = dimension.x;
@@ -115,6 +123,7 @@ public:
 		float ClosestGeometryDistance;
 	};
 
+	VLMData vlmData;
 	std::vector<BrickData> importedData;
 	FVolumetricLightmapSettings VLMSetting;
 
@@ -122,8 +131,10 @@ public:
 	virtual ~Importer();
 
 	bool Read();
+	
+	template<class T>
+	void ReadArray(std::vector<T>& arr);
 
-	void ReadArray(Texture_t& arr);
 	bool Record(const wchar_t* filename);
 
 	void TransformData();
@@ -143,8 +154,10 @@ public:
 		const UINT8* srcPtr,
 		UINT8* destPtr
 	);
+	void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, const Texture_t& data);
 
 private:
 	std::ifstream* pIfStream;
+	ID3D11Texture3D* tex3D;
 };
 
