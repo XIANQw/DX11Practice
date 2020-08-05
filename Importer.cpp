@@ -114,8 +114,8 @@ void Importer::BuildIndirectionTexture(
 				for (int y = 0; y < NumBottomLevelBricks; y++) {
 					for (int x = 0; x < NumBottomLevelBricks; x++) {
 						const DirectX::XMINT3 IndirectionDestDataCoordinate = DirectX::XMINT3(brick.IndirectionTexturePosition.x + x, brick.IndirectionTexturePosition.y + y, brick.IndirectionTexturePosition.z + z);
-						const INT32 IndirectionDestDataIndex = (IndirectionDestDataCoordinate.z * vlmData.textureDimension.x * vlmData.textureDimension.y)
-							+ (IndirectionDestDataCoordinate.y * vlmData.textureDimension.x) + IndirectionDestDataCoordinate.x * texture.FormatSize;
+						const INT32 IndirectionDestDataIndex = ((IndirectionDestDataCoordinate.z * vlmData.textureDimension.x * vlmData.textureDimension.y)
+							+ (IndirectionDestDataCoordinate.y * vlmData.textureDimension.x) + IndirectionDestDataCoordinate.x) * texture.FormatSize;
 						texture.data[IndirectionDestDataIndex] = layoutPos.x;
 						texture.data[IndirectionDestDataIndex + 1] = layoutPos.y;
 						texture.data[IndirectionDestDataIndex + 2] = layoutPos.z;
