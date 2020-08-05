@@ -137,7 +137,9 @@ void TestVLM::DrawScene() {
 
 }
 
-void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, DXGI_FORMAT format, const std::vector<UINT8>& srcData, ID3D11Texture3D** outTexture) {
+void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, DXGI_FORMAT format, const std::vector<UINT8>& srcData, ID3D11ShaderResourceView** outSRV) {
+	ID3D11Texture3D* pTex3D;
+	
 	D3D11_TEXTURE3D_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(texDesc));
 	texDesc.Width = width;
@@ -153,18 +155,15 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 	subResData.pSysMem = srcData.data();
 	subResData.SysMemPitch = width * 4;
 	subResData.SysMemSlicePitch = width * height * 4;
-	HR(device->CreateTexture3D(&texDesc, &subResData, outTexture));
-}
+	HR(device->CreateTexture3D(&texDesc, &subResData, &pTex3D));
 
-
-void CreateResourceView(ID3D11Device* device, ID3D11DeviceContext* context, DXGI_FORMAT format, ID3D11Texture3D* tex3D, ID3D11ShaderResourceView** outResView) {
 	D3D11_SHADER_RESOURCE_VIEW_DESC tex3DViewDesc;
 	ZeroMemory(&tex3DViewDesc, sizeof(tex3DViewDesc));
 	tex3DViewDesc.Format = format;
 	tex3DViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
 	tex3DViewDesc.Texture3D.MipLevels = 1;
 	tex3DViewDesc.Texture3D.MostDetailedMip = 0;
-	HR(device->CreateShaderResourceView(tex3D, &tex3DViewDesc, outResView));
+	HR(device->CreateShaderResourceView(pTex3D, &tex3DViewDesc, outSRV));
 }
 
 bool TestVLM::InitVLM() {
@@ -185,15 +184,14 @@ bool TestVLM::InitVLM() {
 	m_BasicEffect.SetVLMWorldToUVScale(InvVolumeSize);
 	XMVECTOR VolumeMinVec = XMLoadFloat3(&m_Importer.VLMSetting.VolumeMin);
 	XMFLOAT3 VLMWorldToUVAdd;
-	XMStoreFloat3(&VLMWorldToUVAdd, XMVectorMultiply(-VolumeMinVec, InvVolumeSizeVec));
+	XMStoreFloat3(&VLMWorldToUVAdd, XMVectorMultiply(VolumeMinVec, InvVolumeSizeVec));
 	m_BasicEffect.SetVLMWorldToUVAdd(VLMWorldToUVAdd);
 
 
-	ComPtr<ID3D11Texture3D> pTex3D;
-	CreateTexture3D(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(), 16, 16, 16, vlmData.indirectionTexture.Format, vlmData.indirectionTexture.data, pTex3D.GetAddressOf());
-	ComPtr<ID3D11ShaderResourceView> resView;
-	CreateResourceView(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(), vlmData.indirectionTexture.Format, pTex3D.Get(), resView.GetAddressOf());
-	m_BasicEffect.SetTexture3D(resView.Get());
+
+	ComPtr<ID3D11ShaderResourceView> SRV;
+	CreateTexture3D(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(), 16, 16, 16, vlmData.indirectionTexture.Format, vlmData.indirectionTexture.data, SRV.GetAddressOf());
+	m_BasicEffect.SetTexture3D(SRV.Get());
 
 	CreateTexture3D(m_pd3dDevice.Get(),
 		m_pd3dImmediateContext.Get(),
@@ -202,12 +200,8 @@ bool TestVLM::InitVLM() {
 		vlmData.brickDataDimension.y,
 		vlmData.brickData.AmbientVector.Format,
 		vlmData.brickData.AmbientVector.data,
-		pTex3D.GetAddressOf());
-	CreateResourceView(m_pd3dDevice.Get(),
-		m_pd3dImmediateContext.Get(),
-		vlmData.brickData.AmbientVector.Format, pTex3D.Get(),
-		resView.GetAddressOf());
-	m_BasicEffect.SetTexture3D(resView.Get());
+		SRV.GetAddressOf());
+	m_BasicEffect.SetTexture3D(SRV.Get());
 
 	for (int i = 0; i < 6; i++) {
 		CreateTexture3D(m_pd3dDevice.Get(),
@@ -217,12 +211,8 @@ bool TestVLM::InitVLM() {
 			vlmData.brickDataDimension.y,
 			vlmData.brickData.SHCoefficients[i].Format,
 			vlmData.brickData.SHCoefficients[i].data,
-			pTex3D.GetAddressOf());
-		CreateResourceView(m_pd3dDevice.Get(),
-			m_pd3dImmediateContext.Get(),
-			vlmData.brickData.SHCoefficients[i].Format, pTex3D.Get(),
-			resView.GetAddressOf());
-		m_BasicEffect.SetTexture3D(resView.Get());
+			SRV.GetAddressOf());
+		m_BasicEffect.SetTexture3D(SRV.Get());
 	}
 
 	return true;
