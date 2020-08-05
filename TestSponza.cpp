@@ -59,7 +59,6 @@ void TestSponza::UpdateScene(float dt)
 	m_KeyboardTracker.Update(keyState);
 
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
-	auto cam3rd = std::dynamic_pointer_cast<TPSCamera>(m_pCamera);
 
 	if (m_CameraMode == CameraMode::Free) {
 		// FPS mode
@@ -149,12 +148,8 @@ bool TestSponza::InitResource()
 	material.ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
 	material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	material.specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 16.0f);
-
-	// 阴影材质，形成阴影效果
 	m_Material = material;
-	m_ShadowMat.ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-	m_ShadowMat.diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
-	m_ShadowMat.specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 16.0f);
+
 
 	// 读取sponza
 	m_ObjReader.Read(L"Model\\SponzaUV.mbo", L"Model\\SponzaUV.obj");
@@ -177,7 +172,7 @@ bool TestSponza::InitResource()
 	auto camera = std::shared_ptr<FPSCamera>(new FPSCamera);
 	m_pCamera = camera;
 	camera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
-	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 1000.0f);
+	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 10000.0f);
 	camera->SetPosition(0.0f, 6.0f, -10.0f);
 
 	/**********************************************

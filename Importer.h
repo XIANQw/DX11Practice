@@ -10,6 +10,7 @@
 #include <DirectXPackedVector.h>
 #include <DirectXMath.h>
 
+#include "ThridParty/DXTrace.h"
 #include "Vertex.h"
 #include "light.h"
 
@@ -20,8 +21,8 @@ struct FVolumetricLightmapSettings
 	DirectX::XMINT3 TopLevelGridSize;
 
 	/** World space size of the volumetric lightmap. */
-	DirectX::XMINT3 VolumeMin;
-	DirectX::XMINT3 VolumeSize;
+	DirectX::XMFLOAT3 VolumeMin;
+	DirectX::XMFLOAT3 VolumeSize;
 
 	/**
 	 * Size of a brick of unique lighting data.  Must be a power of 2.
@@ -59,7 +60,7 @@ struct FVolumetricLightmapSettings
 struct Texture_t {
 	std::vector<UINT8> data;
 	size_t FormatSize;
-
+	DXGI_FORMAT Format;
 	void Resize(size_t size) {
 		data.resize(size * FormatSize);
 	}
@@ -109,12 +110,6 @@ class Importer
 {
 public:
 
-	struct FGuid {
-		INT32 A,B,C,D;
-		FGuid() = default;
-		FGuid(INT32 A, INT32 B, INT32 C, INT32 D): A(A), B(B), C(C), D(D){}
-	};
-
 	/** Data used by the editor import process and not uploaded into textures. */
 	struct FIrradianceVoxelImportProcessingData
 	{
@@ -127,7 +122,7 @@ public:
 	std::vector<BrickData> importedData;
 	FVolumetricLightmapSettings VLMSetting;
 
-	Importer(const wchar_t* filename);
+	Importer() = default;
 	virtual ~Importer();
 
 	bool Read();
@@ -138,7 +133,8 @@ public:
 	bool Record(const wchar_t* filename);
 
 	void TransformData();
-	void initVLMSetting();
+	bool ImportFile(const wchar_t* filename);
+	void InitVLMSetting();
 
 	void BuildIndirectionTexture(
 		const std::vector<std::vector<const BrickData*>>& BricksByDepth,
@@ -154,7 +150,7 @@ public:
 		const UINT8* srcPtr,
 		UINT8* destPtr
 	);
-	void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, const Texture_t& data);
+
 
 private:
 	std::ifstream* pIfStream;

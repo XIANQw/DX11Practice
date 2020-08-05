@@ -20,7 +20,9 @@ bool Ex13Shadow::Init() {
 	if (!D3DApp::Init()) return false;
 
 	RenderStates::InitAll(m_pd3dDevice.Get());
-
+	
+	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\Ex13_VS3D.hlsl")) return false;
+	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\Ex13_PS3D.hlsl")) return false;;
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get()))
 		return false;
 
@@ -122,7 +124,7 @@ void Ex13Shadow::UpdateScene(float dt)
 		woodCrateTransform.SetPosition(adjustPos);
 
 		cam3rd->SetTarget(woodCrateTransform.GetPosition());
-		// 摄像机绕目标旋转
+		woodCrateTransform.RotateAxis(XMFLOAT3(0.0f, 1.0f, 0.0f), mouseState.x * dt * 2.5f);
 		cam3rd->RotateX(mouseState.y * dt * 2.5f);
 		cam3rd->RotateY(mouseState.x * dt * 2.5f);
 		cam3rd->Approach(mouseState.scrollWheelValue / 120 * 1.0f);
@@ -212,6 +214,7 @@ void Ex13Shadow::DrawScene()
 	1. 绘制物体
 	*************************/
 	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
+	m_BasicEffect.SetTextureUsed(true);
 	for (auto& wall : m_Walls)
 		wall.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	m_Floor.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
@@ -222,6 +225,7 @@ void Ex13Shadow::DrawScene()
 	*************************/
 	m_WoodCrate.SetMaterial(m_ShadowMat);
 	m_BasicEffect.SetShadowState(true);	// 反射关闭，阴影开启
+	m_BasicEffect.SetTextureUsed(false);
 	m_BasicEffect.SetRenderNoDoubleBlend(m_pd3dImmediateContext.Get(), 0);
 	m_WoodCrate.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 

@@ -25,10 +25,12 @@ public:
 
 protected:
 	bool InitResource();
+	bool InitVLM();
 
+	GameObject m_Sponza;
 	GameObject m_WoodCrate;
 	GameObject m_Ground;
-	GameObject m_House;
+	GameObject m_Box;
 	GameObject m_Floor;
 	GameObject m_Sphere;
 	std::vector<GameObject> m_Walls;
@@ -37,12 +39,14 @@ protected:
 	Material m_Material;
 
 	BasicEffect m_BasicEffect;
-	
-	ComPtr<VLMData> m_pVLMData ;
 
 	std::shared_ptr<Camera> m_pCamera;
 	CameraMode m_CameraMode;
-
+	bool m_IsWireframeMode;
 	ObjReader m_ObjReader;
+	Importer m_Importer;
+	
+	DirectX::XMVECTORF32 m_BackGroundColor;
+	INT32 m_Speed;
 };
 

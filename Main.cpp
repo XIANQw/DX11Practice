@@ -1,10 +1,10 @@
 //#include "Ex7Light.h"
 //#include "Ex9Tex.h"
 //#include "Ex10Camera.h"
-//#include "Ex13Shadow.h"
+#include "Ex13Shadow.h"
 //#include "Ex19ReadObj.h"
 #include "TestSponza.h"
-#include "Importer.h"
+#include "TestVLM.h"
 
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
@@ -19,17 +19,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	D3DApp * theApp = new TestSponza(hInstance);
+	D3DApp * theApp = new TestVLM(hInstance);
 
 	if( !theApp->Init() )
 		return 0;
-	
 	theApp->Run();
 	delete theApp;
-	/*Importer imp(L"D:\\brickData_1596014953");
-	if(!imp.Read()) 
-		return false;
-	imp.TransformData();*/
 
 	return 0;
 }

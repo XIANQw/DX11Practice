@@ -3,21 +3,17 @@
 
 using namespace std;
 
-Importer::Importer(const wchar_t* filename) {
-	pIfStream = new std::ifstream(filename, std::ios::in | std::ios::binary);
-}
-
 Importer::~Importer() {
 	delete pIfStream;
 }
-
 
 bool Importer::Read() {
 	if (!pIfStream->is_open()) {
 		std::cout << "open ifstream failed";
 		return false;
 	}
-
+	pIfStream->read(reinterpret_cast<char*>(&VLMSetting.VolumeMin), sizeof(float)*3);
+	pIfStream->read(reinterpret_cast<char*>(&VLMSetting.VolumeSize), sizeof(float)*3);
 	while (!pIfStream->eof())
 	{
 		INT32 numBricks;
@@ -37,8 +33,8 @@ bool Importer::Read() {
 			ReadArray(refData.LQLightDirection);
 			ReadArray(refData.SkyBentNormal);
 			ReadArray(refData.DirectionalLightShadowing);
-			//ReadArray(refData.TaskVoxelImportProcessingData);
 		}
+
 	}
 	if (!importedData.empty() && importedData.back().AmbientVector.empty()) importedData.pop_back();
 	return true;
@@ -58,14 +54,14 @@ void Importer::ReadArray(vector<T>& arr) {
 bool Importer::Record(const wchar_t* filename) {
 	std::ofstream fout(filename);
 	if (!fout.is_open()) return false;
-	for (int i = 0; i < importedData.size();i++) {
+	for (int i = 0; i < importedData.size(); i++) {
 		const auto& brick = importedData[i];
 		fout << "Brick " << i << std::endl;
 		fout << "TexturePosition " << brick.IndirectionTexturePosition.x << "," << brick.IndirectionTexturePosition.y << "," << brick.IndirectionTexturePosition.z << std::endl;
 		fout << "Depth " << brick.TreeDepth << std::endl;
 		fout << "Distance " << brick.AverageClosestGeometryDistance << std::endl;
 		fout << "SH Coefs" << std::endl;
-		for (const auto & arr: brick.SHCoefficients) {
+		for (const auto& arr : brick.SHCoefficients) {
 			for (int i = 0; i < arr.size(); i++) {
 				fout << (int)arr[i].b << "," << (int)arr[i].g << "," << (int)arr[i].r << "," << (int)arr[i].a << std::endl;
 			}
@@ -75,11 +71,10 @@ bool Importer::Record(const wchar_t* filename) {
 	return true;
 }
 
-void Importer::initVLMSetting() {
+void Importer::InitVLMSetting() {
 	VLMSetting.BrickSize = 4;
 	VLMSetting.MaxRefinementLevels = 3;
-	VLMSetting.VolumeSize = DirectX::XMINT3(12800, 12800, 12800);
-	VLMSetting.TopLevelGridSize = DirectX::XMINT3(1,1,1);
+	VLMSetting.TopLevelGridSize = DirectX::XMINT3(1, 1, 1);
 }
 
 const DirectX::XMINT3 computePositionByLayout(int index, DirectX::XMINT3 layout) {
@@ -105,11 +100,11 @@ void Importer::BuildIndirectionTexture(
 	for (int i = 0; i < VLMSetting.MaxRefinementLevels; i++) {
 		for (int j = 0; j < BricksByDepth[i].size(); j++) {
 			const BrickData& brick = *BricksByDepth[i][j];
-			
+
 			DirectX::XMINT3 layoutPos = computePositionByLayout(BrickIndex, Layout);
-			
-			assert(layoutPos.x < maxLayoutDimension && layoutPos.y < maxLayoutDimension && layoutPos.z < maxLayoutDimension);
-			
+
+			assert(layoutPos.x < maxLayoutDimension&& layoutPos.y < maxLayoutDimension&& layoutPos.z < maxLayoutDimension);
+
 			const INT32 DetailCellsPerCurrentLevelBrick = pow(VLMSetting.BrickSize, VLMSetting.MaxRefinementLevels - brick.TreeDepth);
 			const INT32 NumBottomLevelBricks = DetailCellsPerCurrentLevelBrick / VLMSetting.BrickSize;
 			assert(NumBottomLevelBricks < maxLayoutDimension);
@@ -118,13 +113,13 @@ void Importer::BuildIndirectionTexture(
 			for (int z = 0; z < NumBottomLevelBricks; z++) {
 				for (int y = 0; y < NumBottomLevelBricks; y++) {
 					for (int x = 0; x < NumBottomLevelBricks; x++) {
-						const DirectX::XMINT3 IndirectionDestDataCoordinate = DirectX::XMINT3(brick.IndirectionTexturePosition.x + x , brick.IndirectionTexturePosition.y + y, brick.IndirectionTexturePosition.z + z);
+						const DirectX::XMINT3 IndirectionDestDataCoordinate = DirectX::XMINT3(brick.IndirectionTexturePosition.x + x, brick.IndirectionTexturePosition.y + y, brick.IndirectionTexturePosition.z + z);
 						const INT32 IndirectionDestDataIndex = (IndirectionDestDataCoordinate.z * vlmData.textureDimension.x * vlmData.textureDimension.y)
 							+ (IndirectionDestDataCoordinate.y * vlmData.textureDimension.x) + IndirectionDestDataCoordinate.x * texture.FormatSize;
 						texture.data[IndirectionDestDataIndex] = layoutPos.x;
-						texture.data[IndirectionDestDataIndex+1] = layoutPos.y;
-						texture.data[IndirectionDestDataIndex+2] = layoutPos.z;
-						texture.data[IndirectionDestDataIndex+3] = NumBottomLevelBricks;
+						texture.data[IndirectionDestDataIndex + 1] = layoutPos.y;
+						texture.data[IndirectionDestDataIndex + 2] = layoutPos.z;
+						texture.data[IndirectionDestDataIndex + 3] = NumBottomLevelBricks;
 					}
 				}
 			}
@@ -153,15 +148,39 @@ void Importer::CopyBrickToTexture(
 	}
 }
 
+bool Importer::ImportFile(const wchar_t* filename) {
+	pIfStream = new std::ifstream(filename, std::ios::in | std::ios::binary);
+	if (!pIfStream->is_open()) return false;
+	return true;
+}
+
+
+void ConvertB8G8R8A8ToR8G8B8A8(Texture_t& tex) {
+	if ((tex.Format != DXGI_FORMAT_B8G8R8A8_UNORM) && (tex.FormatSize != 4)) return;
+	for (int i = 0; i < tex.data.size() / 4; i++) {
+		UINT8 r, g, b, a;
+		b = tex.data[i * 4 + 0];
+		g = tex.data[i * 4 + 1];
+		r = tex.data[i * 4 + 2];
+		a = tex.data[i * 4 + 3];
+
+		tex.data[i * 4 + 0] = r;
+		tex.data[i * 4 + 1] = g;
+		tex.data[i * 4 + 2] = b;
+		tex.data[i * 4 + 3] = a;
+	}
+	tex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+}
+
 
 void Importer::TransformData() {
-	
-	initVLMSetting();
+
+	InitVLMSetting();
 	vector<vector<const BrickData*>> BricksByDepth(3);
-	for (const auto & tmp : importedData) {
+	for (const auto& tmp : importedData) {
 		BricksByDepth[tmp.TreeDepth].push_back(&tmp);
 	}
-	
+
 	INT32 LayoutAllocator = importedData.size();
 	const INT32 MaxBricksInLayoutOneDim = 1 << 8;
 	DirectX::XMINT3 BrickLayoutDimensions;
@@ -176,6 +195,7 @@ void Importer::TransformData() {
 
 	auto& inTexture = vlmData.indirectionTexture;
 	inTexture.FormatSize = sizeof(DirectX::PackedVector::XMCOLOR);
+	inTexture.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	vlmData.textureDimension.x = VLMSetting.TopLevelGridSize.x * IndirectionCellsPerTopLevelCell;
 	vlmData.textureDimension.y = VLMSetting.TopLevelGridSize.y * IndirectionCellsPerTopLevelCell;
 	vlmData.textureDimension.z = VLMSetting.TopLevelGridSize.z * IndirectionCellsPerTopLevelCell;
@@ -189,17 +209,22 @@ void Importer::TransformData() {
 	vlmData.brickDataDimension.z = BrickLayoutDimensions.z * PaddedBrickSize;
 	const INT32 TotalBrickData = vlmData.brickDataDimension.x * vlmData.brickDataDimension.y * vlmData.brickDataDimension.z;
 	vlmData.brickData.AmbientVector.FormatSize = sizeof(DirectX::PackedVector::XMFLOAT3PK);
+	vlmData.brickData.AmbientVector.Format = DXGI_FORMAT_R11G11B10_FLOAT;
 	vlmData.brickData.AmbientVector.Resize(TotalBrickData);
 	for (auto& SHCoef : vlmData.brickData.SHCoefficients) {
 		SHCoef.FormatSize = sizeof(DirectX::PackedVector::XMCOLOR);
+		SHCoef.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 		SHCoef.Resize(TotalBrickData);
 	}
 	vlmData.brickData.DirectionalLightShadowing.FormatSize = sizeof(UINT8);
+	vlmData.brickData.DirectionalLightShadowing.Format = DXGI_FORMAT_A8_UNORM;
 	vlmData.brickData.DirectionalLightShadowing.Resize(TotalBrickData);
 
 	vlmData.brickData.LQLightColor.FormatSize = sizeof(DirectX::PackedVector::XMFLOAT3PK);
+	vlmData.brickData.LQLightColor.Format = DXGI_FORMAT_R11G11B10_FLOAT;
 	vlmData.brickData.LQLightColor.Resize(TotalBrickData);
 	vlmData.brickData.LQLightDirection.FormatSize = sizeof(DirectX::PackedVector::XMCOLOR);
+	vlmData.brickData.LQLightDirection.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	vlmData.brickData.LQLightDirection.Resize(TotalBrickData);
 
 	INT32 BrickIndex = 0;
@@ -212,8 +237,8 @@ void Importer::TransformData() {
 				vlmData.brickData.AmbientVector.FormatSize,
 				vlmData.brickDataDimension,
 				layoutPos,
-				(UINT8*)(&(brick.AmbientVector[0])),
-				(UINT8*)(&(vlmData.brickData.AmbientVector.data[0]))
+				(UINT8*)(brick.AmbientVector.data()),
+				(UINT8*)(vlmData.brickData.AmbientVector.data.data())
 			);
 
 			for (INT32 i = 0; i < 6; i++) {
@@ -222,57 +247,44 @@ void Importer::TransformData() {
 					vlmData.brickData.SHCoefficients[i].FormatSize,
 					vlmData.brickDataDimension,
 					layoutPos,
-					(UINT8*)(&(SHCoef[0])),
-					(UINT8*)(&(vlmData.brickData.SHCoefficients[i].data[0]))
+					(UINT8*)(SHCoef.data()),
+					(UINT8*)(vlmData.brickData.SHCoefficients[i].data.data())
 				);
 			}
 			CopyBrickToTexture(
 				vlmData.brickData.LQLightColor.FormatSize,
 				vlmData.brickDataDimension,
 				layoutPos,
-				(UINT8*)(&(brick.LQLightColor[0])),
-				(UINT8*)(&(vlmData.brickData.LQLightColor.data[0]))
+				(UINT8*)(brick.LQLightColor.data()),
+				(UINT8*)(vlmData.brickData.LQLightColor.data.data())
 			);
 			CopyBrickToTexture(
 				vlmData.brickData.LQLightDirection.FormatSize,
 				vlmData.brickDataDimension,
 				layoutPos,
-				(UINT8*)(&(brick.LQLightDirection[0])),
-				(UINT8*)(&(vlmData.brickData.LQLightDirection.data[0]))
+				(UINT8*)(brick.LQLightDirection.data()),
+				(UINT8*)(vlmData.brickData.LQLightDirection.data.data())
 			);
 			CopyBrickToTexture(
 				vlmData.brickData.DirectionalLightShadowing.FormatSize,
 				vlmData.brickDataDimension,
 				layoutPos,
-				(UINT8*)(&(brick.DirectionalLightShadowing[0])),
-				(UINT8*)(&(vlmData.brickData.DirectionalLightShadowing.data[0]))
+				(UINT8*)(brick.DirectionalLightShadowing.data()),
+				(UINT8*)(vlmData.brickData.DirectionalLightShadowing.data.data())
 			);
 		}
 		BrickIndex += BricksByDepth[depth].size();
 	}
+
+	ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.SkyBentNormal);
+	for (int i = 0; i < 6; i++)
+		ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.SHCoefficients[i]);
+	ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.LQLightDirection);
 }
 
 
-void Importer::CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, const Texture_t & data) {
-	D3D11_TEXTURE3D_DESC texDesc;
-	ZeroMemory(&texDesc, sizeof(texDesc));
-	texDesc.Width = width;
-	texDesc.Height = height;
-	texDesc.Depth = depth;
-	texDesc.MipLevels = 1;
-	texDesc.Format = DXGI_FORMAT_R8G8B8A8_UINT;
-	texDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	texDesc.CPUAccessFlags = 0;
-	texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	device->CreateTexture3D(&texDesc, nullptr, &tex3D);
-	D3D11_MAPPED_SUBRESOURCE mappedData;
-	context->Map(tex3D, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
-	memcpy_s(tex3D, 
-		vlmData.brickData.AmbientVector.data.size() * vlmData.brickData.AmbientVector.FormatSize, 
-		&vlmData.brickData.AmbientVector.data[0], 
-		vlmData.brickData.AmbientVector.data.size() * vlmData.brickData.AmbientVector.FormatSize);
-	context->Unmap(tex3D, 0);
-}
+
+
 
 
 

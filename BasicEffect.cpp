@@ -55,6 +55,17 @@ public:
 		PointLight pointLight[BasicEffect::maxLights];
 		SpotLight spotLight[BasicEffect::maxLights];
 	};
+	
+	struct CBVLMParams {
+		DirectX::XMFLOAT3 VLMWorldToUVScale;
+		float VLMBrickSize;
+		DirectX::XMFLOAT3 VLMIndirectionTextureSize;
+		float pad1;
+		DirectX::XMFLOAT3 VLMWorldToUVAdd;
+		float pad2;
+		DirectX::XMFLOAT3 VLMBrickTexelSize;
+		float pad3;
+	};
 
 public:
 	// 必须显式指定
@@ -68,6 +79,8 @@ public:
 	CBufferObject<2, CBChangesEveryFrame>   m_CBFrame;		    // 每帧绘制的常量缓冲区
 	CBufferObject<3, CBChangesOnResize>     m_CBOnResize;		// 每次窗口大小变更的常量缓冲区
 	CBufferObject<4, CBChangesRarely>		m_CBRarely;		    // 几乎不会变更的常量缓冲区
+	CBufferObject<5, CBVLMParams>			m_CBVLMParams;
+
 	BOOL m_IsDirty;												// 是否有值变更
 	std::vector<CBufferBase*> m_pCBuffers;					    // 统一管理上面所有的常量缓冲区
 
@@ -81,6 +94,7 @@ public:
 	ComPtr<ID3D11InputLayout>  m_pVertexLayout3D;				// 用于3D的顶点输入布局
 
 	ComPtr<ID3D11ShaderResourceView> m_pTexture;				// 用于绘制的纹理
+	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pTexture3DArray;				
 
 };
 
@@ -197,7 +211,8 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 		&pImpl->m_CBFrame,
 		&pImpl->m_CBStates,
 		&pImpl->m_CBOnResize,
-		&pImpl->m_CBRarely });
+		&pImpl->m_CBRarely,
+		&pImpl->m_CBVLMParams});
 
 	// 创建常量缓冲区
 	for (auto& pBuffer : pImpl->m_pCBuffers)
@@ -383,7 +398,7 @@ void BasicEffect::Set2DRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->PSSetShader(pImpl->m_pPixelShader2D.Get(), nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
-	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
+deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
 }
 
 
@@ -479,6 +494,15 @@ void BasicEffect::SetTexture(ID3D11ShaderResourceView* texture)
 	pImpl->m_pTexture = texture;
 }
 
+void BasicEffect::SetTexture2D(ID3D11ShaderResourceView* texture) {
+	SetTexture(texture);
+}
+
+void BasicEffect::SetTexture3D(ID3D11ShaderResourceView* texture){
+	pImpl->m_pTexture3DArray.emplace_back(texture);
+}
+
+
 void XM_CALLCONV BasicEffect::SetEyePos(FXMVECTOR eyePos)
 {
 	auto& cBuffer = pImpl->m_CBFrame;
@@ -508,6 +532,41 @@ void BasicEffect::SetTextureUsed(bool isOn)
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
+void BasicEffect::SetVLMWorldToUVScale(DirectX::XMFLOAT3 VLMWorldToUVScale) {
+	auto& cBuffer = pImpl->m_CBVLMParams;
+	cBuffer.data.VLMWorldToUVScale.x = VLMWorldToUVScale.x;
+	cBuffer.data.VLMWorldToUVScale.y = VLMWorldToUVScale.y;
+	cBuffer.data.VLMWorldToUVScale.z = VLMWorldToUVScale.z;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+void BasicEffect::SetVLMWorldToUVAdd(DirectX::XMFLOAT3 VLMWorldToUVAdd) {
+	auto& cBuffer = pImpl->m_CBVLMParams;
+	cBuffer.data.VLMWorldToUVAdd.x = VLMWorldToUVAdd.x;
+	cBuffer.data.VLMWorldToUVAdd.y = VLMWorldToUVAdd.y;
+	cBuffer.data.VLMWorldToUVAdd.z = VLMWorldToUVAdd.z;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+void BasicEffect::SetVLMIndirectionTextureSize(DirectX::XMFLOAT3 indirectionTextureSize) {
+	auto& cBuffer = pImpl->m_CBVLMParams;
+	cBuffer.data.VLMIndirectionTextureSize.x = indirectionTextureSize.x;
+	cBuffer.data.VLMIndirectionTextureSize.y = indirectionTextureSize.y;
+	cBuffer.data.VLMIndirectionTextureSize.z = indirectionTextureSize.z;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+void BasicEffect::SetVLMBrickSize(float brickSize) {
+	auto& cBuffer = pImpl->m_CBVLMParams;
+	cBuffer.data.VLMBrickSize = brickSize;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+void BasicEffect::SetVLMBrickTexelSize(DirectX::XMFLOAT3 VLMBrickTexelSize) {
+	auto& cBuffer = pImpl->m_CBVLMParams;
+	cBuffer.data.VLMBrickTexelSize.x = VLMBrickTexelSize.x;
+	cBuffer.data.VLMBrickTexelSize.y = VLMBrickTexelSize.y;
+	cBuffer.data.VLMBrickTexelSize.z = VLMBrickTexelSize.z;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+
 /**********************************
  应用缓冲区，将所有缓冲区绑定到管道上
 ***********************************/
@@ -534,6 +593,9 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 		这里可以放多个贴图，比如光照贴图和纹理贴图
 	*******************************************/
 	deviceContext->PSSetShaderResources(0, 1, pImpl->m_pTexture.GetAddressOf());
+	for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
+		deviceContext->PSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
+	}
 
 	if (pImpl->m_IsDirty)
 	{

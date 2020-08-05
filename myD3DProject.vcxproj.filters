@@ -224,11 +224,14 @@
     <None Include="HLSL\Ex13_CBuffers.hlsli">
       <Filter>shader\Ex13</Filter>
     </None>
-    <None Include="HLSL\LightHelper.hlsli">
-      <Filter>shader\Ex10</Filter>
-    </None>
     <None Include="HLSL\CBuffer.hlsli">
       <Filter>shader\Ex10</Filter>
+    </None>
+    <None Include="HLSL\TestVLM.hlsli">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="HLSL\LightHelper.hlsli">
+      <Filter>shader\Ex13</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -261,6 +264,12 @@
     </FxCompile>
     <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
       <Filter>shader\Ex10</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\TestVLM_PS3D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\TestVLM_VS3D.hlsl">
+      <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -171,3 +171,4 @@ void ComputeSpotLight(Material mat, SpotLight L, float3 pos, float3 normal, floa
     diffuse *= att;
     spec *= att;
 }
+
