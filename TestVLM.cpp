@@ -185,7 +185,7 @@ bool TestVLM::InitVLM() {
 	m_BasicEffect.SetVLMWorldToUVScale(InvVolumeSize);
 	XMVECTOR VolumeMinVec = XMLoadFloat3(&m_Importer.VLMSetting.VolumeMin);
 	XMFLOAT3 VLMWorldToUVAdd;
-	XMStoreFloat3(&VLMWorldToUVAdd, XMVectorMultiply(VolumeMinVec, InvVolumeSizeVec));
+	XMStoreFloat3(&VLMWorldToUVAdd, XMVectorMultiply(-VolumeMinVec, InvVolumeSizeVec));
 	m_BasicEffect.SetVLMWorldToUVAdd(VLMWorldToUVAdd);
 
 
