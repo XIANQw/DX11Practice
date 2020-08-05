@@ -176,7 +176,7 @@ bool TestVLM::InitVLM() {
 	const VLMData& vlmData = m_Importer.vlmData;
 	m_BasicEffect.SetVLMBrickSize(m_Importer.VLMSetting.BrickSize);
 	m_BasicEffect.SetVLMIndirectionTextureSize(XMFLOAT3(vlmData.textureDimension.x, vlmData.textureDimension.y, vlmData.textureDimension.z));
-	m_BasicEffect.SetVLMBrickTexelSize(XMFLOAT3(vlmData.brickDataDimension.x, vlmData.brickDataDimension.y, vlmData.brickDataDimension.z));
+	m_BasicEffect.SetVLMBrickTexelSize(XMFLOAT3(1.0f/vlmData.brickDataDimension.x, 1.0f/vlmData.brickDataDimension.y, 1.0f/vlmData.brickDataDimension.z));
 	XMVECTOR VolumeSizeVec = XMLoadFloat3(&m_Importer.VLMSetting.VolumeSize);
 	XMVECTOR InvVolumeSizeVec = XMVectorReciprocal(VolumeSizeVec);
 	XMFLOAT3 InvVolumeSize;
