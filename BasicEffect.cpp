@@ -228,6 +228,7 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 	D3D11SetDebugObjectName(pImpl->m_pCBuffers[2]->cBuffer.Get(), "CBFrame");
 	D3D11SetDebugObjectName(pImpl->m_pCBuffers[3]->cBuffer.Get(), "CBOnResize");
 	D3D11SetDebugObjectName(pImpl->m_pCBuffers[4]->cBuffer.Get(), "CBRarely");
+	D3D11SetDebugObjectName(pImpl->m_pCBuffers[5]->cBuffer.Get(), "CBVLMParams");
 	D3D11SetDebugObjectName(pImpl->m_pVertexShader2D.Get(), "Basic_VS_2D");
 	D3D11SetDebugObjectName(pImpl->m_pVertexShader3D.Get(), "Basic_VS_3D");
 	D3D11SetDebugObjectName(pImpl->m_pPixelShader2D.Get(), "Basic_PS_2D");
@@ -584,6 +585,7 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 	pCBuffers[1]->BindPS(deviceContext);
 	pCBuffers[2]->BindPS(deviceContext);
 	pCBuffers[4]->BindPS(deviceContext);
+	pCBuffers[5]->BindPS(deviceContext);
 
 	/******************************************
 			绑定贴图到管线
