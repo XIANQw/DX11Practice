@@ -94,7 +94,8 @@ public:
 	ComPtr<ID3D11InputLayout>  m_pVertexLayout3D;				// 用于3D的顶点输入布局
 
 	ComPtr<ID3D11ShaderResourceView> m_pTexture;				// 用于绘制的纹理
-	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pTexture3DArray;				
+	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pTexture3DArray;			
+	std::vector<ComPtr<ID3D11UnorderedAccessView>> m_pRWTexture3DArray;
 
 };
 
@@ -501,6 +502,10 @@ void BasicEffect::SetTexture2D(ID3D11ShaderResourceView* texture) {
 
 void BasicEffect::SetTexture3D(ID3D11ShaderResourceView* texture){
 	pImpl->m_pTexture3DArray.emplace_back(texture);
+}
+
+void BasicEffect::SetRWTexture3D(ID3D11UnorderedAccessView* texture) {
+	pImpl->m_pRWTexture3DArray.emplace_back(texture);
 }
 
 

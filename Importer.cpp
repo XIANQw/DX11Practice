@@ -195,7 +195,7 @@ void Importer::TransformData() {
 
 	auto& inTexture = vlmData.indirectionTexture;
 	inTexture.FormatSize = sizeof(DirectX::PackedVector::XMCOLOR);
-	inTexture.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	inTexture.Format = DXGI_FORMAT_R8G8B8A8_UINT;
 	vlmData.textureDimension.x = VLMSetting.TopLevelGridSize.x * IndirectionCellsPerTopLevelCell;
 	vlmData.textureDimension.y = VLMSetting.TopLevelGridSize.y * IndirectionCellsPerTopLevelCell;
 	vlmData.textureDimension.z = VLMSetting.TopLevelGridSize.z * IndirectionCellsPerTopLevelCell;

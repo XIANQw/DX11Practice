@@ -1,7 +1,9 @@
 #include "LightHelper.hlsli"
 
 Texture2D g_Tex2D: register(t0);
-Texture3D<float4> g_IndirectionTexture: register(t1);
+
+Texture3D<uint4> g_IndirectionTexture: register(t1);
+
 Texture3D g_AmbientVector: register(t2);
 Texture3D g_SHCoef0: register(t3);
 Texture3D g_SHCoef1: register(t4);

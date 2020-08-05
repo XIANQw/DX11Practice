@@ -5,7 +5,7 @@ float3 ComputeVolumetricLightmapBrickTextureUVs(float3 WorldPosition)
     // Compute indirection UVs from world position
     float3 IndirectionVolumeUVs = clamp(WorldPosition * VLMWorldToUVScale + VLMWorldToUVAdd, 0.0f, .99f);
     float3 IndirectionTextureTexelCoordinate = IndirectionVolumeUVs * VLMIndirectionTextureSize;
-    float4 BrickOffsetAndSize = g_IndirectionTexture.Sample(g_Sam, IndirectionTextureTexelCoordinate);
+    float4 BrickOffsetAndSize = g_IndirectionTexture.Load(int4(IndirectionTextureTexelCoordinate,0.0f));
 
     float PaddedBrickSize = VLMBrickSize + 1;
     return (BrickOffsetAndSize.xyz * PaddedBrickSize + frac(IndirectionTextureTexelCoordinate / BrickOffsetAndSize.w) * VLMBrickSize + .5f) * VLMBrickTexelSize;
@@ -21,12 +21,14 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
         clip(texColor.a - 0.1f);
     }
 
+    // Compute indirection UVs from world position
     float3 IndirectionVolumeUVs = clamp(pIn.PosW * VLMWorldToUVScale + VLMWorldToUVAdd, 0.0f, .99f);
     float3 IndirectionTextureTexelCoordinate = IndirectionVolumeUVs * VLMIndirectionTextureSize;
-    float4 BrickOffsetAndSize = g_IndirectionTexture.Sample(g_Sam, IndirectionTextureTexelCoordinate);
-    float4 flagColor = BrickOffsetAndSize;
+    float4 BrickOffsetAndSize = g_IndirectionTexture.Load(int4(IndirectionTextureTexelCoordinate, 0.0f));
 
-    float3 brickTextureUVs = ComputeVolumetricLightmapBrickTextureUVs(pIn.PosW);
+    float PaddedBrickSize = VLMBrickSize + 1;
+    float3 BrickUV = (BrickOffsetAndSize.xyz * PaddedBrickSize + frac(IndirectionTextureTexelCoordinate / BrickOffsetAndSize.w) * VLMBrickSize + .5f) * VLMBrickTexelSize;
+ 
 
     // 标准化法向量
     pIn.NormalW = normalize(pIn.NormalW);
@@ -77,5 +79,5 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 
     float4 litColor = texColor * (ambient + diffuse) + spec;
     litColor.a = texColor.a * g_Material.Diffuse.a;
-    return flagColor;
+    return float4(BrickUV, 0.0f);
 }
