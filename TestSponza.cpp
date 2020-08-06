@@ -197,27 +197,27 @@ bool TestSponza::InitResource()
 	dirLight.direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	m_BasicEffect.SetDirLight(0, dirLight);
 	//// 灯光，range会阴影光圈的范围
-	PointLight pointLight(XMFLOAT3(0.0f, 10.0f, 0.0f));
-	PointLight pointLight1(XMFLOAT3(15.0f, 10.0f, 0.0f));
-	PointLight pointLight2(XMFLOAT3(-15.0f, 10.0f, 0.0f));
-	pointLight.range = pointLight1.range = pointLight2.range = 10.0f;
-	pointLight.position = XMFLOAT3(30.0f, 60.0f, 0.0f);
-	pointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-	pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
-	pointLight.range = 100.0f;
-	m_BasicEffect.SetPointLight(0, pointLight);
-	m_BasicEffect.SetPointLight(1, pointLight1);
-	m_BasicEffect.SetPointLight(2, pointLight2);
+	//PointLight pointLight(XMFLOAT3(0.0f, 10.0f, 0.0f));
+	//PointLight pointLight1(XMFLOAT3(15.0f, 10.0f, 0.0f));
+	//PointLight pointLight2(XMFLOAT3(-15.0f, 10.0f, 0.0f));
+	//pointLight.range = pointLight1.range = pointLight2.range = 10.0f;
+	//pointLight.position = XMFLOAT3(30.0f, 60.0f, 0.0f);
+	//pointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	//pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	//pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	//pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
+	//pointLight.range = 100.0f;
+	//m_BasicEffect.SetPointLight(0, pointLight);
+	//m_BasicEffect.SetPointLight(1, pointLight1);
+	//m_BasicEffect.SetPointLight(2, pointLight2);
 
 
 	/*
 		设置阴影矩阵
 		稍微高一点位置以显示阴影
 	*/
-	m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f),
-		XMVectorSet(pointLight.position.x, pointLight.position.y, pointLight.position.z, 1.0f)));
+	//m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f),
+	//	XMVectorSet(pointLight.position.x, pointLight.position.y, pointLight.position.z, 1.0f)));
 	//m_BasicEffect.SetRefShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f), XMVectorSet(0.0f, 10.0f, 30.0f, 1.0f)));
 
 

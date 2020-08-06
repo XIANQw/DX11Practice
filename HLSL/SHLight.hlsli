@@ -1,79 +1,33 @@
+#include "LightHelper.hlsli"
+#include "SHComputer.hlsli"
 
-// æ–¹å‘å…‰
-struct DirectionalLight
-{
-    float4 Ambient;
-    float4 Diffuse;
-    float4 Specular;
-    float3 Direction;
-    float Pad;
-};
-
-// ç‚¹å…‰
-struct PointLight
-{
-    float4 Ambient;
-    float4 Diffuse;
-    float4 Specular;
-
-    float3 Position;
-    float Range;
-
-    float3 Att;
-    float Pad;
-};
-
-// èšå…‰ç¯
-struct SpotLight
-{
-    float4 Ambient;
-    float4 Diffuse;
-    float4 Specular;
-
-    float3 Position;
-    float Range;
-
-    float3 Direction;
-    float Spot;
-
-    float3 Att;
-    float Pad;
-};
-
-// ç‰©ä½“è¡¨é¢æè´¨
-struct Material
-{
-    float4 Ambient;
-    float4 Diffuse;
-    float4 Specular; // w = SpecPower
-    float4 Reflect;
-};
-
-
-void ComputeDirectionalLight(Material mat, DirectionalLight L,
-	float3 normal, float3 toEye,
-	out float4 ambient,
-	out float4 diffuse,
-	out float4 spec)
+void ComputeDirectionalLightSH(Material mat, DirectionalLight L,
+    SHCoefs3BandRGB IrradianceSH,
+    float3 normal, float3 toEye,
+    out float4 ambient,
+    out float4 diffuse,
+    out float4 spec)
 {
     half PI = 3.1415926f;
-	// åˆå§‹åŒ–è¾“å‡º
+    // ³õÊ¼»¯Êä³ö
     ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 
-	// å…‰å‘é‡ä¸ç…§å°„æ–¹å‘ç›¸å
+    // ¹âÏòÁ¿ÓëÕÕÉä·½ÏòÏà·´
     float3 lightVec = -L.Direction;
 
-	// æ·»åŠ ç¯å¢ƒå…‰
+    // Ìí¼Ó»·¾³¹â
     ambient = mat.Ambient * L.Ambient;
 
-	// æ·»åŠ æ¼«åå°„å…‰å’Œé•œé¢å…‰
+    // Ìí¼ÓÂş·´Éä¹âºÍ¾µÃæ¹â
     float diffuseFactor = dot(lightVec, normal);
 
     if (diffuseFactor > 0.0f)
     {
+        SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(normal, 1);
+        diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / PI;
 
         float3 v = reflect(-lightVec, normal);
         float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
@@ -84,37 +38,40 @@ void ComputeDirectionalLight(Material mat, DirectionalLight L,
 }
 
 
-void ComputePointLight(Material mat, PointLight L, 
+void ComputePointLightSH(Material mat, PointLight L,
+    SHCoefs3BandRGB IrradianceSH,
     float3 pos, float3 normal, float3 toEye,
-	out float4 ambient, out float4 diffuse, out float4 spec)
+    out float4 ambient, out float4 diffuse, out float4 spec)
 {
     half PI = 3.1415926f;
-	// åˆå§‹åŒ–è¾“å‡º
+    // ³õÊ¼»¯Êä³ö
     ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// ä»è¡¨é¢åˆ°å…‰æºçš„å‘é‡
+    // ´Ó±íÃæµ½¹âÔ´µÄÏòÁ¿
     float3 lightVec = L.Position - pos;
 
-	// è¡¨é¢åˆ°å…‰çº¿çš„è·ç¦»
+    // ±íÃæµ½¹âÏßµÄ¾àÀë
     float d = length(lightVec);
 
-	// ç¯å…‰èŒƒå›´æµ‹è¯•
+    // µÆ¹â·¶Î§²âÊÔ
     if (d > L.Range)
         return;
 
-	// æ ‡å‡†åŒ–å…‰å‘é‡
+    // ±ê×¼»¯¹âÏòÁ¿
     lightVec /= d;
 
-	// ç¯å¢ƒå…‰è®¡ç®—
+    // »·¾³¹â¼ÆËã
     ambient = mat.Ambient * L.Ambient;
 
-	// æ¼«åå°„å’Œé•œé¢è®¡ç®—
+    // Âş·´ÉäºÍ¾µÃæ¼ÆËã
     float diffuseFactor = dot(lightVec, normal);
 
     if (diffuseFactor > 0.0f)
     {
+        SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(normal, 1);
+        diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / PI;
 
         float3 v = reflect(-lightVec, normal);
         float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
@@ -123,7 +80,7 @@ void ComputePointLight(Material mat, PointLight L,
         spec = specFactor * mat.Specular * L.Specular;
     }
 
-	// å…‰çš„è¡°å¼±
+    // ¹âµÄË¥Èõ
     float att = 1.0f / dot(L.Att, float3(1.0f, d, d * d));
 
     diffuse *= att;
@@ -131,38 +88,42 @@ void ComputePointLight(Material mat, PointLight L,
 }
 
 
-void ComputeSpotLight(Material mat, SpotLight L, 
+void ComputeSpotLightSH(Material mat, SpotLight L,
+    SHCoefs3BandRGB IrradianceSH,
     float3 pos, float3 normal, float3 toEye,
-	out float4 ambient, out float4 diffuse, out float4 spec)
+    out float4 ambient, out float4 diffuse, out float4 spec)
 {
     half PI = 3.1415926f;
-	// åˆå§‹åŒ–è¾“å‡º
+    // ³õÊ¼»¯Êä³ö
     ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// // ä»è¡¨é¢åˆ°å…‰æºçš„å‘é‡
+    // // ´Ó±íÃæµ½¹âÔ´µÄÏòÁ¿
     float3 lightVec = L.Position - pos;
 
-    // è¡¨é¢åˆ°å…‰æºçš„è·ç¦»
+    // ±íÃæµ½¹âÔ´µÄ¾àÀë
     float d = length(lightVec);
 
-	// èŒƒå›´æµ‹è¯•
+    // ·¶Î§²âÊÔ
     if (d > L.Range)
         return;
 
-	// æ ‡å‡†åŒ–å…‰å‘é‡
+    // ±ê×¼»¯¹âÏòÁ¿
     lightVec /= d;
 
-	// è®¡ç®—ç¯å¢ƒå…‰éƒ¨åˆ†
+    // ¼ÆËã»·¾³¹â²¿·Ö
     ambient = mat.Ambient * L.Ambient;
 
 
-    // è®¡ç®—æ¼«åå°„å…‰å’Œé•œé¢åå°„å…‰éƒ¨åˆ†
+    // ¼ÆËãÂş·´Éä¹âºÍ¾µÃæ·´Éä¹â²¿·Ö
     float diffuseFactor = dot(lightVec, normal);
 
     if (diffuseFactor > 0.0f)
     {
+        SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(normal, 1);
+        diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / PI;
+
         float3 v = reflect(-lightVec, normal);
         float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
 
@@ -170,7 +131,7 @@ void ComputeSpotLight(Material mat, SpotLight L,
         spec = specFactor * mat.Specular * L.Specular;
     }
 
-	// è®¡ç®—æ±‡èšå› å­å’Œè¡°å¼±ç³»æ•°
+    // ¼ÆËã»ã¾ÛÒò×ÓºÍË¥ÈõÏµÊı
     float spot = pow(max(dot(-lightVec, L.Direction), 0.0f), L.Spot);
     float att = spot / dot(L.Att, float3(1.0f, d, d * d));
 
@@ -178,3 +139,4 @@ void ComputeSpotLight(Material mat, SpotLight L,
     diffuse *= att;
     spec *= att;
 }
+

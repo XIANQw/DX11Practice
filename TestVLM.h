@@ -39,10 +39,13 @@ protected:
 	Material m_Material;
 
 	BasicEffect m_BasicEffect;
+	PointLight m_PointLight;
 
 	std::shared_ptr<Camera> m_pCamera;
 	CameraMode m_CameraMode;
 	bool m_IsWireframeMode;
+	bool m_UseSH;
+	bool m_UseTexture;
 	ObjReader m_ObjReader;
 	Importer m_Importer;
 	

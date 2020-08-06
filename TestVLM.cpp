@@ -26,10 +26,14 @@ bool TestVLM::Init() {
 	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_VS3D.hlsl")) return false;
 	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_PS3D.hlsl")) return false;
 
+	m_BasicEffect.SetPrecomputeSH(true);
+	m_BasicEffect.SetSHUsed(true);
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get())) return false;
 
 	if (!InitVLM()) return false;
 	if (!InitResource()) return false;
+
+	m_BasicEffect.SetDebugName();
 	m_pMouse->SetWindow(m_hMainWnd);
 	m_pMouse->SetMode(Mouse::Mode::MODE_RELATIVE);
 
@@ -87,6 +91,7 @@ void TestVLM::UpdateScene(float dt) {
 		XMVECTOR VolumeMaxVec = XMVectorAdd(VolumeMinVec, VolumeSizeVec);
 		XMStoreFloat3(&adjustPos, XMVectorClamp(cam1st->GetPositionXM(),VolumeMinVec, VolumeMaxVec));
 		cam1st->SetPosition(adjustPos);
+		m_PointLight.position = adjustPos;
 
 		cam1st->Pitch(mouseState.y * dt * 1.25f);
 		cam1st->RotateY(mouseState.x * dt * 1.25f);
@@ -103,6 +108,17 @@ void TestVLM::UpdateScene(float dt) {
 		m_IsWireframeMode = !m_IsWireframeMode;
 		m_BackGroundColor = m_IsWireframeMode ? Colors::Black : Colors::White;
 	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::F)) {
+		m_UseSH = ! m_UseSH;
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::V)) {
+		m_UseTexture = !m_UseTexture;
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::C)) {
+		m_PointLight.range = static_cast<int>(m_PointLight.range) ^ 300;
+	}
+
+	m_BasicEffect.SetPointLight(3, m_PointLight);
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
@@ -120,8 +136,6 @@ void TestVLM::DrawScene() {
 	*************************/
 	if (m_IsWireframeMode) {
 		m_BasicEffect.SetWireFrameWode(m_pd3dImmediateContext.Get());
-		m_BasicEffect.SetTextureUsed(false);
-
 		m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 		/*
 		3. 绘制世界包围盒
@@ -129,10 +143,12 @@ void TestVLM::DrawScene() {
 		m_Box.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	} else{
 		m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
-		m_BasicEffect.SetTextureUsed(true);
 		m_Sponza.SetMaterial(m_Material);
 		m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	}
+
+	m_BasicEffect.SetSHUsed(m_UseSH);
+	m_BasicEffect.SetTextureUsed(m_UseTexture);
 	HR(m_pSwapChain->Present(0, 0));
 
 }
@@ -167,7 +183,7 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 }
 
 bool TestVLM::InitVLM() {
-	m_Importer.ImportFile(L"D:\\brickData_1596541525");
+	m_Importer.ImportFile(L"D:\\brickData_1596704532");
 	if (!m_Importer.Read())
 		return false;
 
@@ -214,7 +230,7 @@ bool TestVLM::InitVLM() {
 			SRV.GetAddressOf());
 		m_BasicEffect.SetTexture3D(SRV.Get());
 	}
-
+	
 	return true;
 }
 
@@ -285,18 +301,23 @@ bool TestVLM::InitResource() {
 	dirLight.direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	m_BasicEffect.SetDirLight(0, dirLight);
 	//// 灯光，range会阴影光圈的范围
-	PointLight pointLight(XMFLOAT3(0.0f, 4000.0f, 0.0f));
-	PointLight pointLight1(XMFLOAT3(15.0f, 4000.0f, 0.0f));
-	PointLight pointLight2(XMFLOAT3(-15.0f, 4000.0f, 0.0f));
-	pointLight.position = XMFLOAT3(30.0f, 60.0f, 0.0f);
-	pointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-	pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
-	pointLight.range = pointLight1.range = pointLight2.range = 7000.0f;
+	PointLight pointLight;
+	PointLight pointLight1;
+	PointLight pointLight2;
+	m_PointLight.position = m_pCamera->GetPosition();
+	pointLight.position = XMFLOAT3(1000.0f, 200.0f, 0.0f);
+	pointLight1.position = XMFLOAT3(0.0f, 200.0f, 0.0f);
+	pointLight2.position = XMFLOAT3(-1000.0f, 200.0f, 0.0f);
+	m_PointLight.ambient = pointLight1.ambient = pointLight2.ambient = pointLight.ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+	m_PointLight.diffuse = pointLight1.diffuse = pointLight2.diffuse = pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	m_PointLight.specular = pointLight1.specular = pointLight2.specular = pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	m_PointLight.att = pointLight1.att = pointLight2.att = pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
+	m_PointLight.range = pointLight.range = pointLight1.range = pointLight2.range = 300.0f;
 	m_BasicEffect.SetPointLight(0, pointLight);
 	m_BasicEffect.SetPointLight(1, pointLight1);
 	m_BasicEffect.SetPointLight(2, pointLight2);
+	m_BasicEffect.SetPointLight(3, m_PointLight);
+	
 
 	/*
 		设置阴影矩阵

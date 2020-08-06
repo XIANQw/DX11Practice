@@ -60,7 +60,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			*************************************************/
 			XMFLOAT3 pos;
 			wfin >> pos.x >> pos.y >> pos.z;
- 			pos.z = -pos.z;
+			pos.z = -pos.z;
 			positions.push_back(pos);
 			XMVECTOR vecPos = XMLoadFloat3(&pos);
 			vecMax = XMVectorMax(vecPos, vecMax);
@@ -117,6 +117,11 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			while (ed > beg && iswspace(mtlName[ed - 1])) ed--;
 			mtlName = mtlName.substr(beg, ed - beg);
 
+			if (!objParts.back().texStrDiffuse.empty()) {
+				ObjPart newPart(objParts.back());
+				objParts.push_back(newPart);
+			}
+
 			objParts.back().material = mtlReader.materials[mtlName];
 			objParts.back().texStrDiffuse = mtlReader.mapKdStrs[mtlName];
 		}
@@ -146,7 +151,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 					std::wstring svpi = tmp.substr(0, index1);
 					vpi[i] = std::stoul(svpi);
 					ULONG index2 = tmp.find(L"/", index1 + 1);
-					std::wstring svti = tmp.substr(index1 + 1, index2 - index1 -1 );
+					std::wstring svti = tmp.substr(index1 + 1, index2 - index1 - 1);
 					vti[i] = std::stoul(svti);
 					std::wstring svni = tmp.substr(index2 + 1);
 					vni[i] = std::stoul(svni);
@@ -345,6 +350,28 @@ void ObjReader::AddVertex(const VertexPosNormalTex& vertex, DWORD vpi, DWORD vti
 	}
 }
 
+inline void mapping_mat_texture(const wchar_t* mtlFileName, std::wifstream& wfin, std::map<std::wstring, std::wstring>& map, const std::wstring& curMatName) {
+	std::wstring fileName;
+	std::getline(wfin, fileName);
+	// 去掉前后空格
+	size_t beg = 0, ed = fileName.size();
+	while (iswspace(fileName[beg]))
+		beg++;
+	while (ed > beg && iswspace(fileName[ed - 1]))
+		ed--;
+	fileName = fileName.substr(beg, ed - beg);
+
+	// 追加路径
+	std::wstring dir = mtlFileName;
+	size_t pos;
+	if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
+		(pos = dir.find_last_of('\\')) == std::wstring::npos)
+		pos = 0;
+	else
+		pos += 1;
+
+	map[curMatName] = dir.erase(pos) + fileName;
+}
 
 bool MtlReader::ReadMtl(const wchar_t* mtlFileName)
 {
@@ -439,109 +466,32 @@ bool MtlReader::ReadMtl(const wchar_t* mtlFileName)
 		}
 		else if (wstr == L"map_Ka")
 		{
-			//
-			// map_Kd为漫反射使用的纹理
-			//
-			std::wstring fileName;
-			std::getline(wfin, fileName);
-			// 去掉前后空格
-			size_t beg = 0, ed = fileName.size();
-			while (iswspace(fileName[beg]))
-				beg++;
-			while (ed > beg && iswspace(fileName[ed - 1]))
-				ed--;
-			fileName = fileName.substr(beg, ed - beg);
-
-			// 追加路径
-			std::wstring dir = mtlFileName;
-			size_t pos;
-			if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
-				(pos = dir.find_last_of('\\')) == std::wstring::npos)
-				pos = 0;
-			else
-				pos += 1;
-
-			mapKaStrs[currMtl] = dir.erase(pos) + fileName;
+			mapping_mat_texture(mtlFileName, wfin, mapKaStrs, currMtl);
 		}
 		else if (wstr == L"map_Kd")
 		{
-			//
-			// map_Kd为漫反射使用的纹理
-			//
-			std::wstring fileName;
-			std::getline(wfin, fileName);
-			// 去掉前后空格
-			size_t beg = 0, ed = fileName.size();
-			while (iswspace(fileName[beg]))
-				beg++;
-			while (ed > beg && iswspace(fileName[ed - 1]))
-				ed--;
-			fileName = fileName.substr(beg, ed - beg);
-
-			// 追加路径
-			std::wstring dir = mtlFileName;
-			size_t pos;
-			if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
-				(pos = dir.find_last_of('\\')) == std::wstring::npos)
-				pos = 0;
-			else
-				pos += 1;
-
-			mapKdStrs[currMtl] = dir.erase(pos) + fileName;
+			mapping_mat_texture(mtlFileName, wfin, mapKdStrs, currMtl);
 		}
 		else if (wstr == L"map_Ks")
 		{
-			//
-			// map_Ks为镜面反射使用的纹理
-			//
-			std::wstring fileName;
-			std::getline(wfin, fileName);
-			// 去掉前后空格
-			size_t beg = 0, ed = fileName.size();
-			while (iswspace(fileName[beg]))
-				beg++;
-			while (ed > beg && iswspace(fileName[ed - 1]))
-				ed--;
-			fileName = fileName.substr(beg, ed - beg);
-
-			// 追加路径
-			std::wstring dir = mtlFileName;
-			size_t pos;
-			if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
-				(pos = dir.find_last_of('\\')) == std::wstring::npos)
-				pos = 0;
-			else
-				pos += 1;
-
-			mapKsStrs[currMtl] = dir.erase(pos) + fileName;
+			mapping_mat_texture(mtlFileName, wfin, mapKsStrs, currMtl);
 		}
 		else if (wstr == L"map_d")
 		{
-			//
-			// map_d
-			//
-			std::wstring fileName;
-			std::getline(wfin, fileName);
-			// 去掉前后空格
-			size_t beg = 0, ed = fileName.size();
-			while (iswspace(fileName[beg]))
-				beg++;
-			while (ed > beg && iswspace(fileName[ed - 1]))
-				ed--;
-			fileName = fileName.substr(beg, ed - beg);
-
-			// 追加路径
-			std::wstring dir = mtlFileName;
-			size_t pos;
-			if ((pos = dir.find_last_of('/')) == std::wstring::npos &&
-				(pos = dir.find_last_of('\\')) == std::wstring::npos)
-				pos = 0;
-			else
-				pos += 1;
-
-			mapDStrs[currMtl] = dir.erase(pos) + fileName;
+			mapping_mat_texture(mtlFileName, wfin, mapDStrs, currMtl);
+		}
+		else if (wstr == L"map_bump") {
+			mapping_mat_texture(mtlFileName, wfin, mapBumpStrs, currMtl);
+		}
+		else if (wstr == L"bump") {
+			mapping_mat_texture(mtlFileName, wfin, BumpStrs, currMtl);
 		}
 	}
 
 	return true;
 }
+
+
+
+
+

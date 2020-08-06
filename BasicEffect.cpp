@@ -31,7 +31,7 @@ public:
 		int isReflection;
 		int isShadow;
 		int isTextureUsed;
-		float pad;
+		int useSH;
 	};
 
 	struct CBChangesEveryFrame
@@ -84,6 +84,7 @@ public:
 	BOOL m_IsDirty;												// 是否有值变更
 	std::vector<CBufferBase*> m_pCBuffers;					    // 统一管理上面所有的常量缓冲区
 
+	bool m_PrecomputeSH = false;
 
 	ComPtr<ID3D11VertexShader> m_pVertexShader3D;				// 用于3D的顶点着色器
 	ComPtr<ID3D11PixelShader>  m_pPixelShader3D;				// 用于3D的像素着色器
@@ -221,7 +222,14 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 		HR(pBuffer->CreateBuffer(device));
 	}
 
-	// 设置调试对象名
+
+
+	return true;
+}
+
+
+void BasicEffect::SetDebugName() {
+
 	D3D11SetDebugObjectName(pImpl->m_pVertexLayout2D.Get(), "VertexPosTexLayout");
 	D3D11SetDebugObjectName(pImpl->m_pVertexLayout3D.Get(), "VertexPosNormalTexLayout");
 	D3D11SetDebugObjectName(pImpl->m_pCBuffers[0]->cBuffer.Get(), "CBDrawing");
@@ -234,8 +242,14 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 	D3D11SetDebugObjectName(pImpl->m_pVertexShader3D.Get(), "Basic_VS_3D");
 	D3D11SetDebugObjectName(pImpl->m_pPixelShader2D.Get(), "Basic_PS_2D");
 	D3D11SetDebugObjectName(pImpl->m_pPixelShader3D.Get(), "Basic_PS_3D");
-
-	return true;
+	D3D11SetDebugObjectName(pImpl->m_pTexture3DArray[0].Get(), "IndirectionTexture");
+	D3D11SetDebugObjectName(pImpl->m_pTexture3DArray[1].Get(), "AmbientVector");
+	
+	char name[24];
+	for (int i = 2; i < pImpl->m_pTexture3DArray.size(); i++) {
+		_snprintf_s(name, 24, "SHCoefs[%d]", i);
+		D3D11SetDebugObjectName(pImpl->m_pTexture3DArray[i].Get(), name);
+	}
 }
 
 /*********************
@@ -253,6 +267,10 @@ void BasicEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext)
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(nullptr);
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+	
+	if(pImpl->m_PrecomputeSH)
+		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+	
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
@@ -274,6 +292,10 @@ void BasicEffect::SetRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+
+	if (pImpl->m_PrecomputeSH)
+		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+	
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
@@ -295,6 +317,10 @@ void BasicEffect::SetRenderNoDoubleBlend(ID3D11DeviceContext* deviceContext, UIN
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+	
+	if (pImpl->m_PrecomputeSH)
+		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(RenderStates::DSSNoDoubleBlend.Get(), stencilRef);
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
@@ -316,6 +342,10 @@ void BasicEffect::SetWriteStencilOnly(ID3D11DeviceContext* deviceContext, UINT s
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(nullptr);
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+	
+	if (pImpl->m_PrecomputeSH)
+		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(RenderStates::DSSWriteStencil.Get(), stencilRef);
 	deviceContext->OMSetBlendState(RenderStates::BSNoColorWrite.Get(), nullptr, 0xFFFFFFFF);
@@ -337,6 +367,10 @@ void BasicEffect::SetRenderDefaultWithStencil(ID3D11DeviceContext* deviceContext
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(RenderStates::RSCullClockWise.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+	
+	if (pImpl->m_PrecomputeSH)
+		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+	
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(RenderStates::DSSDrawWithStencil.Get(), stencilRef);
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
@@ -357,6 +391,10 @@ void BasicEffect::SetRenderAlphaBlendWithStencil(ID3D11DeviceContext* deviceCont
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+
+	if (pImpl->m_PrecomputeSH)
+		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(RenderStates::DSSDrawWithStencil.Get(), stencilRef);
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
@@ -538,6 +576,14 @@ void BasicEffect::SetTextureUsed(bool isOn)
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
+void BasicEffect::SetSHUsed(bool isOn)
+{
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.useSH = isOn;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+
 void BasicEffect::SetVLMWorldToUVScale(DirectX::XMFLOAT3 VLMWorldToUVScale) {
 	auto& cBuffer = pImpl->m_CBVLMParams;
 	cBuffer.data.VLMWorldToUVScale.x = VLMWorldToUVScale.x;
@@ -573,6 +619,11 @@ void BasicEffect::SetVLMBrickTexelSize(DirectX::XMFLOAT3 VLMBrickTexelSize) {
 }
 
 
+void BasicEffect::SetPrecomputeSH(bool state) {
+	pImpl->m_PrecomputeSH = state;
+}
+
+
 /**********************************
  应用缓冲区，将所有缓冲区绑定到管道上
 ***********************************/
@@ -585,6 +636,7 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 	pCBuffers[2]->BindVS(deviceContext);
 	pCBuffers[3]->BindVS(deviceContext);
 	pCBuffers[4]->BindVS(deviceContext);
+	pCBuffers[5]->BindVS(deviceContext);
 
 	pCBuffers[0]->BindPS(deviceContext);
 	pCBuffers[1]->BindPS(deviceContext);
@@ -599,10 +651,19 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 		3.贴图指针
 		这里可以放多个贴图，比如光照贴图和纹理贴图
 	*******************************************/
+	
 	deviceContext->PSSetShaderResources(0, 1, pImpl->m_pTexture.GetAddressOf());
-	for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
-		deviceContext->PSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
+	if (pImpl->m_PrecomputeSH) {
+		for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
+			deviceContext->VSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
+		}
+	} else {
+		for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
+			deviceContext->PSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
+		}
 	}
+
+
 
 	if (pImpl->m_IsDirty)
 	{

@@ -1,18 +1,6 @@
-#include "LightHelper.hlsli"
+#include "SHLight.hlsli"
 
 Texture2D g_Tex2D: register(t0);
-
-Texture3D<uint4> g_IndirectionTexture: register(t1);
-
-Texture3D g_AmbientVector: register(t2);
-Texture3D g_SHCoef0: register(t3);
-Texture3D g_SHCoef1: register(t4);
-Texture3D g_SHCoef2: register(t5);
-Texture3D g_SHCoef3: register(t6);
-Texture3D g_SHCoef4: register(t7);
-Texture3D g_SHCoef5: register(t8);
-
-SamplerState g_Sam : register(s0);
 
 
 cbuffer CBChangesEveryDrawing : register(b0)
@@ -26,7 +14,7 @@ cbuffer CBDrawingState:register(b1) {
     int g_IsReflection;
     int g_IsShadow;
     int g_TextureUsed;
-    float g_Pad1;
+    int g_UseSH;
 }
 
 cbuffer CBChangesEveryFrame : register(b2)
@@ -60,7 +48,7 @@ cbuffer CBVLMParams : register(b5)
     float3 VLMWorldToUVAdd;
     float pad2;
     float3 VLMBrickTexelSize;
-    float pad3;
+    bool pad3;
 };
 
 struct VertexPosNormalTex
@@ -82,6 +70,7 @@ struct VertexPosHWNormalTex
     float3 PosW : POSITION; // 在世界中的位置
     float3 NormalW : NORMAL; // 法向量在世界中的方向
     float2 Tex : TEXCOORD;
+    float4 VertexIndirectSH[3] : TEXCOORD14;
 };
 
 struct VertexPosHTex
@@ -89,3 +78,4 @@ struct VertexPosHTex
     float4 PosH : SV_POSITION;
     float2 Tex : TEXCOORD;
 };
+

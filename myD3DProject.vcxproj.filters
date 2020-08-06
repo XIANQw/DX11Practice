@@ -233,6 +233,12 @@
     <None Include="HLSL\LightHelper.hlsli">
       <Filter>shader\Ex13</Filter>
     </None>
+    <None Include="HLSL\SHComputer.hlsli">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="HLSL\SHLight.hlsli">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\PixelShader.hlsl">

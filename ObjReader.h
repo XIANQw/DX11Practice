@@ -36,7 +36,17 @@ public:
 		std::vector<VertexPosNormalTex> vertices;  // 顶点集合
 		std::vector<WORD> indices16;				// 顶点数不超过65535时使用
 		std::vector<DWORD> indices32;				// 顶点数超过65535时使用
-		std::wstring texStrDiffuse;					// 漫射光纹理文件名，需为相对路径，在mbo必须为32字节
+		std::wstring texStrDiffuse;			
+		// 漫射光纹理文件名，需为相对路径，在mbo必须为32字节
+		ObjPart() = default;
+		//ObjPart(ObjPart& orther) {
+		//	material = orther.material;
+		//	vertices.assign(orther.vertices.begin(), orther.vertices.end());
+		//	if (orther.indices16.empty()) indices32.assign(orther.indices32.begin(), orther.indices32.end());
+		//	else indices16.assign(orther.indices16.begin(), orther.indices16.end());
+		//	texStrDiffuse.assign(orther.texStrDiffuse.c_str());
+		//}
+
 	};
 
 	// 有指定.mbo文件时直接读取.mbo， 否则得先都.obj
@@ -69,4 +79,6 @@ public:
 	std::map<std::wstring, std::wstring> mapKdStrs;
 	std::map<std::wstring, std::wstring> mapKsStrs;
 	std::map<std::wstring, std::wstring> mapDStrs;
+	std::map<std::wstring, std::wstring> mapBumpStrs;
+	std::map<std::wstring, std::wstring> BumpStrs;
 };

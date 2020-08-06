@@ -118,18 +118,19 @@ public:
 	void SetVLMIndirectionTextureSize(DirectX::XMFLOAT3 indirectionTextureSize);
 	void SetVLMBrickSize(float brickSize);
 	void SetVLMBrickTexelSize(DirectX::XMFLOAT3 VLMBrickTexelSize);
-
+	void SetPrecomputeSH(bool);
 
 	//
 	// 状态开关设置
 	//
-
 	void SetReflectionState(bool isOn);
 	void SetShadowState(bool isOn);
 	void SetTextureUsed(bool isOn);
-
+	void SetSHUsed(bool isOn);
 	// 应用常量缓冲区和纹理资源的变更
 	void Apply(ID3D11DeviceContext* deviceContext);
+
+	void SetDebugName();
 
 private:
 	class Impl;

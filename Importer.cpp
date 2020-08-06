@@ -36,7 +36,7 @@ bool Importer::Read() {
 		}
 
 	}
-	if (!importedData.empty() && importedData.back().AmbientVector.empty()) importedData.pop_back();
+	while (!importedData.empty() && importedData.back().AmbientVector.empty()) importedData.pop_back();
 	return true;
 }
 
