@@ -118,7 +118,8 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			mtlName = mtlName.substr(beg, ed - beg);
 
 			if (!objParts.back().texStrDiffuse.empty()) {
-				ObjPart newPart(objParts.back());
+				ObjPart newPart;
+				newPart.vertices = objParts.back().vertices;
 				objParts.push_back(newPart);
 			}
 
