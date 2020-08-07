@@ -127,10 +127,15 @@ public:
 	void SetShadowState(bool isOn);
 	void SetTextureUsed(bool isOn);
 	void SetSHUsed(bool isOn);
+	void SetLightUsed(bool isOn);
+	void SetDirLightUsed(bool isOn);
+	void SetPointLightUsed(bool isOn);
+
 	// 应用常量缓冲区和纹理资源的变更
 	void Apply(ID3D11DeviceContext* deviceContext);
 
 	void SetDebugName();
+
 
 private:
 	class Impl;

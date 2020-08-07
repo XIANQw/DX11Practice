@@ -32,6 +32,11 @@ public:
 		int isShadow;
 		int isTextureUsed;
 		int useSH;
+
+		int useLight;
+		int useDirLight;
+		int usePointLight;
+		float pad;
 	};
 
 	struct CBChangesEveryFrame
@@ -140,6 +145,7 @@ BasicEffect& BasicEffect::Get()
 	return *g_pInstance;
 }
 
+
 #define GET_CSO_FILENAME(hlslFile, csoFile) \
 	size_t nameSize = wcslen(hlslFile);\
 	if (!(hlslFile[nameSize - 5] == L'.' &&\
@@ -150,7 +156,7 @@ BasicEffect& BasicEffect::Get()
 		return false;\
 	WCHAR FileName[64];\
 	wcsncpy_s(FileName, ARRAYSIZE(FileName), hlslFile, nameSize - 5);\
-	_snwprintf_s(csoFile, ARRAYSIZE(csoFile), ARRAYSIZE(csoFile) - 1, L"%s.cso", FileName)\
+	_snwprintf_s(csoFile, ARRAYSIZE(csoFile), ARRAYSIZE(csoFile) - 1, L"%s.cso", FileName)
 
 
 bool BasicEffect::SetVSShader2D(ID3D11Device* device, const WCHAR* hlslFile) {
@@ -221,7 +227,6 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 	{
 		HR(pBuffer->CreateBuffer(device));
 	}
-
 
 
 	return true;
@@ -583,6 +588,25 @@ void BasicEffect::SetSHUsed(bool isOn)
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
+void BasicEffect::SetLightUsed(bool isOn) {
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.useLight = isOn;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+
+void BasicEffect::SetDirLightUsed(bool isOn) {
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.useDirLight = isOn;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetPointLightUsed(bool isOn) {
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.usePointLight = isOn;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
 
 void BasicEffect::SetVLMWorldToUVScale(DirectX::XMFLOAT3 VLMWorldToUVScale) {
 	auto& cBuffer = pImpl->m_CBVLMParams;
@@ -662,8 +686,6 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 			deviceContext->PSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
 		}
 	}
-
-
 
 	if (pImpl->m_IsDirty)
 	{

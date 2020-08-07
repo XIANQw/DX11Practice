@@ -91,7 +91,6 @@ void TestVLM::UpdateScene(float dt) {
 		XMVECTOR VolumeMaxVec = XMVectorAdd(VolumeMinVec, VolumeSizeVec);
 		XMStoreFloat3(&adjustPos, XMVectorClamp(cam1st->GetPositionXM(),VolumeMinVec, VolumeMaxVec));
 		cam1st->SetPosition(adjustPos);
-		m_PointLight.position = adjustPos;
 
 		cam1st->Pitch(mouseState.y * dt * 1.25f);
 		cam1st->RotateY(mouseState.x * dt * 1.25f);
@@ -110,16 +109,27 @@ void TestVLM::UpdateScene(float dt) {
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::F)) {
 		m_UseSH = ! m_UseSH;
+		m_BasicEffect.SetSHUsed(m_UseSH);
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::V)) {
 		m_UseTexture = !m_UseTexture;
+		m_BasicEffect.SetTextureUsed(m_UseTexture);
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::C)) {
-		m_PointLight.range = static_cast<int>(m_PointLight.range) ^ 300;
+		for (int i = 0; i < m_PointLightArray.size(); i++) {
+			auto& light = m_PointLightArray[i];
+			light.range = static_cast<int>(light.range) ^ 300;
+			m_BasicEffect.SetPointLight(i, light);
+		}
 	}
-
-	m_BasicEffect.SetPointLight(3, m_PointLight);
-
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1)) {
+		m_UseDirLight = !m_UseDirLight;
+		m_BasicEffect.SetDirLightUsed(m_UseDirLight);
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2)) {
+		m_UsePointLight = !m_UsePointLight;
+		m_BasicEffect.SetPointLightUsed(m_UsePointLight);
+	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
 	}
@@ -147,8 +157,6 @@ void TestVLM::DrawScene() {
 		m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	}
 
-	m_BasicEffect.SetSHUsed(m_UseSH);
-	m_BasicEffect.SetTextureUsed(m_UseTexture);
 	HR(m_pSwapChain->Present(0, 0));
 
 }
@@ -240,7 +248,7 @@ bool TestVLM::InitResource() {
 	const XMFLOAT3& VolumeMin = m_Importer.VLMSetting.VolumeMin;
 	XMVECTOR VolumeMinVec = XMLoadFloat3(&VolumeMin);
 	XMVECTOR VolumeSizeVec = XMLoadFloat3(&VolumeSize);
-	XMVECTOR BoundCentreVec = XMVectorAdd(VolumeMinVec, XMVectorDivide(VolumeSizeVec, XMVectorSet(2.0f,2.0f,2.0f,2.0f)));
+	XMVECTOR BoundCentreVec = XMVectorAdd(VolumeMinVec, XMVectorDivide(VolumeSizeVec, XMVectorSet(2.0f, 2.0f, 2.0f, 2.0f)));
 	m_Box.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateBox(VolumeSize.x, VolumeSize.y, VolumeSize.z)));
 	XMFLOAT3 BoundCentre; XMStoreFloat3(&BoundCentre, BoundCentreVec);
 	m_Box.GetTransform().SetPosition(BoundCentre);
@@ -295,36 +303,34 @@ bool TestVLM::InitResource() {
 	*******************/
 	// 环境光
 	DirectionalLight dirLight;
-	dirLight.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	dirLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	dirLight.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	dirLight.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	dirLight.direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	m_BasicEffect.SetDirLight(0, dirLight);
-	//// 灯光，range会阴影光圈的范围
-	PointLight pointLight;
-	PointLight pointLight1;
-	PointLight pointLight2;
-	m_PointLight.position = m_pCamera->GetPosition();
-	pointLight.position = XMFLOAT3(1000.0f, 200.0f, 0.0f);
-	pointLight1.position = XMFLOAT3(0.0f, 200.0f, 0.0f);
-	pointLight2.position = XMFLOAT3(-1000.0f, 200.0f, 0.0f);
-	m_PointLight.ambient = pointLight1.ambient = pointLight2.ambient = pointLight.ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-	m_PointLight.diffuse = pointLight1.diffuse = pointLight2.diffuse = pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	m_PointLight.specular = pointLight1.specular = pointLight2.specular = pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	m_PointLight.att = pointLight1.att = pointLight2.att = pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
-	m_PointLight.range = pointLight.range = pointLight1.range = pointLight2.range = 300.0f;
-	m_BasicEffect.SetPointLight(0, pointLight);
-	m_BasicEffect.SetPointLight(1, pointLight1);
-	m_BasicEffect.SetPointLight(2, pointLight2);
-	m_BasicEffect.SetPointLight(3, m_PointLight);
-	
+	for (int i = 0; i < 3; i++) {
+		PointLight pointLight;
+		pointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+		pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+		pointLight.specular = pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+		pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
+		pointLight.range = 300.0f;
+		m_PointLightArray.push_back(pointLight);
+	}
+	m_PointLightArray[0].position = XMFLOAT3(1000.0f, 200.0f, 0.0f);
+	m_PointLightArray[1].position = XMFLOAT3(0.0f, 200.0f, 0.0f);
+	m_PointLightArray[2].position = XMFLOAT3(-1000.0f, 200.0f, 0.0f);
+	for (int i = 0; i < m_PointLightArray.size(); i++) {
+		m_BasicEffect.SetPointLight(i, m_PointLightArray[i]);
+	}
+
 
 	/*
 		设置阴影矩阵
 		稍微高一点位置以显示阴影
 	*/
-	m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f),
-		XMVectorSet(pointLight.position.x, pointLight.position.y, pointLight.position.z, 1.0f)));
+	//m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f),
+	//	XMVectorSet(pointLight.position.x, pointLight.position.y, pointLight.position.z, 1.0f)));
 
 	return true;
 }

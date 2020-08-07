@@ -24,11 +24,11 @@ void ComputeDirectionalLightSH(Material mat, DirectionalLight L,
     // 添加漫反射光和镜面光
     float diffuseFactor = dot(lightVec, normal);
 
+    SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(normal, 1);
+    diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / PI;
+    
     if (diffuseFactor > 0.0f)
     {
-        SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(normal, 1);
-        diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / PI;
-
         float3 v = reflect(-lightVec, normal);
         float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
 
@@ -68,11 +68,11 @@ void ComputePointLightSH(Material mat, PointLight L,
     // 漫反射和镜面计算
     float diffuseFactor = dot(lightVec, normal);
 
+    SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(normal, 1);
+    diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / PI;
+
     if (diffuseFactor > 0.0f)
     {
-        SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(normal, 1);
-        diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / PI;
-
         float3 v = reflect(-lightVec, normal);
         float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
 

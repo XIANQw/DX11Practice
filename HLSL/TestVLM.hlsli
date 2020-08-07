@@ -15,6 +15,11 @@ cbuffer CBDrawingState:register(b1) {
     int g_IsShadow;
     int g_TextureUsed;
     int g_UseSH;
+
+    int g_UseLight;
+    int g_UseDirLight;
+    int g_UsePointLight;
+    float pad;
 }
 
 cbuffer CBChangesEveryFrame : register(b2)

@@ -41,41 +41,48 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 	float4 D = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 S = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	int i;
+	
+	bool useLight = g_UseDirLight || g_UsePointLight;
 
-	[unroll]
-	for (i = 0; i < 5; ++i)
-	{
-		if (g_UseSH) ComputeDirectionalLightSH(g_Material, g_DirLight[i], IrradianceSH, pIn.NormalW, toEyeW, A, D, S);
-		else ComputeDirectionalLight(g_Material, g_DirLight[i], pIn.NormalW, toEyeW, A, D, S);
-		ambient += A;
-		diffuse += D;
-		spec += S;
+	if (useLight) {
+		if (g_UseDirLight) {
+			[unroll]
+			for (i = 0; i < 5; ++i)
+			{
+				if (g_UseSH) ComputeDirectionalLightSH(g_Material, g_DirLight[i], IrradianceSH, pIn.NormalW, toEyeW, A, D, S);
+				else ComputeDirectionalLight(g_Material, g_DirLight[i], pIn.NormalW, toEyeW, A, D, S);
+				ambient += A;
+				diffuse += D;
+				spec += S;
+			}
+		}
+		// 若当前在绘制反射物体，需要对光照进行反射矩阵变换
+		if (g_UsePointLight) {
+			[unroll]
+			for (i = 0; i < 5; ++i)
+			{
+				if (g_UseSH) ComputePointLightSH(g_Material, g_PointLight[i], IrradianceSH, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+				else ComputePointLight(g_Material, g_PointLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+				ambient += A;
+				diffuse += D;
+				spec += S;
+			}
+		}
+		// 若当前在绘制反射物体，需要对光照进行反射矩阵变换
+		//[unroll]
+		//for (i = 0; i < 5; ++i)
+		//{
+		//	if (g_UseSH) ComputeSpotLightSH(g_Material, g_SpotLight[i], IrradianceSH, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+		//	else ComputeSpotLight(g_Material, g_SpotLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+		//	ambient += A;
+		//	diffuse += D;
+		//	spec += S;
+		//}
 	}
-
-
-	// 若当前在绘制反射物体，需要对光照进行反射矩阵变换
-	[unroll]
-	for (i = 0; i < 5; ++i)
-	{
-		if (g_UseSH) ComputePointLightSH(g_Material, g_PointLight[i], IrradianceSH, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
-		else ComputePointLight(g_Material, g_PointLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
-		ambient += A;
-		diffuse += D;
-		spec += S;
+	else {
+		SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(pIn.NormalW, 1);
+		diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / 3.1415926f;
 	}
-
-
-	// 若当前在绘制反射物体，需要对光照进行反射矩阵变换
-	[unroll]
-	for (i = 0; i < 5; ++i)
-	{
-		if (g_UseSH) ComputeSpotLightSH(g_Material, g_SpotLight[i], IrradianceSH, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
-		else ComputeSpotLight(g_Material, g_SpotLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
-		ambient += A;
-		diffuse += D;
-		spec += S;
-	}
-
 
 	float4 litColor = texColor * (ambient + diffuse) + spec;
 	litColor.a = texColor.a * g_Material.Diffuse.a;
