@@ -1,24 +1,29 @@
 #include "TestVLM.hlsli"
 
-float3 ComputeVolumetricLightmapBrickTextureUVs(float3 WorldPosition)
-{
-	// Compute indirection UVs from world position
-	float3 IndirectionVolumeUVs = clamp(WorldPosition * VLMWorldToUVScale + VLMWorldToUVAdd, 0.0f, .99f);
-	float3 IndirectionTextureTexelCoordinate = IndirectionVolumeUVs * VLMIndirectionTextureSize;
-	float4 BrickOffsetAndSize = g_IndirectionTexture.Load(int4(IndirectionTextureTexelCoordinate, 0.0f));
 
-	float PaddedBrickSize = VLMBrickSize + 1;
-	return (BrickOffsetAndSize.xyz * PaddedBrickSize + frac(IndirectionTextureTexelCoordinate / BrickOffsetAndSize.w) * VLMBrickSize + .5f) * VLMBrickTexelSize;
-}
 
 // 像素着色器(3D)
 float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 {
 	SHCoefs3BandRGB IrradianceSH = (SHCoefs3BandRGB)0;
 	if (g_UseSH) {
-		IrradianceSH.R.coefs1_4 = pIn.VertexIndirectSH[0];
-		IrradianceSH.G.coefs1_4 = pIn.VertexIndirectSH[1];
-		IrradianceSH.B.coefs1_4 = pIn.VertexIndirectSH[2];
+		if (g_SHMode == 0) {
+			IrradianceSH.R.coefs1_4 = pIn.VertexIndirectSH[0];
+			IrradianceSH.G.coefs1_4 = pIn.VertexIndirectSH[1];
+			IrradianceSH.B.coefs1_4 = pIn.VertexIndirectSH[2];
+		}
+		else if (g_SHMode == 1) {
+			float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs(pIn.PosW);
+
+			SHCoefs2BandRGB IrradianceSH2 = GetVolumetricLightmapSH2(BrickUV);
+			IrradianceSH.R.coefs1_4 = IrradianceSH2.R.coefs1_4;
+			IrradianceSH.G.coefs1_4 = IrradianceSH2.G.coefs1_4;
+			IrradianceSH.B.coefs1_4 = IrradianceSH2.B.coefs1_4;
+		}
+		else {
+			float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs(pIn.PosW);
+			IrradianceSH = GetVolumetricLightmapSH3(BrickUV);
+		}
 	}
 	float4 texColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	if (g_TextureUsed) {
@@ -36,6 +41,8 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 	// 初始化为0 
 	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 indirectDiffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 directDiffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 A = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 D = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -44,46 +51,46 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 	
 	bool useLight = g_UseDirLight || g_UsePointLight;
 
+	if (g_UseSH) {
+		SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(pIn.NormalW, 1);
+        indirectDiffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / 3.1415926f;
+    }
+
 	if (useLight) {
 		if (g_UseDirLight) {
 			[unroll]
-			for (i = 0; i < 5; ++i)
+			for (i = 0; i < DirLightNums; ++i)
 			{
-				if (g_UseSH) ComputeDirectionalLightSH(g_Material, g_DirLight[i], IrradianceSH, pIn.NormalW, toEyeW, A, D, S);
-				else ComputeDirectionalLight(g_Material, g_DirLight[i], pIn.NormalW, toEyeW, A, D, S);
+				ComputeDirectionalLight(g_Material, g_DirLight[i], pIn.NormalW, toEyeW, A, D, S);
 				ambient += A;
-				diffuse += D;
+                directDiffuse += D;
 				spec += S;
 			}
 		}
 		// 若当前在绘制反射物体，需要对光照进行反射矩阵变换
 		if (g_UsePointLight) {
 			[unroll]
-			for (i = 0; i < 5; ++i)
+			for (i = 0; i < PointLightNums; ++i)
 			{
-				if (g_UseSH) ComputePointLightSH(g_Material, g_PointLight[i], IrradianceSH, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
-				else ComputePointLight(g_Material, g_PointLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+				ComputePointLight(g_Material, g_PointLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
 				ambient += A;
-				diffuse += D;
+                directDiffuse += D;
 				spec += S;
 			}
 		}
-		// 若当前在绘制反射物体，需要对光照进行反射矩阵变换
-		//[unroll]
-		//for (i = 0; i < 5; ++i)
-		//{
-		//	if (g_UseSH) ComputeSpotLightSH(g_Material, g_SpotLight[i], IrradianceSH, pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
-		//	else ComputeSpotLight(g_Material, g_SpotLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
-		//	ambient += A;
-		//	diffuse += D;
-		//	spec += S;
-		//}
+		 //若当前在绘制反射物体，需要对光照进行反射矩阵变换
+		[unroll]
+		for (i = 0; i < SpotLightNums; ++i)
+		{
+			ComputeSpotLight(g_Material, g_SpotLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+			ambient += A;
+            directDiffuse += D;
+			spec += S;
+		}
 	}
-	else {
-		SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(pIn.NormalW, 1);
-		diffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / 3.1415926f;
-	}
-
+	 // diffuse = indirectDiffuse + directDiffuse(1 - indirectDiffuse)
+     diffuse = lerp(indirectDiffuse, float4(1.0f, 1.0f, 1.0f, 1.0f), directDiffuse);
+	
 	float4 litColor = texColor * (ambient + diffuse) + spec;
 	litColor.a = texColor.a * g_Material.Diffuse.a;
 	return litColor;

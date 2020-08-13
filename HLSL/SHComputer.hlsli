@@ -148,3 +148,44 @@ SHCoefs2BandRGB GetVolumetricLightmapSH2(float3 BrickTextureUVs)
 
 	return IrradianceSH;
 }
+
+
+SHCoefs3BandRGB GetVolumetricLightmapSH3(float3 BrickTextureUVs)
+{
+	float3 AmbientVector;
+	float4 SHCoefs0R;
+	float4 SHCoefs0G;
+	float4 SHCoefs0B;
+	GetVolumetricLightmapSHCoefficients0(BrickTextureUVs, AmbientVector, SHCoefs0R, SHCoefs0G, SHCoefs0B);
+
+	float4 SHCoefs1R = Texture3DSampleLevel(g_SHCoef1, g_Sam, BrickTextureUVs, 0) * 2 - 1;
+	float4 SHCoefs1G = Texture3DSampleLevel(g_SHCoef3, g_Sam, BrickTextureUVs, 0) * 2 - 1;
+	float4 SHCoefs1B = Texture3DSampleLevel(g_SHCoef5, g_Sam, BrickTextureUVs, 0) * 2 - 1;
+
+	float4 SHDenormalizationScales1 = float4(
+		1.092548f / 0.282095f,
+		4.0f * 0.315392f / 0.282095f,
+		1.092548f / 0.282095f,
+		2.0f * 0.546274f / 0.282095f);
+
+	SHCoefs1R = SHCoefs1R * AmbientVector.x * SHDenormalizationScales1;
+	SHCoefs1G = SHCoefs1G * AmbientVector.y * SHDenormalizationScales1;
+	SHCoefs1B = SHCoefs1B * AmbientVector.z * SHDenormalizationScales1;
+
+	SHCoefs3BandRGB IrradianceSH;
+	// Construct the SH environment
+	IrradianceSH.R.coefs1_4 = float4(AmbientVector.x, SHCoefs0R.xyz);
+	IrradianceSH.R.coefs5_8 = float4(SHCoefs0R.w, SHCoefs1R.xyz);
+	IrradianceSH.R.coef9 = SHCoefs1R.w;
+
+	IrradianceSH.G.coefs1_4 = float4(AmbientVector.y, SHCoefs0G.xyz);
+	IrradianceSH.G.coefs5_8 = float4(SHCoefs0G.w, SHCoefs1G.xyz);
+	IrradianceSH.G.coef9 = SHCoefs1G.w;
+
+	IrradianceSH.B.coefs1_4 = float4(AmbientVector.z, SHCoefs0B.xyz);
+	IrradianceSH.B.coefs5_8 = float4(SHCoefs0B.w, SHCoefs1B.xyz);
+	IrradianceSH.B.coef9 = SHCoefs1B.w;
+
+	return IrradianceSH;
+}
+

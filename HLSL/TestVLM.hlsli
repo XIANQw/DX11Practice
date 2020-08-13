@@ -19,7 +19,10 @@ cbuffer CBDrawingState:register(b1) {
     int g_UseLight;
     int g_UseDirLight;
     int g_UsePointLight;
-    float pad;
+    int g_SHMode;
+
+    int g_UseBrickId;
+    float3 pad;
 }
 
 cbuffer CBChangesEveryFrame : register(b2)
@@ -39,9 +42,13 @@ cbuffer CBChangesRarely : register(b4)
     matrix g_Reflection;
     matrix g_RefShadow;
     matrix g_Shadow;
-    DirectionalLight g_DirLight[5];
-    PointLight g_PointLight[5];
-    SpotLight g_SpotLight[5];
+    DirectionalLight g_DirLight[20];
+    PointLight g_PointLight[20];
+    SpotLight g_SpotLight[20];
+    int DirLightNums;
+    int PointLightNums;
+    int SpotLightNums;
+    int Rarely_pad1;
 }
 
 cbuffer CBVLMParams : register(b5)
@@ -49,11 +56,11 @@ cbuffer CBVLMParams : register(b5)
     float3 VLMWorldToUVScale;
     float VLMBrickSize;
     float3 VLMIndirectionTextureSize;
-    float pad1;
+    float VLMParams_pad1;
     float3 VLMWorldToUVAdd;
-    float pad2;
+    float VLMParams_pad2;
     float3 VLMBrickTexelSize;
-    bool pad3;
+    bool VLMParams_pad3;
 };
 
 struct VertexPosNormalTex
@@ -75,6 +82,7 @@ struct VertexPosHWNormalTex
     float3 PosW : POSITION; // 在世界中的位置
     float3 NormalW : NORMAL; // 法向量在世界中的方向
     float2 Tex : TEXCOORD;
+
     float4 VertexIndirectSH[3] : TEXCOORD14;
 };
 
@@ -84,3 +92,24 @@ struct VertexPosHTex
     float2 Tex : TEXCOORD;
 };
 
+
+int3 GetCurrentBrick() {
+    int3 res;
+    int3 layout = int3(1.0f / VLMBrickTexelSize.x, 1.0f / VLMBrickTexelSize.y, 1.0f / VLMBrickTexelSize.z);
+    res.x = g_UseBrickId % layout.x;
+    res.y = g_UseBrickId / layout.x % layout.y;
+    res.z = g_UseBrickId / (layout.x * layout.y);
+    return res;
+}
+
+float3 ComputeVolumetricLightmapBrickTextureUVs(float3 WorldPosition)
+{
+    // Compute indirection UVs from world position
+    float3 IndirectionVolumeUVs = clamp(WorldPosition * VLMWorldToUVScale + VLMWorldToUVAdd, 0.0f, .99f);
+    float3 IndirectionTextureTexelCoordinate = IndirectionVolumeUVs * VLMIndirectionTextureSize;
+
+    float4 BrickOffsetAndSize = g_IndirectionTexture.Load(int4(IndirectionTextureTexelCoordinate, 0.0f));
+
+    float PaddedBrickSize = VLMBrickSize + 1;
+    return (BrickOffsetAndSize.xyz * PaddedBrickSize + frac(IndirectionTextureTexelCoordinate / BrickOffsetAndSize.w) * VLMBrickSize + .5f) * VLMBrickTexelSize;
+}
