@@ -2,6 +2,9 @@
 
 #include <wrl/client.h>
 #include <d3d11.h>
+#include <d2d1.h>
+#include <dwrite.h>
+
 
 /******************************
 *		RenderStates.h        *
@@ -41,6 +44,7 @@ public:
 	static ComPtr<ID3D11DepthStencilState> DSSNoDoubleBlend;	// 深度/模板状态：无二次混合区域
 	static ComPtr<ID3D11DepthStencilState> DSSNoDepthTest;		// 深度/模板状态：关闭深度测试
 	static ComPtr<ID3D11DepthStencilState> DSSNoDepthWrite;		// 深度/模板状态：仅深度测试，不写入深度值
+
 };
 
 

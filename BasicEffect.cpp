@@ -4,6 +4,8 @@
 #include "ThridParty/DXTrace.h"
 #include "Vertex.h"
 
+#include <d2d1.h>
+#include <dwrite.h>
 #include <winnt.h>
 using namespace DirectX;
 
@@ -36,7 +38,10 @@ public:
 		int useLight;
 		int useDirLight;
 		int usePointLight;
-		float pad;
+		int SHMode;
+
+		int sphereSpeed;
+		DirectX::XMFLOAT3 pad;
 	};
 
 	struct CBChangesEveryFrame
@@ -59,8 +64,12 @@ public:
 		DirectionalLight dirLight[BasicEffect::maxLights];
 		PointLight pointLight[BasicEffect::maxLights];
 		SpotLight spotLight[BasicEffect::maxLights];
+		int dirLightNums;
+		int pointLightNums;
+		int spotLightNums;
+		int pad;
 	};
-	
+
 	struct CBVLMParams {
 		DirectX::XMFLOAT3 VLMWorldToUVScale;
 		float VLMBrickSize;
@@ -89,7 +98,6 @@ public:
 	BOOL m_IsDirty;												// 是否有值变更
 	std::vector<CBufferBase*> m_pCBuffers;					    // 统一管理上面所有的常量缓冲区
 
-	bool m_PrecomputeSH = false;
 
 	ComPtr<ID3D11VertexShader> m_pVertexShader3D;				// 用于3D的顶点着色器
 	ComPtr<ID3D11PixelShader>  m_pPixelShader3D;				// 用于3D的像素着色器
@@ -100,7 +108,7 @@ public:
 	ComPtr<ID3D11InputLayout>  m_pVertexLayout3D;				// 用于3D的顶点输入布局
 
 	ComPtr<ID3D11ShaderResourceView> m_pTexture;				// 用于绘制的纹理
-	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pTexture3DArray;			
+	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pTexture3DArray;
 	std::vector<ComPtr<ID3D11UnorderedAccessView>> m_pRWTexture3DArray;
 
 };
@@ -220,7 +228,7 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 		&pImpl->m_CBStates,
 		&pImpl->m_CBOnResize,
 		&pImpl->m_CBRarely,
-		&pImpl->m_CBVLMParams});
+		&pImpl->m_CBVLMParams });
 
 	// 创建常量缓冲区
 	for (auto& pBuffer : pImpl->m_pCBuffers)
@@ -249,7 +257,7 @@ void BasicEffect::SetDebugName() {
 	D3D11SetDebugObjectName(pImpl->m_pPixelShader3D.Get(), "Basic_PS_3D");
 	D3D11SetDebugObjectName(pImpl->m_pTexture3DArray[0].Get(), "IndirectionTexture");
 	D3D11SetDebugObjectName(pImpl->m_pTexture3DArray[1].Get(), "AmbientVector");
-	
+
 	char name[24];
 	for (int i = 2; i < pImpl->m_pTexture3DArray.size(); i++) {
 		_snprintf_s(name, 24, "SHCoefs[%d]", i);
@@ -272,10 +280,10 @@ void BasicEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext)
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(nullptr);
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
-	
-	if(pImpl->m_PrecomputeSH)
+
+	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
-	
+
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
@@ -298,9 +306,9 @@ void BasicEffect::SetRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_PrecomputeSH)
+	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
-	
+
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
@@ -322,8 +330,8 @@ void BasicEffect::SetRenderNoDoubleBlend(ID3D11DeviceContext* deviceContext, UIN
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
-	
-	if (pImpl->m_PrecomputeSH)
+
+	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -347,8 +355,8 @@ void BasicEffect::SetWriteStencilOnly(ID3D11DeviceContext* deviceContext, UINT s
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(nullptr);
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
-	
-	if (pImpl->m_PrecomputeSH)
+
+	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -372,10 +380,10 @@ void BasicEffect::SetRenderDefaultWithStencil(ID3D11DeviceContext* deviceContext
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(RenderStates::RSCullClockWise.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
-	
-	if (pImpl->m_PrecomputeSH)
+
+	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
-	
+
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(RenderStates::DSSDrawWithStencil.Get(), stencilRef);
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
@@ -397,7 +405,7 @@ void BasicEffect::SetRenderAlphaBlendWithStencil(ID3D11DeviceContext* deviceCont
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_PrecomputeSH)
+	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -443,7 +451,7 @@ void BasicEffect::Set2DRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->PSSetShader(pImpl->m_pPixelShader2D.Get(), nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
-deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
+	deviceContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
 }
 
 
@@ -527,8 +535,25 @@ void BasicEffect::SetSpotLight(size_t pos, const SpotLight& spotLight)
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
-void BasicEffect::SetMaterial(const Material& material)
-{
+void BasicEffect::SetDirLightNums(int num) {
+	auto& cBuffer = pImpl->m_CBRarely;
+	cBuffer.data.dirLightNums = num;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetPointLightNums(int num) {
+	auto& cBuffer = pImpl->m_CBRarely;
+	cBuffer.data.pointLightNums = num;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetSpotLightNums(int num) {
+	auto& cBuffer = pImpl->m_CBRarely;
+	cBuffer.data.spotLightNums = num;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetMaterial(const Material& material) {
 	auto& cBuffer = pImpl->m_CBDrawing;
 	cBuffer.data.material = material;
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
@@ -543,7 +568,7 @@ void BasicEffect::SetTexture2D(ID3D11ShaderResourceView* texture) {
 	SetTexture(texture);
 }
 
-void BasicEffect::SetTexture3D(ID3D11ShaderResourceView* texture){
+void BasicEffect::SetTexture3D(ID3D11ShaderResourceView* texture) {
 	pImpl->m_pTexture3DArray.emplace_back(texture);
 }
 
@@ -643,9 +668,20 @@ void BasicEffect::SetVLMBrickTexelSize(DirectX::XMFLOAT3 VLMBrickTexelSize) {
 }
 
 
-void BasicEffect::SetPrecomputeSH(bool state) {
-	pImpl->m_PrecomputeSH = state;
+void BasicEffect::SetSHMode(int mode) {
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.SHMode = mode;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
+
+
+void BasicEffect::SetSphereSpeed(int SphereSpeed) {
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.sphereSpeed = SphereSpeed;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+
 
 
 /**********************************
@@ -675,17 +711,13 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 		3.贴图指针
 		这里可以放多个贴图，比如光照贴图和纹理贴图
 	*******************************************/
-	
+
 	deviceContext->PSSetShaderResources(0, 1, pImpl->m_pTexture.GetAddressOf());
-	if (pImpl->m_PrecomputeSH) {
-		for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
-			deviceContext->VSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
-		}
-	} else {
-		for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
-			deviceContext->PSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
-		}
+	for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
+		deviceContext->VSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
+		deviceContext->PSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
 	}
+
 
 	if (pImpl->m_IsDirty)
 	{

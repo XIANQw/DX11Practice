@@ -9,7 +9,7 @@ TestVLM::TestVLM(HINSTANCE hInstance)
 	m_Material(),
 	m_ObjReader(),
 	m_Speed(500),
-	m_BackGroundColor(Colors::White){
+	m_BackGroundColor(Colors::White) {
 }
 
 
@@ -26,7 +26,6 @@ bool TestVLM::Init() {
 	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_VS3D.hlsl")) return false;
 	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_PS3D.hlsl")) return false;
 
-	m_BasicEffect.SetPrecomputeSH(true);
 	m_BasicEffect.SetSHUsed(true);
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get())) return false;
 
@@ -42,7 +41,31 @@ bool TestVLM::Init() {
 
 
 void TestVLM::OnResize() {
+	assert(m_pd2dFactory);
+	assert(m_pdwriteFactory);
+	// 释放D2D的相关资源
+	m_pColorBrush.Reset();
+	m_pd2dRenderTarget.Reset();
+
 	D3DApp::OnResize();
+
+	// 为D2D创建DXGI表面渲染目标
+	// 为D2D创建DXGI表面渲染目标
+	ComPtr<IDXGISurface> surface;
+	HR(m_pSwapChain->GetBuffer(0, __uuidof(IDXGISurface), reinterpret_cast<void**>(surface.GetAddressOf())));
+	D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+		D2D1_RENDER_TARGET_TYPE_DEFAULT,
+		D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED));
+	HR(m_pd2dFactory->CreateDxgiSurfaceRenderTarget(surface.Get(), &props, m_pd2dRenderTarget.GetAddressOf()));
+	surface.Reset();
+
+	HR(m_pd2dRenderTarget->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF::White),
+		m_pColorBrush.GetAddressOf()));
+	HR(m_pdwriteFactory->CreateTextFormat(L"宋体", nullptr, DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 15, L"zh-cn",
+		m_pTextFormat.GetAddressOf()));
+
 
 	if (m_pCamera != nullptr) {
 		m_pCamera->SetFrustum(XM_PI / 3, AspectRatio(), 0.5f, 10000.0f);
@@ -62,7 +85,7 @@ void TestVLM::UpdateScene(float dt) {
 	m_KeyboardTracker.Update(keyState);
 
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
-
+	XMFLOAT3 curPos;
 	if (m_CameraMode == CameraMode::Free) {
 		// FPS mode
 		if (keyState.IsKeyDown(Keyboard::W)) {
@@ -81,7 +104,7 @@ void TestVLM::UpdateScene(float dt) {
 		if (m_KeyboardTracker.IsKeyPressed(Keyboard::Y)) {
 			m_Speed -= 500;
 		}
-		m_Speed < 500 ? m_Speed = 500 : m_Speed;
+		m_Speed = max(200, m_Speed);
 
 		// 限制摄像机在固定范围内 x(-8.9, 8.9), z(-8.9, 8.9), y(0, 8.9) y不能为负
 		XMFLOAT3 adjustPos;
@@ -89,12 +112,21 @@ void TestVLM::UpdateScene(float dt) {
 		XMVECTOR VolumeMinVec = XMLoadFloat3(&m_Importer.VLMSetting.VolumeMin);
 		XMVECTOR VolumeSizeVec = XMLoadFloat3(&m_Importer.VLMSetting.VolumeSize);
 		XMVECTOR VolumeMaxVec = XMVectorAdd(VolumeMinVec, VolumeSizeVec);
-		XMStoreFloat3(&adjustPos, XMVectorClamp(cam1st->GetPositionXM(),VolumeMinVec, VolumeMaxVec));
+		XMStoreFloat3(&adjustPos, XMVectorClamp(cam1st->GetPositionXM(), VolumeMinVec, VolumeMaxVec));
+		
 		cam1st->SetPosition(adjustPos);
-
 		cam1st->Pitch(mouseState.y * dt * 1.25f);
 		cam1st->RotateY(mouseState.x * dt * 1.25f);
-
+		BoundingBox houseBox = m_Sponza.GetBoundingBox();
+		
+		for (int i = 0; i < m_Spheres.size(); i++) {
+			auto& trans = m_Spheres[i].GetTransform();
+			curPos = trans.GetPosition();
+			if (curPos.x > 1160.0f) m_SpheresDirection[i] = -1;
+			else if (curPos.x < -1300.0f) m_SpheresDirection[i] = 1;
+			curPos.x += m_SpheresDirection[i] * dt * m_SphereSpeed;
+			trans.SetPosition(curPos);
+		} 
 	}
 	// 更新观察矩阵
 	m_BasicEffect.SetViewMatrix(m_pCamera->GetViewXM());
@@ -108,19 +140,12 @@ void TestVLM::UpdateScene(float dt) {
 		m_BackGroundColor = m_IsWireframeMode ? Colors::Black : Colors::White;
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::F)) {
-		m_UseSH = ! m_UseSH;
+		m_UseSH = !m_UseSH;
 		m_BasicEffect.SetSHUsed(m_UseSH);
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::V)) {
 		m_UseTexture = !m_UseTexture;
 		m_BasicEffect.SetTextureUsed(m_UseTexture);
-	}
-	if (m_KeyboardTracker.IsKeyPressed(Keyboard::C)) {
-		for (int i = 0; i < m_PointLightArray.size(); i++) {
-			auto& light = m_PointLightArray[i];
-			light.range = static_cast<int>(light.range) ^ 300;
-			m_BasicEffect.SetPointLight(i, light);
-		}
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1)) {
 		m_UseDirLight = !m_UseDirLight;
@@ -130,6 +155,30 @@ void TestVLM::UpdateScene(float dt) {
 		m_UsePointLight = !m_UsePointLight;
 		m_BasicEffect.SetPointLightUsed(m_UsePointLight);
 	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D3)) {
+		m_SHMode = 0;
+		m_BasicEffect.SetSHMode(m_SHMode);
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D4)) {
+		m_SHMode = 1;
+		m_BasicEffect.SetSHMode(m_SHMode);
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D5)) {
+		m_SHMode = 2;
+		m_BasicEffect.SetSHMode(m_SHMode);
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Add)) {
+		m_SphereSpeed += 200;
+		m_SphereSpeed = min(600, m_SphereSpeed);
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Subtract)) {
+		m_SphereSpeed -= 200;
+		m_SphereSpeed = max(0, m_SphereSpeed);
+	}
+
+	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, Brick=%d, dirLight=%d, pointLight=%d, posW(%f,%f,%f), sphere(%f, %f, %f), direction=%d", 
+		m_SHMode, m_UseBrickId, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z, curPos.x, curPos.y, curPos.z, m_SpheresDirection[0]);
+
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
 	}
@@ -151,11 +200,19 @@ void TestVLM::DrawScene() {
 		3. 绘制世界包围盒
 		*/
 		m_Box.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	} else{
+	}
+	else {
 		m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
 		m_Sponza.SetMaterial(m_Material);
 		m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	}
+	m_BasicEffect.SetTextureUsed(false);
+	for (auto& sphere: m_Spheres) {
+		sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	}
+	m_BasicEffect.SetTextureUsed(m_UseTexture);
+
+	WriteInformation(std::wstring(m_Text));
 
 	HR(m_pSwapChain->Present(0, 0));
 
@@ -163,7 +220,7 @@ void TestVLM::DrawScene() {
 
 void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, DXGI_FORMAT format, const std::vector<UINT8>& srcData, ID3D11ShaderResourceView** outSRV) {
 	ID3D11Texture3D* pTex3D;
-	
+
 	D3D11_TEXTURE3D_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(texDesc));
 	texDesc.Width = width;
@@ -191,7 +248,7 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 }
 
 bool TestVLM::InitVLM() {
-	m_Importer.ImportFile(L"D:\\brickData_1596704532");
+	m_Importer.ImportFile(L"Texture\\brickData_1597325114");
 	if (!m_Importer.Read())
 		return false;
 
@@ -200,7 +257,7 @@ bool TestVLM::InitVLM() {
 	const VLMData& vlmData = m_Importer.vlmData;
 	m_BasicEffect.SetVLMBrickSize(m_Importer.VLMSetting.BrickSize);
 	m_BasicEffect.SetVLMIndirectionTextureSize(XMFLOAT3(vlmData.textureDimension.x, vlmData.textureDimension.y, vlmData.textureDimension.z));
-	m_BasicEffect.SetVLMBrickTexelSize(XMFLOAT3(1.0f/vlmData.brickDataDimension.x, 1.0f/vlmData.brickDataDimension.y, 1.0f/vlmData.brickDataDimension.z));
+	m_BasicEffect.SetVLMBrickTexelSize(XMFLOAT3(1.0f / vlmData.brickDataDimension.x, 1.0f / vlmData.brickDataDimension.y, 1.0f / vlmData.brickDataDimension.z));
 	XMVECTOR VolumeSizeVec = XMLoadFloat3(&m_Importer.VLMSetting.VolumeSize);
 	XMVECTOR InvVolumeSizeVec = XMVectorReciprocal(VolumeSizeVec);
 	XMFLOAT3 InvVolumeSize;
@@ -238,7 +295,7 @@ bool TestVLM::InitVLM() {
 			SRV.GetAddressOf());
 		m_BasicEffect.SetTexture3D(SRV.Get());
 	}
-	
+
 	return true;
 }
 
@@ -268,8 +325,9 @@ bool TestVLM::InitResource() {
 	m_ObjReader.Read(L"Model\\SponzaUV.mbo", L"Model\\SponzaUV.obj");
 	m_Sponza.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
-	//// 获取房屋包围盒
-	XMMATRIX S = XMMatrixScaling(0.015f, 0.015f, 0.015f);
+	// 获取房屋包围盒
+	/*XMMATRIX S = XMMatrixScaling(0.015f, 0.015f, 0.015f);*/
+	XMMATRIX S = XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	BoundingBox houseBox = m_Sponza.GetLocalBoundingBox();
 	houseBox.Transform(houseBox, S);
 
@@ -286,7 +344,7 @@ bool TestVLM::InitResource() {
 	m_pCamera = camera;
 	camera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
 	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 10000.0f);
-	camera->SetPosition(0.0f, 6.0f, 0.0f);
+	camera->SetPosition(0.0f, 300.0f, 0.0f);
 
 	/**********************************************
 		设置观察矩阵和观察位置，设置平截头体和投影矩阵
@@ -308,22 +366,48 @@ bool TestVLM::InitResource() {
 	dirLight.specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	dirLight.direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	m_BasicEffect.SetDirLight(0, dirLight);
-	for (int i = 0; i < 3; i++) {
+	m_BasicEffect.SetDirLightNums(1);
+	for (int i = 0; i < 11; i++) {
 		PointLight pointLight;
-		pointLight.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-		pointLight.diffuse = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-		pointLight.specular = pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+		pointLight.ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		pointLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		pointLight.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 		pointLight.att = XMFLOAT3(0.0f, 0.1f, 0.0f);
-		pointLight.range = 300.0f;
+		pointLight.range = 500.0f;
 		m_PointLightArray.push_back(pointLight);
 	}
-	m_PointLightArray[0].position = XMFLOAT3(1000.0f, 200.0f, 0.0f);
-	m_PointLightArray[1].position = XMFLOAT3(0.0f, 200.0f, 0.0f);
-	m_PointLightArray[2].position = XMFLOAT3(-1000.0f, 200.0f, 0.0f);
+	m_PointLightArray[0].position = XMFLOAT3(-1200.0f, 350.0f, -420.0f);
+	m_PointLightArray[1].position = XMFLOAT3(-1200.0f, 350.0f, 435.0f);
+	m_PointLightArray[1].diffuse = XMFLOAT4(0.0f, 0.0f, 0.8f, 1.0f);
+	m_PointLightArray[2].position = XMFLOAT3(0.0f, 350.0f, -420.0f);
+	m_PointLightArray[3].position = XMFLOAT3(0.0f, 350.0f, 430.0f);
+	m_PointLightArray[4].position = XMFLOAT3(1100.0f, 350.0f, -410.0f);
+	m_PointLightArray[4].diffuse = XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
+	m_PointLightArray[5].position = XMFLOAT3(1100.0f, 350.0f, 0.0f);
+	m_PointLightArray[6].position = XMFLOAT3(1100.0f, 350.0f, 435.0f);
+	m_PointLightArray[7].position = XMFLOAT3(494.0f, 320.0f, -145.0f);
+	m_PointLightArray[8].position = XMFLOAT3(494.0f, 320.0f, 215.0f);
+	m_PointLightArray[9].position = XMFLOAT3(-620.0f, 320.0f, 210.0f);
+	m_PointLightArray[10].position = XMFLOAT3(-620.0f, 320.0f, -140.0f);
 	for (int i = 0; i < m_PointLightArray.size(); i++) {
 		m_BasicEffect.SetPointLight(i, m_PointLightArray[i]);
 	}
+	m_BasicEffect.SetPointLightNums(m_PointLightArray.size());
 
+	m_BasicEffect.SetSpotLightNums(0);
+	/*
+		动态物体
+	*/
+	for(int i=0; i<3; i++){
+		m_Spheres.push_back(GameObject());
+		m_SpheresDirection.push_back(1);
+		GameObject& sphere = m_Spheres.back();
+		sphere.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(40.0f)));
+	}
+	m_Spheres[0].GetTransform().SetPosition(0, 300, 0);
+	m_Spheres[1].GetTransform().SetPosition(1000, 300, 450);
+	m_Spheres[2].GetTransform().SetPosition(-1000, 300, -400);
+	
 
 	/*
 		设置阴影矩阵

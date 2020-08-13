@@ -96,12 +96,15 @@ public:
 	//
 
 	// 各种类型灯光允许的最大数目
-	static const int maxLights = 5;
+	static const int maxLights = 20;
 	bool isShadow;
 
 	void SetDirLight(size_t pos, const DirectionalLight& dirLight);
 	void SetPointLight(size_t pos, const PointLight& pointLight);
 	void SetSpotLight(size_t pos, const SpotLight& spotLight);
+	void SetDirLightNums(int num);
+	void SetPointLightNums(int num);
+	void SetSpotLightNums(int num);
 
 	void SetMaterial(const Material& material);
 
@@ -118,7 +121,8 @@ public:
 	void SetVLMIndirectionTextureSize(DirectX::XMFLOAT3 indirectionTextureSize);
 	void SetVLMBrickSize(float brickSize);
 	void SetVLMBrickTexelSize(DirectX::XMFLOAT3 VLMBrickTexelSize);
-	void SetPrecomputeSH(bool);
+	void SetSHMode(int);
+	void SetSphereSpeed(int SphereSpeed);
 
 	//
 	// 状态开关设置
@@ -130,6 +134,7 @@ public:
 	void SetLightUsed(bool isOn);
 	void SetDirLightUsed(bool isOn);
 	void SetPointLightUsed(bool isOn);
+
 
 	// 应用常量缓冲区和纹理资源的变更
 	void Apply(ID3D11DeviceContext* deviceContext);

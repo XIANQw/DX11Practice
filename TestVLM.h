@@ -28,12 +28,8 @@ protected:
 	bool InitVLM();
 
 	GameObject m_Sponza;
-	GameObject m_WoodCrate;
-	GameObject m_Ground;
 	GameObject m_Box;
-	GameObject m_Floor;
-	GameObject m_Sphere;
-	std::vector<GameObject> m_Walls;
+	std::vector<GameObject> m_Spheres;
 
 	Material m_ShadowMat;
 	Material m_Material;
@@ -53,8 +49,13 @@ protected:
 
 	bool m_UseDirLight;
 	bool m_UsePointLight;
+	int m_UseBrickId = 0;
+	int m_SHMode = 0;
 
+	wchar_t m_Text[512];
 	DirectX::XMVECTORF32 m_BackGroundColor;
 	INT32 m_Speed;
+	INT32 m_SphereSpeed;
+	std::vector<INT8> m_SpheresDirection;
 };
 

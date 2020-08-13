@@ -201,7 +201,10 @@ void Importer::TransformData() {
 	vlmData.textureDimension.z = VLMSetting.TopLevelGridSize.z * IndirectionCellsPerTopLevelCell;
 	size_t TotalTextureSize = vlmData.textureDimension.x * vlmData.textureDimension.y * vlmData.textureDimension.z;
 	inTexture.Resize(TotalTextureSize);
-	BuildIndirectionTexture(BricksByDepth, MaxBricksInLayoutOneDim, BrickLayoutDimensions, inTexture.FormatSize, vlmData);
+	std::ifstream indirectionTextureImporter("Texture\\indirectionTexture_Sponza", std::ios::in | std::ios::binary);
+	indirectionTextureImporter.read(reinterpret_cast<char*>(inTexture.data.data()), TotalTextureSize*inTexture.FormatSize);
+
+	/*BuildIndirectionTexture(BricksByDepth, MaxBricksInLayoutOneDim, BrickLayoutDimensions, inTexture.FormatSize, vlmData);*/
 
 	const INT32 PaddedBrickSize = VLMSetting.BrickSize + 1;
 	vlmData.brickDataDimension.x = BrickLayoutDimensions.x * PaddedBrickSize;
@@ -211,6 +214,27 @@ void Importer::TransformData() {
 	vlmData.brickData.AmbientVector.FormatSize = sizeof(DirectX::PackedVector::XMFLOAT3PK);
 	vlmData.brickData.AmbientVector.Format = DXGI_FORMAT_R11G11B10_FLOAT;
 	vlmData.brickData.AmbientVector.Resize(TotalBrickData);
+	std::ifstream ambientImporter("Texture\\AmbientVector_Sponza", std::ios::in | std::ios::binary);
+	ambientImporter.read(reinterpret_cast<char*>(vlmData.brickData.AmbientVector.data.data()), vlmData.brickData.AmbientVector.data.size());
+
+	std::ifstream* SH0Importer = new std::ifstream("Texture\\SH0_Sponza", std::ios::in | std::ios::binary);
+	std::ifstream* SH1Importer = new std::ifstream("Texture\\SH1_Sponza", std::ios::in | std::ios::binary);
+	std::ifstream* SH2Importer = new std::ifstream("Texture\\SH2_Sponza", std::ios::in | std::ios::binary);
+	std::ifstream* SH3Importer = new std::ifstream("Texture\\SH3_Sponza", std::ios::in | std::ios::binary);
+	std::ifstream* SH4Importer = new std::ifstream("Texture\\SH4_Sponza", std::ios::in | std::ios::binary);
+	std::ifstream* SH5Importer = new std::ifstream("Texture\\SH5_Sponza", std::ios::in | std::ios::binary);
+	std::vector<std::ifstream*> SHCoefs{ SH0Importer,SH1Importer ,SH2Importer ,SH3Importer ,SH4Importer,SH5Importer };
+
+	for (INT32 i = 0; i < 6; i++)
+	{
+		vlmData.brickData.SHCoefficients[i].FormatSize = sizeof(DirectX::PackedVector::XMCOLOR); 
+		vlmData.brickData.SHCoefficients[i].Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		vlmData.brickData.SHCoefficients[i].Resize(TotalBrickData);
+		SHCoefs[i]->read(reinterpret_cast<char*>(vlmData.brickData.SHCoefficients[i].data.data()), vlmData.brickData.SHCoefficients[i].data.size());
+	}
+
+	for (auto& ptr : SHCoefs) delete ptr;
+	/*
 	for (auto& SHCoef : vlmData.brickData.SHCoefficients) {
 		SHCoef.FormatSize = sizeof(DirectX::PackedVector::XMCOLOR);
 		SHCoef.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -279,7 +303,7 @@ void Importer::TransformData() {
 	ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.SkyBentNormal);
 	for (int i = 0; i < 6; i++)
 		ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.SHCoefficients[i]);
-	ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.LQLightDirection);
+	ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.LQLightDirection);*/
 }
 
 
