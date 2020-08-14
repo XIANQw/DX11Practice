@@ -248,7 +248,15 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 }
 
 bool TestVLM::InitVLM() {
-	m_Importer.ImportFile(L"Texture\\brickData_1597325114");
+	m_Importer.ImportFile(L"Texture\\brickData_1597325114", 
+		L"Texture\\indirectionTexture_Sponza",
+		L"Texture\\ambientVector_Sponza",
+		L"Texture\\SH0_Sponza",
+		L"Texture\\SH1_Sponza",
+		L"Texture\\SH2_Sponza",
+		L"Texture\\SH3_Sponza",
+		L"Texture\\SH4_Sponza",
+		L"Texture\\SH5_Sponza");
 	if (!m_Importer.Read())
 		return false;
 
@@ -267,7 +275,6 @@ bool TestVLM::InitVLM() {
 	XMFLOAT3 VLMWorldToUVAdd;
 	XMStoreFloat3(&VLMWorldToUVAdd, XMVectorMultiply(-VolumeMinVec, InvVolumeSizeVec));
 	m_BasicEffect.SetVLMWorldToUVAdd(VLMWorldToUVAdd);
-
 
 
 	ComPtr<ID3D11ShaderResourceView> SRV;

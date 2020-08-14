@@ -133,7 +133,16 @@ public:
 	bool Record(const wchar_t* filename);
 
 	void TransformData();
-	bool ImportFile(const wchar_t* filename);
+	bool ImportFile(const wchar_t* brickDataFile,
+		const wchar_t* indirectTextureFilename = nullptr,
+		const wchar_t* ambientVectorFilename = nullptr,
+		const wchar_t* SH0CoefsFilename = nullptr,
+		const wchar_t* SH1CoefsFilename = nullptr,
+		const wchar_t* SH2CoefsFilename = nullptr,
+		const wchar_t* SH3CoefsFilename = nullptr,
+		const wchar_t* SH4CoefsFilename = nullptr,
+		const wchar_t* SH5CoefsFilename = nullptr);
+
 	void InitVLMSetting();
 
 	void BuildIndirectionTexture(
@@ -153,7 +162,15 @@ public:
 
 
 private:
-	std::ifstream* pIfStream;
-	ID3D11Texture3D* tex3D;
+	std::ifstream* pBrickDataImporter;
+	std::ifstream* pIndirectionTextureImporter;
+	std::ifstream* pAmbientVectorImporter;
+	std::ifstream* pSH0CoefsImporter;
+	std::ifstream* pSH1CoefsImporter;
+	std::ifstream* pSH2CoefsImporter;
+	std::ifstream* pSH3CoefsImporter;
+	std::ifstream* pSH4CoefsImporter;
+	std::ifstream* pSH5CoefsImporter;
+	bool hasAllSHCoefsTextures;
 };
 
