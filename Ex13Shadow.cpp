@@ -199,9 +199,7 @@ void Ex13Shadow::UpdateScene(float dt)
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
 	}
-
 }
-
 
 
 void Ex13Shadow::DrawScene()
