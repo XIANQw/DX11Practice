@@ -62,5 +62,7 @@ protected:
 
 	std::vector<const wchar_t*> m_SHRepositoies;
 	INT32 m_SHFileIndex;
+	ComPtr<ID3D11Texture3D> m_pTex3D;
+
 };
 

@@ -20,7 +20,7 @@ TestVLM::TestVLM(HINSTANCE hInstance)
 	m_isVisulizeVLM(false), 
 	m_SphereSpeed(200),
 	m_Text(L""),
-	m_SHRepositoies{L"50_2", L"200"},
+	m_SHRepositoies{L"200", L"150", L"100", L"50" },
 	m_SHFileIndex(0){
 }
 
@@ -262,19 +262,16 @@ XMFLOAT3 IndTexPosToWorldPos(const XMINT3& indTexPos, const FVolumetricLightmapS
 }
 
 void TestVLM::VisualizeVLM() {
-	std::vector<std::vector<const BrickData*>> BricksByDepth(3);
-	m_Samples.resize(m_Importer.importedData.size());
-	for (const auto& tmp : m_Importer.importedData) {
-		BricksByDepth[tmp.TreeDepth].push_back(&tmp);
-	}
+	m_Samples.resize(m_Importer.m_BricksNum);
+
 	INT32 SampleIndex = 0;
-	for (INT32 depth = 0; depth < BricksByDepth.size(); depth++) {
-		for (INT32 index = 0; index < BricksByDepth[depth].size(); index++) {
-			const auto& brick = BricksByDepth[depth][index];
+	for (INT32 depth = 0; depth < m_Importer.m_BricksByDepth.size(); depth++) {
+		for (INT32 index = 0; index < m_Importer.m_BricksByDepth[depth].size(); index++) {
+			const auto& brick = m_Importer.m_BricksByDepth[depth][index];
 			float radius = 10.0f;
-			radius = radius + (2 - brick->TreeDepth) * 40;
+			radius = radius + (2 - brick.TreeDepth) * 40;
 			m_Samples[SampleIndex].SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(radius)));
-			m_Samples[SampleIndex++].GetTransform().SetPosition(IndTexPosToWorldPos(brick->IndirectionTexturePosition, m_Importer.VLMSetting, m_Importer.vlmData.textureDimension));
+			m_Samples[SampleIndex++].GetTransform().SetPosition(IndTexPosToWorldPos(brick.IndirectionTexturePosition, m_Importer.VLMSetting, m_Importer.vlmData.textureDimension));
 		}
 	}
 
@@ -283,8 +280,7 @@ void TestVLM::VisualizeVLM() {
 
 
 
-void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, DXGI_FORMAT format, const std::vector<UINT8>& srcData, ID3D11ShaderResourceView** outSRV) {
-	ID3D11Texture3D* pTex3D;
+void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, DXGI_FORMAT format, const std::vector<UINT8>& srcData, ID3D11Texture3D** pTex3D, ID3D11ShaderResourceView** outSRV) {
 
 	D3D11_TEXTURE3D_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(texDesc));
@@ -301,7 +297,7 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 	subResData.pSysMem = srcData.data();
 	subResData.SysMemPitch = width * 4;
 	subResData.SysMemSlicePitch = width * height * 4;
-	HR(device->CreateTexture3D(&texDesc, &subResData, &pTex3D));
+	HR(device->CreateTexture3D(&texDesc, &subResData, pTex3D));
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC tex3DViewDesc;
 	ZeroMemory(&tex3DViewDesc, sizeof(tex3DViewDesc));
@@ -309,15 +305,15 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 	tex3DViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
 	tex3DViewDesc.Texture3D.MipLevels = 1;
 	tex3DViewDesc.Texture3D.MostDetailedMip = 0;
-	HR(device->CreateShaderResourceView(pTex3D, &tex3DViewDesc, outSRV));
+	HR(device->CreateShaderResourceView(*pTex3D, &tex3DViewDesc, outSRV));
 }
 
 bool TestVLM::InitVLM() {
 
-	wchar_t bricksRepo[128], brickByDepthRepo[128], indTexRepo[128], AmbientVecRepo[128], SH0Repo[128],
+	wchar_t VLMSettingRepo[128], brickByDepthRepo[128], indTexRepo[128], AmbientVecRepo[128], SH0Repo[128],
 		SH1Repo[128], SH2Repo[128], SH3Repo[128], SH4Repo[128], SH5Repo[128];
-	_snwprintf_s(bricksRepo, ARRAYSIZE(bricksRepo), ARRAYSIZE(bricksRepo) - 1, L"Texture\\SHCoefs\\%s\\brickData", m_SHRepositoies[m_SHFileIndex]);
 	_snwprintf_s(brickByDepthRepo, ARRAYSIZE(brickByDepthRepo), ARRAYSIZE(brickByDepthRepo) - 1, L"Texture\\SHCoefs\\%s\\brickDataByDepth", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(VLMSettingRepo, ARRAYSIZE(VLMSettingRepo), ARRAYSIZE(VLMSettingRepo) - 1, L"Texture\\SHCoefs\\%s\\vlmSetting", m_SHRepositoies[m_SHFileIndex]);
 	_snwprintf_s(indTexRepo, ARRAYSIZE(indTexRepo), ARRAYSIZE(indTexRepo) - 1, L"Texture\\SHCoefs\\%s\\indirectionTexture", m_SHRepositoies[m_SHFileIndex]);
 	_snwprintf_s(AmbientVecRepo, ARRAYSIZE(AmbientVecRepo), ARRAYSIZE(AmbientVecRepo) - 1, L"Texture\\SHCoefs\\%s\\AmbientVector", m_SHRepositoies[m_SHFileIndex]);
 	_snwprintf_s(SH0Repo, ARRAYSIZE(SH0Repo), ARRAYSIZE(SH0Repo) - 1, L"Texture\\SHCoefs\\%s\\SH0", m_SHRepositoies[m_SHFileIndex]);
@@ -327,7 +323,7 @@ bool TestVLM::InitVLM() {
 	_snwprintf_s(SH4Repo, ARRAYSIZE(SH4Repo), ARRAYSIZE(SH4Repo) - 1, L"Texture\\SHCoefs\\%s\\SH4", m_SHRepositoies[m_SHFileIndex]);
 	_snwprintf_s(SH5Repo, ARRAYSIZE(SH5Repo), ARRAYSIZE(SH5Repo) - 1, L"Texture\\SHCoefs\\%s\\SH5", m_SHRepositoies[m_SHFileIndex]);
 
-	m_Importer.ImportFile(bricksRepo, brickByDepthRepo,
+	m_Importer.ImportFile(brickByDepthRepo, VLMSettingRepo,
 		indTexRepo, AmbientVecRepo, SH0Repo, SH1Repo,SH2Repo,SH3Repo,SH4Repo,SH5Repo);
 
 	if (!m_Importer.Read())
@@ -351,7 +347,15 @@ bool TestVLM::InitVLM() {
 
 
 	ComPtr<ID3D11ShaderResourceView> SRV;
-	CreateTexture3D(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(), vlmData.textureDimension.z, vlmData.textureDimension.x, vlmData.textureDimension.y, vlmData.indirectionTexture.Format, vlmData.indirectionTexture.data, SRV.GetAddressOf());
+	CreateTexture3D(m_pd3dDevice.Get(), 
+		m_pd3dImmediateContext.Get(), 
+		vlmData.textureDimension.z, 
+		vlmData.textureDimension.x, 
+		vlmData.textureDimension.y, 
+		vlmData.indirectionTexture.Format, 
+		vlmData.indirectionTexture.data, 
+		m_pTex3D.ReleaseAndGetAddressOf(),
+		SRV.ReleaseAndGetAddressOf());
 	m_BasicEffect.SetTexture3D(SRV.Get());
 
 	CreateTexture3D(m_pd3dDevice.Get(),
@@ -361,7 +365,8 @@ bool TestVLM::InitVLM() {
 		vlmData.brickDataDimension.y,
 		vlmData.brickData.AmbientVector.Format,
 		vlmData.brickData.AmbientVector.data,
-		SRV.GetAddressOf());
+		m_pTex3D.ReleaseAndGetAddressOf(),
+		SRV.ReleaseAndGetAddressOf());
 	m_BasicEffect.SetTexture3D(SRV.Get());
 
 	for (int i = 0; i < 6; i++) {
@@ -372,7 +377,8 @@ bool TestVLM::InitVLM() {
 			vlmData.brickDataDimension.y,
 			vlmData.brickData.SHCoefficients[i].Format,
 			vlmData.brickData.SHCoefficients[i].data,
-			SRV.GetAddressOf());
+			m_pTex3D.ReleaseAndGetAddressOf(),
+			SRV.ReleaseAndGetAddressOf());
 		m_BasicEffect.SetTexture3D(SRV.Get());
 	}
 

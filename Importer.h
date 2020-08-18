@@ -129,7 +129,8 @@ public:
 	};
 
 	VLMData vlmData;
-	std::vector<BrickData> importedData;
+	std::vector<std::vector<BrickDataImported>> m_BricksByDepth;
+	INT32 m_BricksNum;
 	FVolumetricLightmapSettings VLMSetting;
 
 	Importer() = default;
@@ -137,17 +138,16 @@ public:
 
 	bool Read();
 	
-	template<class T>
-	void ReadArray(std::vector<T>& arr);
+	//template<class T>
+	//void ReadArray(std::vector<T>& arr);
 
 	template<class T>
 	void ReadArray(std::vector<T>& arr, std::ifstream& importer);
 
-	bool Record(const wchar_t* filename);
-
 	void TransformData();
-	bool ImportFile(const wchar_t* brickDataFile,
-		const wchar_t* bricksByDepthFile = nullptr,
+	bool ImportFile(
+		const wchar_t* bricksByDepthFile,
+		const wchar_t* vlmSettingFile,
 		const wchar_t* indirectTextureFilename = nullptr,
 		const wchar_t* ambientVectorFilename = nullptr,
 		const wchar_t* SH0CoefsFilename = nullptr,
@@ -159,7 +159,7 @@ public:
 
 
 	void BuildIndirectionTexture(
-		const std::vector<std::vector<const BrickData*>>& BricksByDepth,
+		const std::vector<std::vector<BrickDataImported>>& BricksByDepth,
 		const INT32 maxLayoutDimension,
 		const DirectX::XMINT3 Layout,
 		const INT32 formatSize,
@@ -176,8 +176,8 @@ public:
 
 private:
 
-	std::unique_ptr<std::ifstream> pBrickDataImporter;
 	std::unique_ptr<std::ifstream> pBrickByDepthImporter;
+	std::unique_ptr<std::ifstream> pVLMSettingImporter;
 	std::unique_ptr<std::ifstream> pIndirectionTextureImporter;
 	std::unique_ptr<std::ifstream> pAmbientVectorImporter;
 	std::unique_ptr<std::ifstream> pSH0CoefsImporter;
