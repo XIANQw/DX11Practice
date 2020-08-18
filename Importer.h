@@ -67,6 +67,16 @@ struct Texture_t {
 
 };
 
+struct BrickDataImported {
+	DirectX::XMINT3 IndirectionTexturePosition;
+	INT32 TreeDepth;
+	float AverageClosestGeometryDistance;
+	std::vector<DirectX::PackedVector::XMFLOAT3PK> AmbientVector;
+	std::vector<DirectX::PackedVector::XMCOLOR> SHCoefficients[6];
+
+	BrickDataImported() = default;
+};
+
 struct BrickData {
 	DirectX::XMINT3 IndirectionTexturePosition;
 	INT32 TreeDepth;
@@ -130,6 +140,9 @@ public:
 	template<class T>
 	void ReadArray(std::vector<T>& arr);
 
+	template<class T>
+	void ReadArray(std::vector<T>& arr, std::ifstream& importer);
+
 	bool Record(const wchar_t* filename);
 
 	void TransformData();
@@ -143,7 +156,6 @@ public:
 		const wchar_t* SH4CoefsFilename = nullptr,
 		const wchar_t* SH5CoefsFilename = nullptr);
 
-	void InitVLMSetting();
 
 	void BuildIndirectionTexture(
 		const std::vector<std::vector<const BrickData*>>& BricksByDepth,

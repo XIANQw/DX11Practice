@@ -21,6 +21,7 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
+	void VisualizeVLM();
 
 
 protected:
@@ -30,6 +31,7 @@ protected:
 	GameObject m_Sponza;
 	GameObject m_Box;
 	std::vector<GameObject> m_Spheres;
+	std::vector<GameObject> m_Samples;
 
 	Material m_ShadowMat;
 	Material m_Material;
@@ -49,8 +51,9 @@ protected:
 
 	bool m_UseDirLight;
 	bool m_UsePointLight;
-	int m_UseBrickId = 0;
-	int m_SHMode = 0;
+	int m_UseBrickId;
+	int m_SHMode;
+	bool m_isVisulizeVLM;
 
 	wchar_t m_Text[512];
 	DirectX::XMVECTORF32 m_BackGroundColor;

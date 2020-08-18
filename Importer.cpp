@@ -14,6 +14,14 @@ bool Importer::Read() {
 	}
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.VolumeMin), sizeof(float) * 3);
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.VolumeSize), sizeof(float) * 3);
+	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.TopLevelGridSize.x), sizeof(INT32));
+	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.TopLevelGridSize.y), sizeof(INT32));
+	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.TopLevelGridSize.z), sizeof(INT32));
+	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.BrickSize), sizeof(INT32));
+	//VLMSetting.TopLevelGridSize = DirectX::XMINT3(1, 1, 1);
+	//VLMSetting.BrickSize = 4;
+
+	VLMSetting.MaxRefinementLevels = 3;
 	while (!pBrickDataImporter->eof())
 	{
 		INT32 numBricks;
@@ -50,6 +58,16 @@ void Importer::ReadArray(vector<T>& arr) {
 	}
 }
 
+template<class T>
+void Importer::ReadArray(vector<T>& arr, std::ifstream& importer) {
+	INT32 numArray = 0;
+	importer.read(reinterpret_cast<char*>(&numArray), sizeof(INT32));
+	arr.resize(numArray);
+	for (INT32 i = 0; i < numArray; i++) {
+		importer.read(reinterpret_cast<char*>(&arr[i]), sizeof(T));
+	}
+}
+
 
 bool Importer::Record(const wchar_t* filename) {
 	std::ofstream fout(filename);
@@ -71,11 +89,6 @@ bool Importer::Record(const wchar_t* filename) {
 	return true;
 }
 
-void Importer::InitVLMSetting() {
-	VLMSetting.BrickSize = 4;
-	VLMSetting.MaxRefinementLevels = 3;
-	VLMSetting.TopLevelGridSize = DirectX::XMINT3(1, 1, 1);
-}
 
 const DirectX::XMINT3 computePositionByLayout(int index, DirectX::XMINT3 layout) {
 	DirectX::XMINT3 res;
@@ -200,14 +213,33 @@ void ConvertB8G8R8A8ToR8G8B8A8(Texture_t& tex) {
 
 
 void Importer::TransformData() {
+	ifstream tmpRead("Texture\\SHCoefs\\50_2\\brickDataByDepth", std::ios::in | std::ios::binary);
+	if (!tmpRead.is_open()) return;
+	vector<vector<BrickDataImported*>> BricksImported(3);
+	int totalBricksNum;
+	tmpRead.read(reinterpret_cast<char*>(&totalBricksNum), sizeof(INT32));
+	for (int depth = 0; depth < VLMSetting.MaxRefinementLevels; depth++) {
+		int numAtDepth;
+		tmpRead.read(reinterpret_cast<char*>(&numAtDepth), sizeof(INT32));
+		for (int i = 0; i < numAtDepth; i++) {
+			BricksImported[depth].push_back(new BrickDataImported());
+			auto& brick =  BricksImported[depth].back();
+			tmpRead.read(reinterpret_cast<char*>(&brick->IndirectionTexturePosition), sizeof(brick->IndirectionTexturePosition));
+			tmpRead.read(reinterpret_cast<char*>(&brick->TreeDepth), sizeof(INT32));
+			tmpRead.read(reinterpret_cast<char*>(&brick->AverageClosestGeometryDistance), sizeof(float));
+			ReadArray(brick->AmbientVector, tmpRead);
+			for (int j = 0; j < 6; j++) {
+				ReadArray(brick->SHCoefficients[j], tmpRead);
+			}
+		}
+	}
 
-	InitVLMSetting();
 	vector<vector<const BrickData*>> BricksByDepth(3);
 	for (const auto& tmp : importedData) {
 		BricksByDepth[tmp.TreeDepth].push_back(&tmp);
 	}
 
-	INT32 LayoutAllocator = importedData.size();
+	INT32 LayoutAllocator = totalBricksNum;
 	const INT32 MaxBricksInLayoutOneDim = 1 << 8;
 	DirectX::XMINT3 BrickLayoutDimensions;
 	BrickLayoutDimensions.x = DirectX::XMMin(LayoutAllocator, MaxBricksInLayoutOneDim);
@@ -256,6 +288,7 @@ void Importer::TransformData() {
 	vlmData.brickData.LQLightDirection.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	vlmData.brickData.LQLightDirection.Resize(TotalBrickData);
 
+	//BuildIndirectionTexture(BricksByDepth, MaxBricksInLayoutOneDim, BrickLayoutDimensions, inTexture.FormatSize, vlmData);
 
 	if (hasAllSHCoefsTextures) {
 		pIndirectionTextureImporter->read(reinterpret_cast<char*>(inTexture.data.data()), TotalTextureSize * inTexture.FormatSize);
