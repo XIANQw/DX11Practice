@@ -4,19 +4,24 @@ using namespace DirectX;
 
 TestVLM::TestVLM(HINSTANCE hInstance)
 	:D3DApp(hInstance),
-	m_CameraMode(CameraMode::FPS),
 	m_ShadowMat(),
 	m_Material(),
+	m_CameraMode(CameraMode::FPS),
 	m_ObjReader(),
 	m_Speed(500),
 	m_BackGroundColor(Colors::White),
 	m_IsWireframeMode(false),
-	m_SHMode(true),
-	m_SphereSpeed(200),
+	m_UseSH(true),
+	m_UseTexture(true),
+	m_UseLight(false),
 	m_UseDirLight(false),
 	m_UsePointLight(false),
-	m_UseLight(false),
-	m_isVisulizeVLM(false) {
+	m_SHMode(true),
+	m_isVisulizeVLM(false), 
+	m_SphereSpeed(200),
+	m_Text(L""),
+	m_SHRepositoies{L"50_2", L"200"},
+	m_SHFileIndex(0){
 }
 
 
@@ -33,7 +38,6 @@ bool TestVLM::Init() {
 	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_VS3D.hlsl")) return false;
 	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_PS3D.hlsl")) return false;
 
-	m_BasicEffect.SetSHUsed(true);
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get())) return false;
 
 	if (!InitVLM()) return false;
@@ -157,6 +161,18 @@ void TestVLM::UpdateScene(float dt) {
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::V)) {
 		m_isVisulizeVLM = !m_isVisulizeVLM;
 	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::N)) {
+		m_SHFileIndex += 1;
+		m_SHFileIndex = min(m_SHFileIndex, m_SHRepositoies.size() - 1); 
+		m_BasicEffect.ClearTexture3D();
+		InitVLM();
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::M)) {
+		m_SHFileIndex -= 1;
+		m_SHFileIndex = max(0, m_SHFileIndex);
+		m_BasicEffect.ClearTexture3D();
+		InitVLM();
+	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1)) {
 		m_UseDirLight = !m_UseDirLight;
 		m_BasicEffect.SetDirLightUsed(m_UseDirLight);
@@ -186,8 +202,8 @@ void TestVLM::UpdateScene(float dt) {
 		m_SphereSpeed = max(0, m_SphereSpeed);
 	}
 
-	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, dirLight=%d, pointLight=%d, posW(%f,%f,%f), IsVisulizeVLM=%d, CameraSpeed=%d, SphereSpeed=%d",
-		m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z, m_isVisulizeVLM, m_Speed, m_SphereSpeed);
+	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, dirLight=%d, pointLight=%d, posW(%f,%f,%f), IsVisulizeVLM=%d, CameraSpeed=%d, SphereSpeed=%d, detailCellSize=%s",
+		m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z, m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_SHRepositoies[m_SHFileIndex]);
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
@@ -297,15 +313,23 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 }
 
 bool TestVLM::InitVLM() {
-	m_Importer.ImportFile(L"Texture\\SHCoefs\\50_2\\brickData",
-		L"Texture\\SHCoefs\\50_2\\indirectionTexture",
-		L"Texture\\SHCoefs\\50_2\\AmbientVector",
-		L"Texture\\SHCoefs\\50_2\\SH0",
-		L"Texture\\SHCoefs\\50_2\\SH1",
-		L"Texture\\SHCoefs\\50_2\\SH2",
-		L"Texture\\SHCoefs\\50_2\\SH3",
-		L"Texture\\SHCoefs\\50_2\\SH4",
-		L"Texture\\SHCoefs\\50_2\\SH5");
+
+	wchar_t bricksRepo[128], brickByDepthRepo[128], indTexRepo[128], AmbientVecRepo[128], SH0Repo[128],
+		SH1Repo[128], SH2Repo[128], SH3Repo[128], SH4Repo[128], SH5Repo[128];
+	_snwprintf_s(bricksRepo, ARRAYSIZE(bricksRepo), ARRAYSIZE(bricksRepo) - 1, L"Texture\\SHCoefs\\%s\\brickData", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(brickByDepthRepo, ARRAYSIZE(brickByDepthRepo), ARRAYSIZE(brickByDepthRepo) - 1, L"Texture\\SHCoefs\\%s\\brickDataByDepth", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(indTexRepo, ARRAYSIZE(indTexRepo), ARRAYSIZE(indTexRepo) - 1, L"Texture\\SHCoefs\\%s\\indirectionTexture", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(AmbientVecRepo, ARRAYSIZE(AmbientVecRepo), ARRAYSIZE(AmbientVecRepo) - 1, L"Texture\\SHCoefs\\%s\\AmbientVector", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(SH0Repo, ARRAYSIZE(SH0Repo), ARRAYSIZE(SH0Repo) - 1, L"Texture\\SHCoefs\\%s\\SH0", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(SH1Repo, ARRAYSIZE(SH1Repo), ARRAYSIZE(SH1Repo) - 1, L"Texture\\SHCoefs\\%s\\SH1", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(SH2Repo, ARRAYSIZE(SH2Repo), ARRAYSIZE(SH2Repo) - 1, L"Texture\\SHCoefs\\%s\\SH2", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(SH3Repo, ARRAYSIZE(SH3Repo), ARRAYSIZE(SH3Repo) - 1, L"Texture\\SHCoefs\\%s\\SH3", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(SH4Repo, ARRAYSIZE(SH4Repo), ARRAYSIZE(SH4Repo) - 1, L"Texture\\SHCoefs\\%s\\SH4", m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(SH5Repo, ARRAYSIZE(SH5Repo), ARRAYSIZE(SH5Repo) - 1, L"Texture\\SHCoefs\\%s\\SH5", m_SHRepositoies[m_SHFileIndex]);
+
+	m_Importer.ImportFile(bricksRepo, brickByDepthRepo,
+		indTexRepo, AmbientVecRepo, SH0Repo, SH1Repo,SH2Repo,SH3Repo,SH4Repo,SH5Repo);
+
 	if (!m_Importer.Read())
 		return false;
 
@@ -352,6 +376,7 @@ bool TestVLM::InitVLM() {
 		m_BasicEffect.SetTexture3D(SRV.Get());
 	}
 
+	m_BasicEffect.SetSHUsed(m_UseSH);
 	return true;
 }
 

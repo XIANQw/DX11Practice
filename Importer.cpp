@@ -4,7 +4,6 @@
 using namespace std;
 
 Importer::~Importer() {
-	delete pBrickDataImporter;
 }
 
 bool Importer::Read() {
@@ -12,14 +11,15 @@ bool Importer::Read() {
 		std::cout << "open BrickDataImporter failed";
 		return false;
 	}
+	importedData.clear();
+
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.VolumeMin), sizeof(float) * 3);
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.VolumeSize), sizeof(float) * 3);
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.TopLevelGridSize.x), sizeof(INT32));
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.TopLevelGridSize.y), sizeof(INT32));
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.TopLevelGridSize.z), sizeof(INT32));
 	pBrickDataImporter->read(reinterpret_cast<char*>(&VLMSetting.BrickSize), sizeof(INT32));
-	//VLMSetting.TopLevelGridSize = DirectX::XMINT3(1, 1, 1);
-	//VLMSetting.BrickSize = 4;
+
 
 	VLMSetting.MaxRefinementLevels = 3;
 	while (!pBrickDataImporter->eof())
@@ -45,6 +45,7 @@ bool Importer::Read() {
 
 	}
 	while (!importedData.empty() && importedData.back().AmbientVector.empty()) importedData.pop_back();
+
 	return true;
 }
 
@@ -161,7 +162,9 @@ void Importer::CopyBrickToTexture(
 	}
 }
 
-bool Importer::ImportFile(const wchar_t* brickDataFile,
+bool Importer::ImportFile(
+	const wchar_t* brickDataFile,
+	const wchar_t* bricksByDepthFile,
 	const wchar_t* indirectTextureFilename,
 	const wchar_t* ambientVectorFilename,
 	const wchar_t* SH0CoefsFilename,
@@ -170,17 +173,18 @@ bool Importer::ImportFile(const wchar_t* brickDataFile,
 	const wchar_t* SH3CoefsFilename,
 	const wchar_t* SH4CoefsFilename,
 	const wchar_t* SH5CoefsFilename) {
-	pBrickDataImporter = new std::ifstream(brickDataFile, std::ios::in | std::ios::binary);
+	pBrickDataImporter = std::move(unique_ptr<ifstream>(new std::ifstream(brickDataFile, std::ios::in | std::ios::binary)));
 	if (!pBrickDataImporter->is_open())
 		return false;
-	pIndirectionTextureImporter = new std::ifstream(indirectTextureFilename, std::ios::in | std::ios::binary);
-	pAmbientVectorImporter = new std::ifstream(ambientVectorFilename, std::ios::in | std::ios::binary);
-	pSH0CoefsImporter = new std::ifstream(SH0CoefsFilename, std::ios::in | std::ios::binary);
-	pSH1CoefsImporter = new std::ifstream(SH1CoefsFilename, std::ios::in | std::ios::binary);
-	pSH2CoefsImporter = new std::ifstream(SH2CoefsFilename, std::ios::in | std::ios::binary);
-	pSH3CoefsImporter = new std::ifstream(SH3CoefsFilename, std::ios::in | std::ios::binary);
-	pSH4CoefsImporter = new std::ifstream(SH4CoefsFilename, std::ios::in | std::ios::binary);
-	pSH5CoefsImporter = new std::ifstream(SH5CoefsFilename, std::ios::in | std::ios::binary);
+	pBrickByDepthImporter = std::move(unique_ptr<ifstream>(new ifstream(bricksByDepthFile, std::ios::in | std::ios::binary)));
+	pIndirectionTextureImporter = std::move(unique_ptr<ifstream>(new std::ifstream(indirectTextureFilename, std::ios::in | std::ios::binary)));
+	pAmbientVectorImporter = std::move(unique_ptr<ifstream>(new std::ifstream(ambientVectorFilename, std::ios::in | std::ios::binary)));
+	pSH0CoefsImporter = std::move(unique_ptr<ifstream>(new std::ifstream(SH0CoefsFilename, std::ios::in | std::ios::binary)));
+	pSH1CoefsImporter = std::move(unique_ptr<ifstream>(new std::ifstream(SH1CoefsFilename, std::ios::in | std::ios::binary)));
+	pSH2CoefsImporter = std::move(unique_ptr<ifstream>(new std::ifstream(SH2CoefsFilename, std::ios::in | std::ios::binary)));
+	pSH3CoefsImporter = std::move(unique_ptr<ifstream>(new std::ifstream(SH3CoefsFilename, std::ios::in | std::ios::binary)));
+	pSH4CoefsImporter = std::move(unique_ptr<ifstream>(new std::ifstream(SH4CoefsFilename, std::ios::in | std::ios::binary)));
+	pSH5CoefsImporter = std::move(unique_ptr<ifstream>(new std::ifstream(SH5CoefsFilename, std::ios::in | std::ios::binary)));
 	hasAllSHCoefsTextures =
 		pIndirectionTextureImporter->is_open() &&
 		pAmbientVectorImporter->is_open() &&
@@ -213,23 +217,23 @@ void ConvertB8G8R8A8ToR8G8B8A8(Texture_t& tex) {
 
 
 void Importer::TransformData() {
-	ifstream tmpRead("Texture\\SHCoefs\\50_2\\brickDataByDepth", std::ios::in | std::ios::binary);
-	if (!tmpRead.is_open()) return;
+
+	if (!pBrickByDepthImporter->is_open()) return;
 	vector<vector<BrickDataImported*>> BricksImported(3);
 	int totalBricksNum;
-	tmpRead.read(reinterpret_cast<char*>(&totalBricksNum), sizeof(INT32));
+	pBrickByDepthImporter->read(reinterpret_cast<char*>(&totalBricksNum), sizeof(INT32));
 	for (int depth = 0; depth < VLMSetting.MaxRefinementLevels; depth++) {
 		int numAtDepth;
-		tmpRead.read(reinterpret_cast<char*>(&numAtDepth), sizeof(INT32));
+		pBrickByDepthImporter->read(reinterpret_cast<char*>(&numAtDepth), sizeof(INT32));
 		for (int i = 0; i < numAtDepth; i++) {
 			BricksImported[depth].push_back(new BrickDataImported());
 			auto& brick =  BricksImported[depth].back();
-			tmpRead.read(reinterpret_cast<char*>(&brick->IndirectionTexturePosition), sizeof(brick->IndirectionTexturePosition));
-			tmpRead.read(reinterpret_cast<char*>(&brick->TreeDepth), sizeof(INT32));
-			tmpRead.read(reinterpret_cast<char*>(&brick->AverageClosestGeometryDistance), sizeof(float));
-			ReadArray(brick->AmbientVector, tmpRead);
+			pBrickByDepthImporter->read(reinterpret_cast<char*>(&brick->IndirectionTexturePosition), sizeof(brick->IndirectionTexturePosition));
+			pBrickByDepthImporter->read(reinterpret_cast<char*>(&brick->TreeDepth), sizeof(INT32));
+			pBrickByDepthImporter->read(reinterpret_cast<char*>(&brick->AverageClosestGeometryDistance), sizeof(float));
+			ReadArray(brick->AmbientVector, *(pBrickByDepthImporter.get()));
 			for (int j = 0; j < 6; j++) {
-				ReadArray(brick->SHCoefficients[j], tmpRead);
+				ReadArray(brick->SHCoefficients[j], *(pBrickByDepthImporter.get()));
 			}
 		}
 	}
@@ -288,19 +292,15 @@ void Importer::TransformData() {
 	vlmData.brickData.LQLightDirection.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	vlmData.brickData.LQLightDirection.Resize(TotalBrickData);
 
-	//BuildIndirectionTexture(BricksByDepth, MaxBricksInLayoutOneDim, BrickLayoutDimensions, inTexture.FormatSize, vlmData);
 
 	if (hasAllSHCoefsTextures) {
 		pIndirectionTextureImporter->read(reinterpret_cast<char*>(inTexture.data.data()), TotalTextureSize * inTexture.FormatSize);
 		pAmbientVectorImporter->read(reinterpret_cast<char*>(vlmData.brickData.AmbientVector.data.data()), vlmData.brickData.AmbientVector.data.size());
-
-		std::vector<std::ifstream*> SHCoefsImporter{ pSH0CoefsImporter, pSH1CoefsImporter, pSH2CoefsImporter, pSH3CoefsImporter, pSH4CoefsImporter, pSH5CoefsImporter };
+		
+		std::vector<std::ifstream*> SHCoefsImporter{ pSH0CoefsImporter.get(), pSH1CoefsImporter.get(), pSH2CoefsImporter.get(), pSH3CoefsImporter.get(), pSH4CoefsImporter.get(), pSH5CoefsImporter.get() };
 		for (int i = 0; i < 6; i++) {
 			SHCoefsImporter[i]->read(reinterpret_cast<char*>(vlmData.brickData.SHCoefficients[i].data.data()), vlmData.brickData.SHCoefficients[i].data.size());
-			delete SHCoefsImporter[i];
-			SHCoefsImporter[i] = nullptr;
 		}
-		
 	}
 	else {
 		BuildIndirectionTexture(BricksByDepth, MaxBricksInLayoutOneDim, BrickLayoutDimensions, inTexture.FormatSize, vlmData);

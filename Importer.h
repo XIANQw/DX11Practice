@@ -4,11 +4,11 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <unordered_map>
 #include <algorithm>
 #include <filesystem>
 #include <DirectXPackedVector.h>
 #include <DirectXMath.h>
+#include <wrl/client.h>
 
 #include "ThridParty/DXTrace.h"
 #include "Vertex.h"
@@ -147,6 +147,7 @@ public:
 
 	void TransformData();
 	bool ImportFile(const wchar_t* brickDataFile,
+		const wchar_t* bricksByDepthFile = nullptr,
 		const wchar_t* indirectTextureFilename = nullptr,
 		const wchar_t* ambientVectorFilename = nullptr,
 		const wchar_t* SH0CoefsFilename = nullptr,
@@ -174,15 +175,17 @@ public:
 
 
 private:
-	std::ifstream* pBrickDataImporter;
-	std::ifstream* pIndirectionTextureImporter;
-	std::ifstream* pAmbientVectorImporter;
-	std::ifstream* pSH0CoefsImporter;
-	std::ifstream* pSH1CoefsImporter;
-	std::ifstream* pSH2CoefsImporter;
-	std::ifstream* pSH3CoefsImporter;
-	std::ifstream* pSH4CoefsImporter;
-	std::ifstream* pSH5CoefsImporter;
+
+	std::unique_ptr<std::ifstream> pBrickDataImporter;
+	std::unique_ptr<std::ifstream> pBrickByDepthImporter;
+	std::unique_ptr<std::ifstream> pIndirectionTextureImporter;
+	std::unique_ptr<std::ifstream> pAmbientVectorImporter;
+	std::unique_ptr<std::ifstream> pSH0CoefsImporter;
+	std::unique_ptr<std::ifstream> pSH1CoefsImporter;
+	std::unique_ptr<std::ifstream> pSH2CoefsImporter;
+	std::unique_ptr<std::ifstream> pSH3CoefsImporter;
+	std::unique_ptr<std::ifstream> pSH4CoefsImporter;
+	std::unique_ptr<std::ifstream> pSH5CoefsImporter;
 	bool hasAllSHCoefsTextures;
 };
 

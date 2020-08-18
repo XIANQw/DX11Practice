@@ -51,14 +51,16 @@ protected:
 
 	bool m_UseDirLight;
 	bool m_UsePointLight;
-	int m_UseBrickId;
-	int m_SHMode;
 	bool m_isVisulizeVLM;
+	int m_SHMode;
 
 	wchar_t m_Text[512];
 	DirectX::XMVECTORF32 m_BackGroundColor;
 	INT32 m_Speed;
 	INT32 m_SphereSpeed;
 	std::vector<INT8> m_SpheresDirection;
+
+	std::vector<const wchar_t*> m_SHRepositoies;
+	INT32 m_SHFileIndex;
 };
 

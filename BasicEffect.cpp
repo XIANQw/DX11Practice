@@ -513,7 +513,9 @@ void XM_CALLCONV BasicEffect::SetRefShadowMatrix(DirectX::FXMMATRIX RefS)
 	cBuffer.data.refShadow = XMMatrixTranspose(RefS);
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
-
+/*
+	设置光源
+*/
 void BasicEffect::SetDirLight(size_t pos, const DirectionalLight& dirLight)
 {
 	auto& cBuffer = pImpl->m_CBRarely;
@@ -553,6 +555,9 @@ void BasicEffect::SetSpotLightNums(int num) {
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
+/*
+	设置D3D资源
+*/
 void BasicEffect::SetMaterial(const Material& material) {
 	auto& cBuffer = pImpl->m_CBDrawing;
 	cBuffer.data.material = material;
@@ -574,6 +579,10 @@ void BasicEffect::SetTexture3D(ID3D11ShaderResourceView* texture) {
 
 void BasicEffect::SetRWTexture3D(ID3D11UnorderedAccessView* texture) {
 	pImpl->m_pRWTexture3DArray.emplace_back(texture);
+}
+
+void BasicEffect::ClearTexture3D() {
+	pImpl->m_pTexture3DArray.clear();
 }
 
 
