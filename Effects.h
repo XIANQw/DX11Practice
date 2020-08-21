@@ -51,6 +51,10 @@ public:
 	// 初始化所需资源
 	bool InitAll(ID3D11Device* device);
 
+	bool SetVSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetPSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
 
 	//
 	// 渲染模式的变更
@@ -92,31 +96,52 @@ public:
 	//
 
 	// 各种类型灯光允许的最大数目
-	static const int maxLights = 5;
+	static const int maxLights = 20;
 	bool isShadow;
 
 	void SetDirLight(size_t pos, const DirectionalLight& dirLight);
 	void SetPointLight(size_t pos, const PointLight& pointLight);
 	void SetSpotLight(size_t pos, const SpotLight& spotLight);
+	void SetDirLightNums(int num);
+	void SetPointLightNums(int num);
+	void SetSpotLightNums(int num);
 
 	void SetMaterial(const Material& material);
 
 	void SetTexture(ID3D11ShaderResourceView* texture);
+	void SetTexture2D(ID3D11ShaderResourceView* texture);
+	void SetTexture3D(ID3D11ShaderResourceView* texture);
+	void SetRWTexture3D(ID3D11UnorderedAccessView* texture);
+	void ClearTexture3D();
 
 	void XM_CALLCONV SetEyePos(DirectX::FXMVECTOR eyePos);
-
-
+	
+	// Volumetric Lightmap 设置
+	void SetVLMWorldToUVScale(DirectX::XMFLOAT3 VLMWorldToUVScale);
+	void SetVLMWorldToUVAdd(DirectX::XMFLOAT3 VLMWorldToUVAdd);
+	void SetVLMIndirectionTextureSize(DirectX::XMFLOAT3 indirectionTextureSize);
+	void SetVLMBrickSize(float brickSize);
+	void SetVLMBrickTexelSize(DirectX::XMFLOAT3 VLMBrickTexelSize);
+	void SetSHMode(int);
+	void SetSphereSpeed(int SphereSpeed);
 
 	//
 	// 状态开关设置
 	//
-
 	void SetReflectionState(bool isOn);
 	void SetShadowState(bool isOn);
 	void SetTextureUsed(bool isOn);
+	void SetSHUsed(bool isOn);
+	void SetLightUsed(bool isOn);
+	void SetDirLightUsed(bool isOn);
+	void SetPointLightUsed(bool isOn);
+
 
 	// 应用常量缓冲区和纹理资源的变更
 	void Apply(ID3D11DeviceContext* deviceContext);
+
+	void SetDebugName();
+
 
 private:
 	class Impl;

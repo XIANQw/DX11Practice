@@ -3,7 +3,6 @@
 
 #include "d3dApp.h"
 #include "light.h"
-#include "Geometry.h"
 #include "CBuffer.h"
 #include <vector>
 

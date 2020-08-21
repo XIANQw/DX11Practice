@@ -16,9 +16,6 @@
     <Filter Include="shader">
       <UniqueIdentifier>{05234cff-3973-419b-9b23-d4a70fb6aab9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="generic">
-      <UniqueIdentifier>{f33e2e88-1f31-4072-8a4e-713879572c66}</UniqueIdentifier>
-    </Filter>
     <Filter Include="shader\Ex9">
       <UniqueIdentifier>{cbb3d261-a07d-485b-a583-bb68bd6d897c}</UniqueIdentifier>
     </Filter>
@@ -40,26 +37,14 @@
     <Filter Include="shader\Ex13">
       <UniqueIdentifier>{0fb61b82-1b34-4293-968a-07bdd88a007f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThridParty">
+      <UniqueIdentifier>{008cf6cf-8b0c-43b3-b190-9d1b64a68b57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Instances">
+      <UniqueIdentifier>{f33e2e88-1f31-4072-8a4e-713879572c66}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Keyboard.h">
-      <Filter>generic</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>generic</Filter>
-    </ClInclude>
-    <ClInclude Include="Ex7Light.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Ex9Tex.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader.h">
-      <Filter>generic</Filter>
-    </ClInclude>
-    <ClInclude Include="WICTextureLoader.h">
-      <Filter>generic</Filter>
-    </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -67,18 +52,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="d3dApp.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dUtil.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="DXTrace.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="GameTimer.h">
-      <Filter>头文件\Generic</Filter>
-    </ClInclude>
-    <ClInclude Include="Geometry.h">
       <Filter>头文件\Generic</Filter>
     </ClInclude>
     <ClInclude Include="light.h">
@@ -93,9 +66,6 @@
     <ClInclude Include="CBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Ex10Camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="RenderStates.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -108,41 +78,62 @@
     <ClInclude Include="Effects.h">
       <Filter>Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Ex13Shadow.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ObjReader.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Ex19ReadObj.h">
+    <ClInclude Include="Importer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ThridParty\WICTextureLoader.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\Mouse.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\Keyboard.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\Geometry.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\GameTimer.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\DXTrace.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\DDSTextureLoader.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\d3dUtil.h">
+      <Filter>ThridParty</Filter>
+    </ClInclude>
+    <ClInclude Include="Ex9Tex.h">
+      <Filter>Instances</Filter>
+    </ClInclude>
+    <ClInclude Include="Ex7Light.h">
+      <Filter>Instances</Filter>
+    </ClInclude>
+    <ClInclude Include="Ex10Camera.h">
+      <Filter>Instances</Filter>
+    </ClInclude>
+    <ClInclude Include="Ex13Shadow.h">
+      <Filter>Instances</Filter>
+    </ClInclude>
+    <ClInclude Include="Ex19ReadObj.h">
+      <Filter>Instances</Filter>
+    </ClInclude>
     <ClInclude Include="TestSponza.h">
-      <Filter>头文件</Filter>
+      <Filter>Instances</Filter>
+    </ClInclude>
+    <ClInclude Include="TestVLM.h">
+      <Filter>Instances</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Keyboard.cpp">
-      <Filter>generic</Filter>
-    </ClCompile>
-    <ClCompile Include="Mouse.cpp">
-      <Filter>generic</Filter>
-    </ClCompile>
-    <ClCompile Include="Ex7Light.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="DDSTextureLoader.cpp">
-      <Filter>generic</Filter>
-    </ClCompile>
-    <ClCompile Include="WICTextureLoader.cpp">
-      <Filter>generic</Filter>
-    </ClCompile>
-    <ClCompile Include="Ex9Tex.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -152,23 +143,11 @@
     <ClCompile Include="d3dApp.cpp">
       <Filter>源文件\Generic</Filter>
     </ClCompile>
-    <ClCompile Include="d3dUtil.cpp">
-      <Filter>源文件\Generic</Filter>
-    </ClCompile>
-    <ClCompile Include="DXTrace.cpp">
-      <Filter>源文件\Generic</Filter>
-    </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
-      <Filter>源文件\Generic</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>源文件\Generic</Filter>
     </ClCompile>
     <ClCompile Include="Vertex.cpp">
       <Filter>源文件\Generic</Filter>
-    </ClCompile>
-    <ClCompile Include="Ex10Camera.cpp">
-      <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="RenderStates.cpp">
       <Filter>源文件</Filter>
@@ -179,20 +158,59 @@
     <ClCompile Include="BasicEffect.cpp">
       <Filter>Effect</Filter>
     </ClCompile>
-    <ClCompile Include="Ex13Shadow.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="ObjReader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Ex19ReadObj.cpp">
+    <ClCompile Include="Importer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ThridParty\WICTextureLoader.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Mouse.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Keyboard.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\Geometry.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\GameTimer.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\DXTrace.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\DDSTextureLoader.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="ThridParty\d3dUtil.cpp">
+      <Filter>ThridParty</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex7Light.cpp">
+      <Filter>Instances</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex9Tex.cpp">
+      <Filter>Instances</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex10Camera.cpp">
+      <Filter>Instances</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex13Shadow.cpp">
+      <Filter>Instances</Filter>
+    </ClCompile>
+    <ClCompile Include="Ex19ReadObj.cpp">
+      <Filter>Instances</Filter>
+    </ClCompile>
     <ClCompile Include="TestSponza.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Instances</Filter>
+    </ClCompile>
+    <ClCompile Include="TestVLM.cpp">
+      <Filter>Instances</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -206,11 +224,20 @@
     <None Include="HLSL\Ex13_CBuffers.hlsli">
       <Filter>shader\Ex13</Filter>
     </None>
-    <None Include="HLSL\LightHelper.hlsli">
-      <Filter>shader\Ex10</Filter>
-    </None>
     <None Include="HLSL\CBuffer.hlsli">
       <Filter>shader\Ex10</Filter>
+    </None>
+    <None Include="HLSL\TestVLM.hlsli">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="HLSL\LightHelper.hlsli">
+      <Filter>shader\Ex13</Filter>
+    </None>
+    <None Include="HLSL\SHComputer.hlsli">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="HLSL\SHLight.hlsli">
+      <Filter>shader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -243,6 +270,12 @@
     </FxCompile>
     <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
       <Filter>shader\Ex10</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\TestVLM_PS3D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\TestVLM_VS3D.hlsl">
+      <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

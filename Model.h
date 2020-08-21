@@ -3,7 +3,8 @@
 #include <DirectXCollision.h>
 #include "Effects.h"
 #include "ObjReader.h"
-#include "Geometry.h"
+#include "ThridParty/Geometry.h"
+
 /********************************************************************************************
 *							Model.h															*
 *		用于管理从.obj文件中读取的模型															*

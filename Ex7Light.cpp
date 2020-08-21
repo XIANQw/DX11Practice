@@ -1,6 +1,4 @@
 ﻿#include "Ex7Light.h"
-#include "d3dUtil.h"
-#include "DXTrace.h"
 using namespace DirectX;
 
 Ex7Light::Ex7Light(HINSTANCE hInstance)

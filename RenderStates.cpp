@@ -1,7 +1,7 @@
 ﻿#include "RenderStates.h"
+#include "ThridParty/d3dUtil.h"
+#include "ThridParty/DXTrace.h"
 
-#include "d3dUtil.h"
-#include "DXTrace.h"
 using namespace Microsoft::WRL;
 
 ComPtr<ID3D11RasterizerState> RenderStates::RSNoCull = nullptr;		  // 背面剔除
@@ -206,7 +206,6 @@ void RenderStates::InitAll(ID3D11Device* device)
 	// 而默认情况下模板测试就是关闭的
 	dsDesc.DepthEnable = false;
 	dsDesc.StencilEnable = false;
-
 	HR(device->CreateDepthStencilState(&dsDesc, DSSNoDepthTest.GetAddressOf()));
 
 
@@ -218,7 +217,6 @@ void RenderStates::InitAll(ID3D11Device* device)
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	dsDesc.StencilEnable = false;
-
 	HR(device->CreateDepthStencilState(&dsDesc, DSSNoDepthWrite.GetAddressOf()));
 
 

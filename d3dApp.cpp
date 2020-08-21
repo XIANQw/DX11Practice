@@ -1,6 +1,5 @@
 #include "d3dApp.h"
-#include "d3dUtil.h"
-#include "DXTrace.h"
+
 #include <sstream>
 
 namespace
@@ -21,7 +20,7 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance),
-	m_MainWndCaption(L"Rendering something"),
+	m_MainWndCaption(L"Rendering Something ..."),
 	m_ClientWidth(1280),
 	m_ClientHeight(720),
 	m_hMainWnd(nullptr),
@@ -74,30 +73,24 @@ int D3DApp::Run()
 
 	m_Timer.Reset();
 
-	while (msg.message != WM_QUIT)
-	{
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-		{
+	while (msg.message != WM_QUIT){
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)){
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		else
-		{
+		else{
 			m_Timer.Tick();
 
-			if (!m_AppPaused)
-			{
+			if (!m_AppPaused){
 				CalculateFrameStats();
 				UpdateScene(m_Timer.DeltaTime());
 				DrawScene();
 			}
-			else
-			{
+			else{
 				Sleep(100);
 			}
 		}
 	}
-
 	return (int)msg.wParam;
 }
 
@@ -109,11 +102,11 @@ bool D3DApp::Init()
 	if (!InitMainWindow())
 		return false;
 
-	if (!InitDirect3D())
+	if (!InitDirect2D())
 		return false;
 
-	m_pMouse->SetWindow(m_hMainWnd);
-	m_pMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
+	if (!InitDirect3D())
+		return false;
 
 	return true;
 }
@@ -138,13 +131,13 @@ void D3DApp::OnResize()
 
 	// 重设交换链并且重新创建渲染目标视图
 	ComPtr<ID3D11Texture2D> backBuffer;
-	HR(m_pSwapChain->ResizeBuffers(1, m_ClientWidth, m_ClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+	HR(m_pSwapChain->ResizeBuffers(1, m_ClientWidth, m_ClientHeight, DXGI_FORMAT_B8G8R8A8_UNORM, 0));	// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
 	HR(m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf())));
 	HR(m_pd3dDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, m_pRenderTargetView.GetAddressOf()));
-	
+
 	// 设置调试对象名
 	D3D11SetDebugObjectName(backBuffer.Get(), "BackBuffer[0]");
-	
+
 	backBuffer.Reset();
 
 
@@ -167,7 +160,6 @@ void D3DApp::OnResize()
 		depthStencilDesc.SampleDesc.Count = 1;
 		depthStencilDesc.SampleDesc.Quality = 0;
 	}
-	
 
 
 	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -192,12 +184,12 @@ void D3DApp::OnResize()
 	m_ScreenViewport.MaxDepth = 1.0f;
 
 	m_pd3dImmediateContext->RSSetViewports(1, &m_ScreenViewport);
-	
+
 	// 设置调试对象名
 	D3D11SetDebugObjectName(m_pDepthStencilBuffer.Get(), "DepthStencilBuffer");
 	D3D11SetDebugObjectName(m_pDepthStencilView.Get(), "DepthStencilView");
 	D3D11SetDebugObjectName(m_pRenderTargetView.Get(), "BackBufferRTV[0]");
-	
+
 }
 
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -310,9 +302,9 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
 		return 0;
 
-
-	// mouse
+		// 监测这些键盘/鼠标事件
 	case WM_INPUT:
+
 	case WM_LBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
@@ -322,18 +314,20 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
 	case WM_XBUTTONUP:
+
 	case WM_MOUSEWHEEL:
 	case WM_MOUSEHOVER:
 	case WM_MOUSEMOVE:
 		m_pMouse->ProcessMessage(msg, wParam, lParam);
 		return 0;
-		// keyboard
+
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
 		m_pKeyboard->ProcessMessage(msg, wParam, lParam);
 		return 0;
+
 	case WM_ACTIVATEAPP:
 		m_pMouse->ProcessMessage(msg, wParam, lParam);
 		m_pKeyboard->ProcessMessage(msg, wParam, lParam);
@@ -364,8 +358,10 @@ bool D3DApp::InitMainWindow()
 		return false;
 	}
 
+	// 将窗口调整到中心
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
 	// Compute window rectangle dimensions based on requested client area dimensions.
 	RECT R = { 0, 0, m_ClientWidth, m_ClientHeight };
 	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
@@ -373,7 +369,8 @@ bool D3DApp::InitMainWindow()
 	int height = R.bottom - R.top;
 
 	m_hMainWnd = CreateWindow(L"D3DWndClassName", m_MainWndCaption.c_str(),
-		WS_OVERLAPPEDWINDOW, (screenWidth - width)/2, (screenHeight - height)/2, width, height, 0, 0, m_hAppInst, 0);
+		WS_OVERLAPPEDWINDOW, (screenWidth - width) / 2, (screenHeight - height) / 2, width, height, 0, 0, m_hAppInst, 0);
+
 	if (!m_hMainWnd)
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);
@@ -386,12 +383,21 @@ bool D3DApp::InitMainWindow()
 	return true;
 }
 
+bool D3DApp::InitDirect2D()
+{
+	HR(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_pd2dFactory.GetAddressOf()));
+	HR(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown**>(m_pdwriteFactory.GetAddressOf())));
+
+	return true;
+}
+
 bool D3DApp::InitDirect3D()
 {
 	HRESULT hr = S_OK;
 
 	// 创建D3D设备 和 D3D设备上下文
-	UINT createDeviceFlags = 0;
+	UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;	// Direct2D需要支持BGRA格式
 #if defined(DEBUG) || defined(_DEBUG)  
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -446,8 +452,11 @@ bool D3DApp::InitDirect3D()
 
 	// 检测 MSAA支持的质量等级
 	m_pd3dDevice->CheckMultisampleQualityLevels(
-		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_4xMsaaQuality);
+		DXGI_FORMAT_B8G8R8A8_UNORM, 4, &m_4xMsaaQuality);	// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
 	assert(m_4xMsaaQuality > 0);
+
+
+
 
 	ComPtr<IDXGIDevice> dxgiDevice = nullptr;
 	ComPtr<IDXGIAdapter> dxgiAdapter = nullptr;
@@ -472,7 +481,7 @@ bool D3DApp::InitDirect3D()
 		ZeroMemory(&sd, sizeof(sd));
 		sd.Width = m_ClientWidth;
 		sd.Height = m_ClientHeight;
-		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		sd.Format = DXGI_FORMAT_B8G8R8A8_UNORM;		// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
 		// 是否开启4倍多重采样？
 		if (m_Enable4xMsaa)
 		{
@@ -508,7 +517,7 @@ bool D3DApp::InitDirect3D()
 		sd.BufferDesc.Height = m_ClientHeight;
 		sd.BufferDesc.RefreshRate.Numerator = 60;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
-		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;	// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
 		sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 		sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 		// 是否开启4倍多重采样？
@@ -531,8 +540,6 @@ bool D3DApp::InitDirect3D()
 		HR(dxgiFactory1->CreateSwapChain(m_pd3dDevice.Get(), &sd, m_pSwapChain.GetAddressOf()));
 	}
 
-
-
 	// 可以禁止alt+enter全屏
 	dxgiFactory1->MakeWindowAssociation(m_hMainWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 
@@ -546,6 +553,7 @@ bool D3DApp::InitDirect3D()
 
 	return true;
 }
+
 
 void D3DApp::CalculateFrameStats()
 {
@@ -573,4 +581,13 @@ void D3DApp::CalculateFrameStats()
 	}
 }
 
+
+void D3DApp::WriteInformation(const std::wstring& text) {
+	if (m_pd2dRenderTarget != nullptr) {
+		m_pd2dRenderTarget->BeginDraw();
+		m_pd2dRenderTarget->DrawTextW(text.c_str(), (UINT32)text.length(), m_pTextFormat.Get(),
+			D2D1_RECT_F{ 0.0f, 0.0f, 600.0f, 200.0f }, m_pColorBrush.Get());
+		HR(m_pd2dRenderTarget->EndDraw());
+	}
+}
 
