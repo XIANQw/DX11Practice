@@ -30,8 +30,9 @@ protected:
 
 	GameObject m_Sponza;
 	GameObject m_Box;
-	std::vector<GameObject> m_Spheres;
-	std::vector<GameObject> m_Samples;
+	std::vector<Transform> m_DynamicTransform;
+	GameObject m_Sample;
+	std::vector<std::vector<Transform>> m_TransformData;
 
 	Material m_ShadowMat;
 	Material m_Material;
@@ -54,10 +55,13 @@ protected:
 	bool m_isVisulizeVLM;
 	int m_SHMode;
 
-	wchar_t m_Text[512];
+	bool m_isControlObj;
+
+	wchar_t m_Text[1024];
 	DirectX::XMVECTORF32 m_BackGroundColor;
 	INT32 m_Speed;
 	INT32 m_SphereSpeed;
+	INT32 m_TargetDistance;
 	std::vector<INT8> m_SpheresDirection;
 
 	std::vector<const wchar_t*> m_SHRepositoies;

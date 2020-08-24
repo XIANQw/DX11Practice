@@ -16,12 +16,12 @@ TestVLM::TestVLM(HINSTANCE hInstance)
 	m_UseLight(false),
 	m_UseDirLight(false),
 	m_UsePointLight(false),
-	m_SHMode(true),
-	m_isVisulizeVLM(false), 
+	m_SHMode(2),
+	m_isVisulizeVLM(false),
 	m_SphereSpeed(200),
 	m_Text(L""),
-	m_SHRepositoies{L"200", L"150", L"100", L"50" },
-	m_SHFileIndex(0){
+	m_SHRepositoies{ L"200", L"150", L"100", L"50" },
+	m_SHFileIndex(0), m_isControlObj(false), m_TargetDistance(100){
 }
 
 
@@ -37,12 +37,13 @@ bool TestVLM::Init() {
 
 	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_VS3D.hlsl")) return false;
 	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_PS3D.hlsl")) return false;
-
+	if (!m_BasicEffect.SetInstanceVS(m_pd3dDevice.Get(), L"HLSL\\InstancesVertexShader.hlsl")) return false;
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get())) return false;
 
 	if (!InitVLM()) return false;
 	if (!InitResource()) return false;
 
+	m_BasicEffect.SetSHMode(m_SHMode);
 
 	m_BasicEffect.SetDebugName();
 	m_pMouse->SetWindow(m_hMainWnd);
@@ -97,6 +98,7 @@ void TestVLM::UpdateScene(float dt) {
 	m_KeyboardTracker.Update(keyState);
 
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
+	auto& sampleTrans = m_Sample.GetTransform();
 	XMFLOAT3 curPos;
 	if (m_CameraMode == CameraMode::Free) {
 		// FPS mode
@@ -106,11 +108,14 @@ void TestVLM::UpdateScene(float dt) {
 		if (keyState.IsKeyDown(Keyboard::S)) {
 			cam1st->MoveForward(-dt * m_Speed);
 		}
-		if (keyState.IsKeyDown(Keyboard::D)) cam1st->Strafe(dt * m_Speed);
-		if (keyState.IsKeyDown(Keyboard::A)) cam1st->Strafe(-dt * m_Speed);
+		if (keyState.IsKeyDown(Keyboard::D)) {
+			cam1st->Strafe(dt * m_Speed);
+		}
+		if (keyState.IsKeyDown(Keyboard::A)) {
+			cam1st->Strafe(-dt * m_Speed);
+		}
 
-
-		// 限制摄像机在固定范围内 x(-8.9, 8.9), z(-8.9, 8.9), y(0, 8.9) y不能为负
+		// 限制摄像机在固定范围内
 		XMFLOAT3 adjustPos;
 		// XMVectorClamp(V, min, max) 将V的每个分量限定在[min, max]范围
 		XMVECTOR VolumeMinVec = XMLoadFloat3(&m_Importer.VLMSetting.VolumeMin);
@@ -121,10 +126,15 @@ void TestVLM::UpdateScene(float dt) {
 		cam1st->SetPosition(adjustPos);
 		cam1st->Pitch(mouseState.y * dt * 1.25f);
 		cam1st->RotateY(mouseState.x * dt * 1.25f);
+		if (m_isControlObj) {
+			m_TargetDistance += 0.05 * mouseState.scrollWheelValue;
+			XMFLOAT3 forward = cam1st->GetLookAxis();
+			sampleTrans.SetPosition(adjustPos.x + m_TargetDistance * forward.x, adjustPos.y + m_TargetDistance * forward.y, adjustPos.z + m_TargetDistance * forward.z);
+		}
 		BoundingBox houseBox = m_Sponza.GetBoundingBox();
 
-		for (int i = 0; i < m_Spheres.size(); i++) {
-			auto& trans = m_Spheres[i].GetTransform();
+		for (int i = 0; i < m_DynamicTransform.size(); i++) {
+			auto& trans = m_DynamicTransform[i];
 			curPos = trans.GetPosition();
 			if (curPos.x > 1160.0f) m_SpheresDirection[i] = -1;
 			else if (curPos.x < -1300.0f) m_SpheresDirection[i] = 1;
@@ -163,15 +173,23 @@ void TestVLM::UpdateScene(float dt) {
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::N)) {
 		m_SHFileIndex += 1;
-		m_SHFileIndex = min(m_SHFileIndex, m_SHRepositoies.size() - 1); 
+		m_SHFileIndex = min(m_SHFileIndex, m_SHRepositoies.size() - 1);
 		m_BasicEffect.ClearTexture3D();
 		InitVLM();
+		VisualizeVLM();
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::M)) {
 		m_SHFileIndex -= 1;
 		m_SHFileIndex = max(0, m_SHFileIndex);
 		m_BasicEffect.ClearTexture3D();
 		InitVLM();
+		VisualizeVLM();
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::K)) {
+		m_isControlObj = !m_isControlObj;
+		XMFLOAT3 samplePos = m_Sample.GetTransform().GetPosition();
+		cam1st->SetPosition(samplePos.x, samplePos.y + 100, samplePos.z - 100);
+		cam1st->LookAt(cam1st->GetPosition(), samplePos, XMFLOAT3(0.0f, 1.0f, 0.0f));
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1)) {
 		m_UseDirLight = !m_UseDirLight;
@@ -202,8 +220,11 @@ void TestVLM::UpdateScene(float dt) {
 		m_SphereSpeed = max(0, m_SphereSpeed);
 	}
 
-	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, dirLight=%d, pointLight=%d, posW(%f,%f,%f), IsVisulizeVLM=%d, CameraSpeed=%d, SphereSpeed=%d, detailCellSize=%s",
-		m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z, m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_SHRepositoies[m_SHFileIndex]);
+	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, dirLight=%d, pointLight=%d, posW(%f,%f,%f), \
+		IsVisulizeVLM=%d, CameraSpeed=%d, SphereSpeed=%d, detailCellSize=%s, VolumeSize(%.1f, %.1f, %.1f), bricksNum=%d, ControlSphere=%d",
+		m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z,
+		m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_SHRepositoies[m_SHFileIndex],
+		m_Importer.VLMSetting.VolumeSize.x, m_Importer.VLMSetting.VolumeSize.y, m_Importer.VLMSetting.VolumeSize.z, m_Importer.m_BricksNum, m_isControlObj);
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
@@ -216,33 +237,39 @@ void TestVLM::DrawScene() {
 	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&m_BackGroundColor));
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	/************************
-	1. 绘制物体
-	*************************/
-	if (m_IsWireframeMode) {
-		m_BasicEffect.SetWireFrameWode(m_pd3dImmediateContext.Get());
-		m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-		/*
-		3. 绘制世界包围盒
-		*/
-		m_Box.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	}
-	else {
-		m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
-		m_Sponza.SetMaterial(m_Material);
-		m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	}
-	m_BasicEffect.SetTextureUsed(false);
-	for (auto& sphere : m_Spheres) {
-		sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	}
-	if (m_isVisulizeVLM) {
-		for (auto& sample : m_Samples) {
-			sample.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	{
+		/************************
+		1. 绘制场景
+		*************************/
+		if (m_IsWireframeMode) {
+			m_BasicEffect.SetWireFrameWode(m_pd3dImmediateContext.Get());
+			m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+			
+			// 显示Volume的边界
+			m_Box.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+		}
+		else {
+			m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
+			m_Sponza.SetMaterial(m_Material);
+			m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 		}
 	}
-	m_BasicEffect.SetTextureUsed(m_UseTexture);
 
+
+	// Draw observe Obj
+	m_BasicEffect.SetTextureUsed(false);
+	m_Sample.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+
+	// Draw dynamic obj
+	m_BasicEffect.SetRenderInstanceDefault(m_pd3dImmediateContext.Get());
+	m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_DynamicTransform);
+
+	if (m_isVisulizeVLM) {
+		for (INT32 depth = 0; depth < m_TransformData.size(); depth++)
+			m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_TransformData[depth]);
+	}
+
+	m_BasicEffect.SetTextureUsed(m_UseTexture);
 	WriteInformation(std::wstring(m_Text));
 
 	HR(m_pSwapChain->Present(0, 0));
@@ -262,23 +289,21 @@ XMFLOAT3 IndTexPosToWorldPos(const XMINT3& indTexPos, const FVolumetricLightmapS
 }
 
 void TestVLM::VisualizeVLM() {
-	m_Samples.resize(m_Importer.m_BricksNum);
 
 	INT32 SampleIndex = 0;
+	m_TransformData.resize(m_Importer.m_BricksByDepth.size());
 	for (INT32 depth = 0; depth < m_Importer.m_BricksByDepth.size(); depth++) {
+		auto& TransformDataAtDepth = m_TransformData[depth];
+		TransformDataAtDepth.resize(m_Importer.m_BricksByDepth[depth].size());
+
 		for (INT32 index = 0; index < m_Importer.m_BricksByDepth[depth].size(); index++) {
 			const auto& brick = m_Importer.m_BricksByDepth[depth][index];
-			float radius = 10.0f;
-			radius = radius + (2 - brick.TreeDepth) * 40;
-			m_Samples[SampleIndex].SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(radius)));
-			m_Samples[SampleIndex++].GetTransform().SetPosition(IndTexPosToWorldPos(brick.IndirectionTexturePosition, m_Importer.VLMSetting, m_Importer.vlmData.textureDimension));
+			TransformDataAtDepth[index].SetScale(XMFLOAT3(3 - depth, 3 - depth, 3 - depth));
+			TransformDataAtDepth[index].SetPosition(IndTexPosToWorldPos(brick.IndirectionTexturePosition, m_Importer.VLMSetting, m_Importer.vlmData.textureDimension));
 		}
 	}
 
 }
-
-
-
 
 void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 depth, INT32 width, INT32 height, DXGI_FORMAT format, const std::vector<UINT8>& srcData, ID3D11Texture3D** pTex3D, ID3D11ShaderResourceView** outSRV) {
 
@@ -322,9 +347,17 @@ bool TestVLM::InitVLM() {
 	_snwprintf_s(SH3Repo, ARRAYSIZE(SH3Repo), ARRAYSIZE(SH3Repo) - 1, L"Texture\\SHCoefs\\%s\\SH3", m_SHRepositoies[m_SHFileIndex]);
 	_snwprintf_s(SH4Repo, ARRAYSIZE(SH4Repo), ARRAYSIZE(SH4Repo) - 1, L"Texture\\SHCoefs\\%s\\SH4", m_SHRepositoies[m_SHFileIndex]);
 	_snwprintf_s(SH5Repo, ARRAYSIZE(SH5Repo), ARRAYSIZE(SH5Repo) - 1, L"Texture\\SHCoefs\\%s\\SH5", m_SHRepositoies[m_SHFileIndex]);
-
 	m_Importer.ImportFile(brickByDepthRepo, VLMSettingRepo,
-		indTexRepo, AmbientVecRepo, SH0Repo, SH1Repo,SH2Repo,SH3Repo,SH4Repo,SH5Repo);
+		indTexRepo, AmbientVecRepo, SH0Repo, SH1Repo, SH2Repo, SH3Repo, SH4Repo, SH5Repo);
+/*{
+		
+		// Should be deleted after test !!!!!!!
+		
+		m_Importer.ImportFile(L"D:\\brickDataByDepth", L"D:\\vlmSetting",
+			L"D:\\indirectionTexture", L"D:\\AmbientVector",
+			L"D:\\SH0", L"D:\\SH1", L"D:\\SH2", L"D:\\SH3",
+			L"D:\\SH4", L"D:\\SH5");
+	}*/
 
 	if (!m_Importer.Read())
 		return false;
@@ -347,13 +380,13 @@ bool TestVLM::InitVLM() {
 
 
 	ComPtr<ID3D11ShaderResourceView> SRV;
-	CreateTexture3D(m_pd3dDevice.Get(), 
-		m_pd3dImmediateContext.Get(), 
-		vlmData.textureDimension.z, 
-		vlmData.textureDimension.x, 
-		vlmData.textureDimension.y, 
-		vlmData.indirectionTexture.Format, 
-		vlmData.indirectionTexture.data, 
+	CreateTexture3D(m_pd3dDevice.Get(),
+		m_pd3dImmediateContext.Get(),
+		vlmData.textureDimension.z,
+		vlmData.textureDimension.x,
+		vlmData.textureDimension.y,
+		vlmData.indirectionTexture.Format,
+		vlmData.indirectionTexture.data,
 		m_pTex3D.ReleaseAndGetAddressOf(),
 		SRV.ReleaseAndGetAddressOf());
 	m_BasicEffect.SetTexture3D(SRV.Get());
@@ -383,6 +416,83 @@ bool TestVLM::InitVLM() {
 	}
 
 	m_BasicEffect.SetSHUsed(m_UseSH);
+
+	/*
+	{
+		//Test part, should be deleted
+		
+		std::ifstream SH0Phase1Importer(L"D:\\SH0Phase1", std::ios::in | std::ios::binary);
+		std::ifstream SH0Phase2Importer(L"D:\\SH0Phase2", std::ios::in | std::ios::binary);
+		std::ifstream SH0Phase3Importer(L"D:\\SH0Phase3", std::ios::in | std::ios::binary);
+		std::ifstream SH0Phase4Importer(L"D:\\SH0Phase4", std::ios::in | std::ios::binary);
+		std::ifstream SH0Phase5Importer(L"D:\\SH0Phase5", std::ios::in | std::ios::binary);
+		std::vector<UINT8>SH0Phase1(vlmData.brickData.SHCoefficients[0].data.size());
+		std::vector<UINT8>SH0Phase2(vlmData.brickData.SHCoefficients[0].data.size());
+		std::vector<UINT8>SH0Phase3(vlmData.brickData.SHCoefficients[0].data.size());
+		std::vector<UINT8>SH0Phase4(vlmData.brickData.SHCoefficients[0].data.size());
+		std::vector<UINT8>SH0Phase5(vlmData.brickData.SHCoefficients[0].data.size());
+		SH0Phase1Importer.read(reinterpret_cast<char*>(SH0Phase1.data()), vlmData.brickData.SHCoefficients[0].data.size());
+		SH0Phase2Importer.read(reinterpret_cast<char*>(SH0Phase2.data()), vlmData.brickData.SHCoefficients[0].data.size());
+		SH0Phase3Importer.read(reinterpret_cast<char*>(SH0Phase3.data()), vlmData.brickData.SHCoefficients[0].data.size());
+		SH0Phase4Importer.read(reinterpret_cast<char*>(SH0Phase4.data()), vlmData.brickData.SHCoefficients[0].data.size());
+		SH0Phase5Importer.read(reinterpret_cast<char*>(SH0Phase5.data()), vlmData.brickData.SHCoefficients[0].data.size());
+		CreateTexture3D(m_pd3dDevice.Get(),
+			m_pd3dImmediateContext.Get(),
+			vlmData.brickDataDimension.z,
+			vlmData.brickDataDimension.x,
+			vlmData.brickDataDimension.y,
+			vlmData.brickData.SHCoefficients[0].Format,
+			SH0Phase1,
+			m_pTex3D.ReleaseAndGetAddressOf(),
+			SRV.ReleaseAndGetAddressOf());
+		m_BasicEffect.SetTexture3D(SRV.Get());
+
+		CreateTexture3D(m_pd3dDevice.Get(),
+			m_pd3dImmediateContext.Get(),
+			vlmData.brickDataDimension.z,
+			vlmData.brickDataDimension.x,
+			vlmData.brickDataDimension.y,
+			vlmData.brickData.SHCoefficients[0].Format,
+			SH0Phase2,
+			m_pTex3D.ReleaseAndGetAddressOf(),
+			SRV.ReleaseAndGetAddressOf());
+		m_BasicEffect.SetTexture3D(SRV.Get());
+
+		CreateTexture3D(m_pd3dDevice.Get(),
+			m_pd3dImmediateContext.Get(),
+			vlmData.brickDataDimension.z,
+			vlmData.brickDataDimension.x,
+			vlmData.brickDataDimension.y,
+			vlmData.brickData.SHCoefficients[0].Format,
+			SH0Phase3,
+			m_pTex3D.ReleaseAndGetAddressOf(),
+			SRV.ReleaseAndGetAddressOf());
+		m_BasicEffect.SetTexture3D(SRV.Get());
+
+		CreateTexture3D(m_pd3dDevice.Get(),
+			m_pd3dImmediateContext.Get(),
+			vlmData.brickDataDimension.z,
+			vlmData.brickDataDimension.x,
+			vlmData.brickDataDimension.y,
+			vlmData.brickData.SHCoefficients[0].Format,
+			SH0Phase4,
+			m_pTex3D.ReleaseAndGetAddressOf(),
+			SRV.ReleaseAndGetAddressOf());
+		m_BasicEffect.SetTexture3D(SRV.Get());
+
+		CreateTexture3D(m_pd3dDevice.Get(),
+			m_pd3dImmediateContext.Get(),
+			vlmData.brickDataDimension.z,
+			vlmData.brickDataDimension.x,
+			vlmData.brickDataDimension.y,
+			vlmData.brickData.SHCoefficients[0].Format,
+			SH0Phase5,
+			m_pTex3D.ReleaseAndGetAddressOf(),
+			SRV.ReleaseAndGetAddressOf());
+		m_BasicEffect.SetTexture3D(SRV.Get());
+	}
+	*/
+
 	return true;
 }
 
@@ -485,16 +595,20 @@ bool TestVLM::InitResource() {
 	/*
 		动态物体
 	*/
+	m_DynamicTransform.resize(3);
+	m_SpheresDirection.resize(3, 1);
 	for (int i = 0; i < 3; i++) {
-		m_Spheres.push_back(GameObject());
-		m_SpheresDirection.push_back(1);
-		GameObject& sphere = m_Spheres.back();
-		sphere.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(40.0f)));
+		m_DynamicTransform[i].SetScale(4, 4, 4);
 	}
-	m_Spheres[0].GetTransform().SetPosition(0, 240, 0);
-	m_Spheres[1].GetTransform().SetPosition(1000, 240, 450);
-	m_Spheres[2].GetTransform().SetPosition(-1000, 240, -400);
+	m_DynamicTransform[0].SetPosition(0, 240, 0);
+	m_DynamicTransform[1].SetPosition(1000, 240, 450);
+	m_DynamicTransform[2].SetPosition(-1000, 240, -400);
 
+	// OberveObj
+	m_Sample.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(10.0f)));
+	m_Sample.GetTransform().SetPosition(0, 800, 0);
+	m_Sample.GetTransform().SetScale(3, 3, 3);
+	m_Sample.SetMaterial(material);
 
 	VisualizeVLM();
 
