@@ -26,3 +26,10 @@ struct VertexPosNormalTex {
 };
 
 
+struct Instances {
+	DirectX::XMMATRIX world;
+	DirectX::XMMATRIX worldInvTranspose;
+	static const D3D11_INPUT_ELEMENT_DESC inputLayout[11];
+};
+
+
