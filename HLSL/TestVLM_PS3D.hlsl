@@ -23,7 +23,7 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 		else {
 			float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs(pIn.PosW);
 			IrradianceSH = GetVolumetricLightmapSH3(BrickUV);
-		}
+        }
 	}
 	float4 texColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	if (g_TextureUsed) {

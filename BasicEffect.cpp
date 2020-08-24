@@ -98,7 +98,7 @@ public:
 	BOOL m_IsDirty;												// 是否有值变更
 	std::vector<CBufferBase*> m_pCBuffers;					    // 统一管理上面所有的常量缓冲区
 
-
+	ComPtr<ID3D11VertexShader> m_pVertexInstanceShader;
 	ComPtr<ID3D11VertexShader> m_pVertexShader3D;				// 用于3D的顶点着色器
 	ComPtr<ID3D11PixelShader>  m_pPixelShader3D;				// 用于3D的像素着色器
 	ComPtr<ID3D11VertexShader> m_pVertexShader2D;				// 用于2D的顶点着色器
@@ -106,6 +106,7 @@ public:
 
 	ComPtr<ID3D11InputLayout>  m_pVertexLayout2D;				// 用于2D的顶点输入布局
 	ComPtr<ID3D11InputLayout>  m_pVertexLayout3D;				// 用于3D的顶点输入布局
+	ComPtr<ID3D11InputLayout> m_pInstancesLayout;
 
 	ComPtr<ID3D11ShaderResourceView> m_pTexture;				// 用于绘制的纹理
 	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pTexture3DArray;
@@ -191,6 +192,18 @@ bool BasicEffect::SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile) {
 	return true;
 }
 
+bool BasicEffect::SetInstanceVS(ID3D11Device* device, const WCHAR* hlslFile) {
+	WCHAR csoFile[64];
+	ZeroMemory(csoFile, sizeof(csoFile));
+	GET_CSO_FILENAME(hlslFile, csoFile);
+	ComPtr<ID3DBlob> blob;
+	HR(CreateShaderFromFile(csoFile, hlslFile, "VS_3D", "vs_5_0", blob.GetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pVertexInstanceShader.GetAddressOf()));
+	HR(device->CreateInputLayout(Instances::inputLayout, ARRAYSIZE(Instances::inputLayout),
+		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pInstancesLayout.GetAddressOf()));
+	return true;
+}
+
 bool BasicEffect::SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile) {
 	WCHAR csoFile[64];
 	ZeroMemory(csoFile, sizeof(csoFile));
@@ -236,7 +249,6 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 		HR(pBuffer->CreateBuffer(device));
 	}
 
-
 	return true;
 }
 
@@ -273,15 +285,29 @@ void BasicEffect::SetDebugName() {
 	4. 无深度模板
 	5. 无混合状态
 **********************/
-void BasicEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext)
-{
+
+void BasicEffect::SetRenderInstanceDefault(ID3D11DeviceContext* deviceContext) {
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetInputLayout(pImpl->m_pInstancesLayout.Get());
+	deviceContext->VSSetShader(pImpl->m_pVertexInstanceShader.Get(), nullptr, 0);
+	deviceContext->RSSetState(nullptr);
+	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
+		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
+	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+}
+
+
+void BasicEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext) {
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext->IASetInputLayout(pImpl->m_pVertexLayout3D.Get());
 	deviceContext->VSSetShader(pImpl->m_pVertexShader3D.Get(), nullptr, 0);
 	deviceContext->RSSetState(nullptr);
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
+	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());

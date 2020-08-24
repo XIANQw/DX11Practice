@@ -53,12 +53,15 @@ public:
 
 	bool SetVSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
 	bool SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetInstanceVS(ID3D11Device* device, const WCHAR* hlslFile);
+
 	bool SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
 	bool SetPSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
 
 	//
 	// 渲染模式的变更
 	//
+	void SetRenderInstanceDefault(ID3D11DeviceContext* deviceContext);
 
 	// 默认状态来绘制
 	void SetRenderDefault(ID3D11DeviceContext* deviceContext);

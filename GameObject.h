@@ -47,11 +47,15 @@ public:
 
 	// 绘制
 	void Draw(ID3D11DeviceContext* deviceContext, BasicEffect & effect);
+	void DrawInstance(ID3D11DeviceContext* deviceContext, BasicEffect& effect, const std::vector<Transform>& instancesData);
 
 private:
 	Transform m_Transform;                          // 世界矩阵
 	ComPtr<ID3D11Buffer> m_pVertexBuffer;               // 顶点缓冲区
 	ComPtr<ID3D11Buffer> m_pIndexBuffer;                // 索引缓冲区
+	ComPtr<ID3D11Buffer> m_pInstancesBuffer;
+	INT32 m_InstancesNum;
+
 	UINT m_VertexStride;                                // 顶点字节大小
 	UINT m_IndexCount;                                  // 索引数目   
 

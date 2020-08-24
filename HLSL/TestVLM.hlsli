@@ -70,6 +70,15 @@ struct VertexPosNormalTex
     float2 Tex : TEXCOORD;
 };
 
+struct InstancesPosNormalTex
+{
+    float3 PosL : POSITION;
+    float3 NormalL : NORMAL;
+    float2 Tex : TEXCOORD;
+    matrix World : WORLD;
+    matrix WorldInvTranspose : WORLDINVTRANSPOSE;
+};
+
 struct VertexPosTex
 {
     float3 PosL : POSITION;
@@ -79,8 +88,8 @@ struct VertexPosTex
 struct VertexPosHWNormalTex
 {
     float4 PosH : SV_POSITION;
-    float3 PosW : POSITION; // 在世界中的位置
-    float3 NormalW : NORMAL; // 法向量在世界中的方向
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL; 
     float2 Tex : TEXCOORD;
 
     float4 VertexIndirectSH[3] : TEXCOORD14;
