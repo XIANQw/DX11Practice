@@ -42,9 +42,9 @@ cbuffer CBChangesRarely : register(b4)
     matrix g_Reflection;
     matrix g_RefShadow;
     matrix g_Shadow;
-    DirectionalLight g_DirLight[20];
-    PointLight g_PointLight[20];
-    SpotLight g_SpotLight[20];
+    DirectionalLight g_DirLight[1];
+    PointLight g_PointLight[22];
+    SpotLight g_SpotLight[2];
     int DirLightNums;
     int PointLightNums;
     int SpotLightNums;

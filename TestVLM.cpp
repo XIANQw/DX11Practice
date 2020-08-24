@@ -172,18 +172,20 @@ void TestVLM::UpdateScene(float dt) {
 		m_isVisulizeVLM = !m_isVisulizeVLM;
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::N)) {
-		m_SHFileIndex += 1;
-		m_SHFileIndex = min(m_SHFileIndex, m_SHRepositoies.size() - 1);
-		m_BasicEffect.ClearTexture3D();
-		InitVLM();
-		VisualizeVLM();
+		if (m_SHFileIndex < m_SHRepositoies.size() - 1) {
+			m_SHFileIndex += 1;
+			m_BasicEffect.ClearTexture3D();
+			InitVLM();
+			VisualizeVLM();
+		}
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::M)) {
-		m_SHFileIndex -= 1;
-		m_SHFileIndex = max(0, m_SHFileIndex);
-		m_BasicEffect.ClearTexture3D();
-		InitVLM();
-		VisualizeVLM();
+		if (m_SHFileIndex > 0) {
+			m_SHFileIndex -= 1;
+			m_BasicEffect.ClearTexture3D();
+			InitVLM();
+			VisualizeVLM();
+		}
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::K)) {
 		m_isControlObj = !m_isControlObj;
@@ -220,11 +222,12 @@ void TestVLM::UpdateScene(float dt) {
 		m_SphereSpeed = max(0, m_SphereSpeed);
 	}
 
-	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, dirLight=%d, pointLight=%d, posW(%f,%f,%f), \
-		IsVisulizeVLM=%d, CameraSpeed=%d, SphereSpeed=%d, detailCellSize=%s, VolumeSize(%.1f, %.1f, %.1f), bricksNum=%d, ControlSphere=%d",
+	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, dirLight=%d, pointLight=%d, posW(%.1f,%.1f,%.1f), \
+		IsVisulizeVLM=%d, CameraSpeed=%d, SphereSpeed=%d, detailCellSize=%s, VolumeSize(%.1f, %.1f, %.1f), ControlSphere=%d, bricksNum=%d, IndirectionTextureMemory=%.1fKB, VLMTextureMemory=%.1fKB",
 		m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z,
 		m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_SHRepositoies[m_SHFileIndex],
-		m_Importer.VLMSetting.VolumeSize.x, m_Importer.VLMSetting.VolumeSize.y, m_Importer.VLMSetting.VolumeSize.z, m_Importer.m_BricksNum, m_isControlObj);
+		m_Importer.VLMSetting.VolumeSize.x, m_Importer.VLMSetting.VolumeSize.y, m_Importer.VLMSetting.VolumeSize.z, m_isControlObj, m_Importer.m_BricksNum, m_Importer.vlmData.indirectionTexture.data.size() / 1024.0f,
+		m_Importer.vlmData.brickData.AmbientVector.data.size() / 1024.0f * 7.0f);
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
@@ -244,7 +247,7 @@ void TestVLM::DrawScene() {
 		if (m_IsWireframeMode) {
 			m_BasicEffect.SetWireFrameWode(m_pd3dImmediateContext.Get());
 			m_Sponza.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-			
+
 			// 显示Volume的边界
 			m_Box.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 		}
@@ -349,15 +352,15 @@ bool TestVLM::InitVLM() {
 	_snwprintf_s(SH5Repo, ARRAYSIZE(SH5Repo), ARRAYSIZE(SH5Repo) - 1, L"Texture\\SHCoefs\\%s\\SH5", m_SHRepositoies[m_SHFileIndex]);
 	m_Importer.ImportFile(brickByDepthRepo, VLMSettingRepo,
 		indTexRepo, AmbientVecRepo, SH0Repo, SH1Repo, SH2Repo, SH3Repo, SH4Repo, SH5Repo);
-/*{
-		
-		// Should be deleted after test !!!!!!!
-		
-		m_Importer.ImportFile(L"D:\\brickDataByDepth", L"D:\\vlmSetting",
-			L"D:\\indirectionTexture", L"D:\\AmbientVector",
-			L"D:\\SH0", L"D:\\SH1", L"D:\\SH2", L"D:\\SH3",
-			L"D:\\SH4", L"D:\\SH5");
-	}*/
+	/*{
+
+			// Should be deleted after test !!!!!!!
+
+			m_Importer.ImportFile(L"D:\\brickDataByDepth", L"D:\\vlmSetting",
+				L"D:\\indirectionTexture", L"D:\\AmbientVector",
+				L"D:\\SH0", L"D:\\SH1", L"D:\\SH2", L"D:\\SH3",
+				L"D:\\SH4", L"D:\\SH5");
+		}*/
 
 	if (!m_Importer.Read())
 		return false;
@@ -420,7 +423,7 @@ bool TestVLM::InitVLM() {
 	/*
 	{
 		//Test part, should be deleted
-		
+
 		std::ifstream SH0Phase1Importer(L"D:\\SH0Phase1", std::ios::in | std::ios::binary);
 		std::ifstream SH0Phase2Importer(L"D:\\SH0Phase2", std::ios::in | std::ios::binary);
 		std::ifstream SH0Phase3Importer(L"D:\\SH0Phase3", std::ios::in | std::ios::binary);
@@ -564,7 +567,7 @@ bool TestVLM::InitResource() {
 	dirLight.direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	m_BasicEffect.SetDirLight(0, dirLight);
 	m_BasicEffect.SetDirLightNums(1);
-	for (int i = 0; i < 11; i++) {
+	for (int i = 0; i < 22; i++) {
 		PointLight pointLight;
 		pointLight.ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 		pointLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -573,6 +576,7 @@ bool TestVLM::InitResource() {
 		pointLight.range = 500.0f;
 		m_PointLightArray.push_back(pointLight);
 	}
+	// 1st floor
 	m_PointLightArray[0].position = XMFLOAT3(-1200.0f, 150.0f, -420.0f);
 	m_PointLightArray[1].position = XMFLOAT3(-1200.0f, 150.0f, 435.0f);
 	m_PointLightArray[1].diffuse = XMFLOAT4(0.0f, 0.0f, 0.8f, 1.0f);
@@ -586,6 +590,23 @@ bool TestVLM::InitResource() {
 	m_PointLightArray[8].position = XMFLOAT3(494.0f, 150.0f, 215.0f);
 	m_PointLightArray[9].position = XMFLOAT3(-620.0f, 150.0f, 210.0f);
 	m_PointLightArray[10].position = XMFLOAT3(-620.0f, 150.0f, -140.0f);
+	// 2nd floor
+	m_PointLightArray[11].position = XMFLOAT3(-1250.0f, 570.0f, 0.0f);
+	m_PointLightArray[12].position = XMFLOAT3(-1150.0f, 570.0f, 480.0f);
+	m_PointLightArray[13].position = XMFLOAT3(-1150.0f, 470.0f, -390.0f);
+	m_PointLightArray[14].position = XMFLOAT3(0.0f, 570.0f, 480.0f);
+	m_PointLightArray[15].position = XMFLOAT3(1100.0f, 570.0f, 480.0f);
+	m_PointLightArray[16].position = XMFLOAT3(0.0f, 570.0f, -370.0f);
+	m_PointLightArray[17].position = XMFLOAT3(1100.0f, 570.0f, -360.0f);
+	m_PointLightArray[18].position = XMFLOAT3(1150.0f, 570.0f, 30.0f);
+	// sky
+	m_PointLightArray[19].position = XMFLOAT3(540.0f, 850.0f, 0.0f);
+	m_PointLightArray[19].diffuse = XMFLOAT4(0.0f, 1.0f, 0.3f, 1.0f);
+	m_PointLightArray[20].position = XMFLOAT3(-90.0f, 850.0f, 0.0f);
+	m_PointLightArray[20].diffuse = XMFLOAT4(1.0f, 0.2f, 0.0f, 1.0f);
+	m_PointLightArray[21].position = XMFLOAT3(-750.0f, 850.0f, 0.0f);
+	m_PointLightArray[21].diffuse = XMFLOAT4(0.0f, 0.12f, 1.0f, 1.0f);
+
 	for (int i = 0; i < m_PointLightArray.size(); i++) {
 		m_BasicEffect.SetPointLight(i, m_PointLightArray[i]);
 	}

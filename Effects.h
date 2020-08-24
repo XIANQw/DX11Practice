@@ -99,7 +99,9 @@ public:
 	//
 
 	// 各种类型灯光允许的最大数目
-	static const int maxLights = 20;
+	static const int maxDirLights = 1;
+	static const int maxPointLights = 22;
+	static const int maxSpotLights = 2;
 	bool isShadow;
 
 	void SetDirLight(size_t pos, const DirectionalLight& dirLight);

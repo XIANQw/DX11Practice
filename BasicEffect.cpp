@@ -61,9 +61,9 @@ public:
 		DirectX::XMMATRIX reflection;
 		DirectX::XMMATRIX shadow;
 		DirectX::XMMATRIX refShadow;
-		DirectionalLight dirLight[BasicEffect::maxLights];
-		PointLight pointLight[BasicEffect::maxLights];
-		SpotLight spotLight[BasicEffect::maxLights];
+		DirectionalLight dirLight[BasicEffect::maxDirLights];
+		PointLight pointLight[BasicEffect::maxPointLights];
+		SpotLight spotLight[BasicEffect::maxSpotLights];
 		int dirLightNums;
 		int pointLightNums;
 		int spotLightNums;
