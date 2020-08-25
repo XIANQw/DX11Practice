@@ -20,7 +20,7 @@ TestVLM::TestVLM(HINSTANCE hInstance)
 	m_isVisulizeVLM(false),
 	m_SphereSpeed(200),
 	m_Text(L""),
-	m_SHRepositoies{ L"200", L"150", L"100", L"50" },
+	m_SHRepositoies{L"50_metal", L"200", L"150", L"100", L"50" },
 	m_SHFileIndex(0), m_isControlObj(false), m_TargetDistance(100){
 }
 
