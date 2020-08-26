@@ -45,12 +45,14 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			if (objParts.size() > 0 && objParts.back().vertices.size() == 0) {
 				objParts.pop_back();
 			}
-			objParts.emplace_back(ObjPart());
-
+			ObjPart newPart;
 			// 提供默认材质
-			objParts.back().material.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-			objParts.back().material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-			objParts.back().material.specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+			newPart.material.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+			newPart.material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+			newPart.material.specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+			objParts.push_back(newPart);
+
 
 			vertexCache.clear();
 		}
@@ -73,7 +75,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			float u, v;
 			wfin >> u >> v;
 			v = 1.0f - v;
-			texCoords.emplace_back(XMFLOAT2(u, v));
+			texCoords.push_back(XMFLOAT2(u, v));
 		}
 		else if (wstr == L"vn") {
 			/*************************************************
@@ -82,7 +84,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			float x, y, z;
 			wfin >> x >> y >> z;
 			z = -z;
-			normals.emplace_back(XMFLOAT3(x, y, z));
+			normals.push_back(XMFLOAT3(x, y, z));
 		}
 		else if (wstr == L"mtllib") {
 			// 指定某一文件的材质
@@ -124,7 +126,20 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			}
 
 			objParts.back().material = mtlReader.materials[mtlName];
-			objParts.back().texStrDiffuse = mtlReader.mapKdStrs[mtlName];
+			if (mtlReader.mapKdStrs.count(mtlName) > 0) {
+				objParts.back().texStrDiffuse = mtlReader.mapKdStrs[mtlName];
+			}
+			else {
+				objParts.back().texStrDiffuse = L"";
+			}
+			if (mtlReader.mapBumpStrs.count(mtlName) > 0) {
+				objParts.back().normalMap = mtlReader.mapBumpStrs[mtlName];
+			}
+			else {
+				objParts.back().normalMap = L"";
+			}
+
+
 		}
 		else if (wstr == L"f") {
 			//
@@ -208,6 +223,8 @@ bool ObjReader::ReadMbo(const wchar_t* mboFileName)
 	// [AABB盒顶点vMin] 12字节
 	// [Part
 	//   [漫射光材质文件名]520字节
+	//   [hasNormalMap] 1 Byte
+	//   [hasNormalMap ? 520 Bytes : 0 Bytes]
 	//   [材质]64字节
 	//   [顶点数]4字节
 	//   [索引数]4字节
@@ -236,6 +253,16 @@ bool ObjReader::ReadMbo(const wchar_t* mboFileName)
 		// [漫射光材质文件名]520字节
 		fin.read(reinterpret_cast<char*>(filePath), MAX_PATH * sizeof(wchar_t));
 		objParts[i].texStrDiffuse = filePath;
+
+		// hasNormalMap 1 byte
+		UINT8 hasNormalMap;
+		fin.read(reinterpret_cast<char*>(&hasNormalMap), sizeof(UINT8));
+		if (hasNormalMap) {
+			// [NormalMap 520 bytes]
+			ZeroMemory(filePath, MAX_PATH * sizeof(wchar_t));
+			fin.read(reinterpret_cast<char*>(filePath), MAX_PATH * sizeof(wchar_t));
+			objParts[i].normalMap = filePath;
+		}
 		// [材质]64字节
 		fin.read(reinterpret_cast<char*>(&objParts[i].material), sizeof(Material));
 		UINT vertexCount, indexCount;
@@ -272,8 +299,9 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 	// [AABB盒顶点vMax] 12字节
 	// [AABB盒顶点vMin] 12字节
 	// [Part
-	//   [环境光材质文件名]520字节
 	//   [漫射光材质文件名]520字节
+	//   [hasNormalMap] 1 Byte
+	//   [hasNormalMap ? 520 Bytes : 0 Bytes]
 	//   [材质]64字节
 	//   [顶点数]4字节
 	//   [索引数]4字节
@@ -298,6 +326,15 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 		wcscpy_s(filePath, objParts[i].texStrDiffuse.c_str());
 		// [漫射光材质文件名]520字节
 		fout.write(reinterpret_cast<const char*>(filePath), MAX_PATH * sizeof(wchar_t));
+		// hasNormalMap 1 byte
+		UINT8 hasNormalMap = objParts[i].normalMap.size() > 0;
+		fout.write(reinterpret_cast<const char*>(&hasNormalMap), sizeof(UINT8));
+		if (hasNormalMap) {
+			// [NormalMap 520 bytes]
+			ZeroMemory(filePath, MAX_PATH);
+			wcscpy_s(filePath, objParts[i].normalMap.c_str());
+			fout.write(reinterpret_cast<const char*>(filePath), MAX_PATH * sizeof(wchar_t));
+		}
 		// [材质]64字节
 		fout.write(reinterpret_cast<const char*>(&objParts[i].material), sizeof(Material));
 		UINT vertexCount = (UINT)objParts[i].vertices.size();
@@ -390,25 +427,20 @@ bool MtlReader::ReadMtl(const wchar_t* mtlFileName)
 
 	std::wstring wstr;
 	std::wstring currMtl;
-	for (;;)
-	{
-		if (!(wfin >> wstr))
-			break;
+	for (;;) {
+		if (!(wfin >> wstr)) break;
 
-		if (wstr[0] == '#')
-		{
+		if (wstr[0] == '#') {
 			//
 			// 忽略注释所在行
 			//
 			while (wfin.get() != '\n')
 				continue;
 		}
-		else if (wstr == L"newmtl")
-		{
+		else if (wstr == L"newmtl") {
 			//
 			// 新材质
 			//
-
 			std::getline(wfin, currMtl);
 			// 去掉前后空格
 			size_t beg = 0, ed = currMtl.size();

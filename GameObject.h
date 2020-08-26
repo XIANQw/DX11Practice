@@ -40,7 +40,7 @@ public:
 
 	// 设置纹理
 	void SetTexture(ID3D11ShaderResourceView* texture);
-
+	void SetNormalmap(ID3D11ShaderResourceView* normalmap);
 	
 	// 设置材质
 	void SetMaterial(const Material& material);

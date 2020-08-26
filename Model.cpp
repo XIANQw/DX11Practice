@@ -76,18 +76,42 @@ void Model::SetModel(ID3D11Device* device, const ObjReader& model) {
 			读取Texture
 		*************/
 		auto& strD = part.texStrDiffuse;
-		if (strD.size() > 4) {
+		modelParts[i].texDiffuse = part.texStrDiffuse;
+		if (strD.size() > 4 && TexDiffuseMap.count(part.texStrDiffuse) == 0) {
+			TexDiffuseMap.insert(std::pair<std::wstring, ComPtr<ID3D11ShaderResourceView>>(part.texStrDiffuse, ComPtr<ID3D11ShaderResourceView>()));
+			auto& ptexDiffuse = TexDiffuseMap.find(part.texStrDiffuse)->second;
 			// Read texture from .dds file
 			if (strD.substr(strD.size() - 3, 3) == L"dds") {
 				HR(CreateDDSTextureFromFile(device, strD.c_str(), nullptr,
-					modelParts[i].texDiffuse.GetAddressOf()));
+					ptexDiffuse.GetAddressOf()));
 			}
 			// Read texture from .wic file
 			else {
 				HR(CreateWICTextureFromFile(device, strD.c_str(), nullptr,
-					modelParts[i].texDiffuse.GetAddressOf()));
+					ptexDiffuse.GetAddressOf()));
 			}
 		}
+
+		/******************
+			读取NormalMap
+		*******************/
+		auto& normalMap = part.normalMap;
+		modelParts[i].normalMap = part.normalMap;
+		if (normalMap.size() > 0 && NormalmapMap.count(part.normalMap) == 0) {
+			NormalmapMap.insert(std::pair<std::wstring, ComPtr<ID3D11ShaderResourceView>>(part.normalMap, ComPtr<ID3D11ShaderResourceView>()));
+			auto& pNormalmap = NormalmapMap.find(part.normalMap)->second;
+			// Read texture from .dds file
+			if (normalMap.substr(normalMap.size() - 3, 3) == L"dds") {
+				HR(CreateDDSTextureFromFile(device, normalMap.c_str(), nullptr,
+					pNormalmap.GetAddressOf()));
+			}
+			// Read texture from .wic file
+			else {
+				HR(CreateWICTextureFromFile(device, normalMap.c_str(), nullptr,
+					pNormalmap.GetAddressOf()));
+			}
+		}
+
 		modelParts[i].material = part.material;
 	}
 }

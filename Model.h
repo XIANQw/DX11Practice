@@ -4,6 +4,7 @@
 #include "Effects.h"
 #include "ObjReader.h"
 #include "ThridParty/Geometry.h"
+#include <map>
 
 /********************************************************************************************
 *							Model.h															*
@@ -17,7 +18,10 @@ struct ModelPart
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 	Material material;
-	ComPtr<ID3D11ShaderResourceView> texDiffuse;
+	std::wstring texDiffuse;
+	std::wstring normalMap;
+	ComPtr<ID3D11ShaderResourceView> pTexDiffuse;
+	ComPtr<ID3D11ShaderResourceView> pNormalmap;
 	ComPtr<ID3D11Buffer> vertexBuffer;
 	ComPtr<ID3D11Buffer> indexBuffer;
 	UINT indexCount;
@@ -35,13 +39,16 @@ struct ModelPart
 
 
 struct Model {
+	template<class T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 	std::vector<ModelPart> modelParts;
+	std::map<std::wstring, ComPtr<ID3D11ShaderResourceView>> TexDiffuseMap;
+	std::map<std::wstring, ComPtr<ID3D11ShaderResourceView>> NormalmapMap;
+
 	DirectX::BoundingBox boundingBox;
 	UINT vertexStride;
 
-	template<class T>
-	using ComPtr = Microsoft::WRL::ComPtr<T>;
 	
 	Model();
 
