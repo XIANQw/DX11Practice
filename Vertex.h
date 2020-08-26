@@ -33,3 +33,11 @@ struct Instances {
 };
 
 
+struct VertexPosNormalTangentTex {
+	DirectX::XMFLOAT3 pos;
+	DirectX::XMFLOAT3 normal;
+	DirectX::XMFLOAT4 tangent;
+	DirectX::XMFLOAT2 tex;
+	static const D3D11_INPUT_ELEMENT_DESC inputLayout[4];
+};
+

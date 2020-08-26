@@ -109,6 +109,8 @@ public:
 	ComPtr<ID3D11InputLayout> m_pInstancesLayout;
 
 	ComPtr<ID3D11ShaderResourceView> m_pTexture;				// 用于绘制的纹理
+	ComPtr<ID3D11ShaderResourceView> m_pNormalMap;				// 用于绘制的纹理
+
 	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pTexture3DArray;
 	std::vector<ComPtr<ID3D11UnorderedAccessView>> m_pRWTexture3DArray;
 
@@ -332,7 +334,7 @@ void BasicEffect::SetRenderAlphaBlend(ID3D11DeviceContext* deviceContext)
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
+	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -357,7 +359,7 @@ void BasicEffect::SetRenderNoDoubleBlend(ID3D11DeviceContext* deviceContext, UIN
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
+	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -382,7 +384,7 @@ void BasicEffect::SetWriteStencilOnly(ID3D11DeviceContext* deviceContext, UINT s
 	deviceContext->RSSetState(nullptr);
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
+	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -407,7 +409,7 @@ void BasicEffect::SetRenderDefaultWithStencil(ID3D11DeviceContext* deviceContext
 	deviceContext->RSSetState(RenderStates::RSCullClockWise.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
+	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -431,7 +433,7 @@ void BasicEffect::SetRenderAlphaBlendWithStencil(ID3D11DeviceContext* deviceCont
 	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
 	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
 
-	if (pImpl->m_CBStates .data.SHMode == 0 == 0)
+	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
@@ -588,6 +590,10 @@ void BasicEffect::SetMaterial(const Material& material) {
 	auto& cBuffer = pImpl->m_CBDrawing;
 	cBuffer.data.material = material;
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetNormalMap(ID3D11ShaderResourceView* normalMap) {
+	pImpl->m_pNormalMap = normalMap;
 }
 
 void BasicEffect::SetTexture(ID3D11ShaderResourceView* texture)
@@ -748,9 +754,13 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 	*******************************************/
 
 	deviceContext->PSSetShaderResources(0, 1, pImpl->m_pTexture.GetAddressOf());
+	if (pImpl->m_pNormalMap.Get() != nullptr) {
+		deviceContext->PSSetShaderResources(1, 1, pImpl->m_pNormalMap.GetAddressOf());
+	}
+
 	for (int i = 0; i < pImpl->m_pTexture3DArray.size(); i++) {
-		deviceContext->VSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
-		deviceContext->PSSetShaderResources(i + 1, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
+		deviceContext->VSSetShaderResources(i + 2, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
+		deviceContext->PSSetShaderResources(i + 2, 1, pImpl->m_pTexture3DArray[i].GetAddressOf());
 	}
 
 

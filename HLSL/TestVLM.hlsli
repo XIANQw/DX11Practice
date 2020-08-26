@@ -1,6 +1,7 @@
 #include "SHLight.hlsli"
 
 Texture2D g_Tex2D: register(t0);
+Texture2D g_NormalMap : register(t1);
 
 
 cbuffer CBChangesEveryDrawing : register(b0)

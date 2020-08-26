@@ -113,6 +113,7 @@ public:
 
 	void SetMaterial(const Material& material);
 
+	void SetNormalMap(ID3D11ShaderResourceView* normalMap);
 	void SetTexture(ID3D11ShaderResourceView* texture);
 	void SetTexture2D(ID3D11ShaderResourceView* texture);
 	void SetTexture3D(ID3D11ShaderResourceView* texture);

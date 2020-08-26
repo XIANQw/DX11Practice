@@ -9,6 +9,7 @@ struct Material {
 	DirectX::XMFLOAT4 diffuse;
 	DirectX::XMFLOAT4 specular;
 	DirectX::XMFLOAT4 reflect;
+	Material() = default;
 };
 
 // 平行光模型
