@@ -631,6 +631,12 @@ bool TestVLM::InitResource() {
 	m_Sample.GetTransform().SetScale(3, 3, 3);
 	m_Sample.SetMaterial(material);
 
+	// Reflection plane
+	m_plane.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateBox(100, 100, 10)));
+	m_plane.GetTransform().SetPosition(1210.0f, 235.0f, -390.0f);
+	m_Sample.SetMaterial(material);
+
+
 	VisualizeVLM();
 
 	/*

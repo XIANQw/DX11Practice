@@ -30,6 +30,7 @@ protected:
 
 	GameObject m_Sponza;
 	GameObject m_Box;
+	GameObject m_plane;
 	std::vector<Transform> m_DynamicTransform;
 	GameObject m_Sample;
 	std::vector<std::vector<Transform>> m_TransformData;
