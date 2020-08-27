@@ -1,9 +1,7 @@
 #include "TestVLM.hlsli"
 
-
-
 // 像素着色器(3D)
-float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
+float4 PS_3D(VertexPosHWNormalTangentTex pIn) : SV_Target
 {
 	SHCoefs3BandRGB IrradianceSH = (SHCoefs3BandRGB)0;
 	if (g_UseSH) {
@@ -25,6 +23,7 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 			IrradianceSH = GetVolumetricLightmapSH3(BrickUV);
         }
 	}
+	
 	float4 texColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	if (g_TextureUsed) {
 		// 提前进行裁剪，对不符合要求的像素可以避免后续运算
@@ -34,7 +33,13 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 
 	// 标准化法向量
 	pIn.NormalW = normalize(pIn.NormalW);
-
+    float3 bumpedNormalW = pIn.NormalW;
+    if (g_hasNormalMap) {
+		float3 normalmapBump = g_NormalMap.Sample(g_Sam, pIn.Tex).rgb;
+		bumpedNormalW = NormalSampleToWorldSpace(normalmapBump, pIn.NormalW, pIn.TangentW);
+    }
+	
+	
 	// 顶点指向眼睛的向量
 	float3 toEyeW = normalize(g_EyePosW - pIn.PosW);
 
@@ -52,7 +57,7 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 	bool useLight = g_UseDirLight || g_UsePointLight;
 
 	if (g_UseSH) {
-		SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(pIn.NormalW, 1);
+        SHCoefs3Band DiffuseTransferSH = CalcDiffuseTransferSH3(bumpedNormalW, 1);
         indirectDiffuse = max(float4(0, 0, 0, 0), float4(DotSH3(IrradianceSH, DiffuseTransferSH), 0.0f)) / 3.1415926f;
     }
 
@@ -61,7 +66,7 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 			[unroll]
 			for (i = 0; i < DirLightNums; ++i)
 			{
-				ComputeDirectionalLight(g_Material, g_DirLight[i], pIn.NormalW, toEyeW, A, D, S);
+                ComputeDirectionalLight(g_Material, g_DirLight[i], bumpedNormalW, toEyeW, A, D, S);
 				ambient += A;
                 directDiffuse += D;
 				spec += S;
@@ -72,7 +77,7 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 			[unroll]
 			for (i = 0; i < PointLightNums; ++i)
 			{
-				ComputePointLight(g_Material, g_PointLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+                ComputePointLight(g_Material, g_PointLight[i], pIn.PosW, bumpedNormalW, toEyeW, A, D, S);
 				ambient += A;
                 directDiffuse += D;
 				spec += S;
@@ -82,7 +87,7 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
 		[unroll]
 		for (i = 0; i < SpotLightNums; ++i)
 		{
-			ComputeSpotLight(g_Material, g_SpotLight[i], pIn.PosW, pIn.NormalW, toEyeW, A, D, S);
+            ComputeSpotLight(g_Material, g_SpotLight[i], pIn.PosW, bumpedNormalW, toEyeW, A, D, S);
 			ambient += A;
             directDiffuse += D;
 			spec += S;

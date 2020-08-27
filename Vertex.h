@@ -2,6 +2,7 @@
 
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <vector>
 
 struct VertexPosNormalColor {
 	DirectX::XMFLOAT3 pos;
@@ -40,4 +41,6 @@ struct VertexPosNormalTangentTex {
 	DirectX::XMFLOAT2 tex;
 	static const D3D11_INPUT_ELEMENT_DESC inputLayout[4];
 };
+
+void CalculeTangent(std::vector<VertexPosNormalTangentTex>& triangle);
 

@@ -23,7 +23,8 @@ cbuffer CBDrawingState:register(b1) {
     int g_SHMode;
 
     int g_UseBrickId;
-    float3 pad;
+    int g_hasNormalMap;
+    float2 pads;
 }
 
 cbuffer CBChangesEveryFrame : register(b2)
@@ -104,6 +105,17 @@ struct VertexPosHWNormalTex
     float4 VertexIndirectSH[3] : TEXCOORD14;
 };
 
+struct VertexPosHWNormalTangentTex
+{
+    float4 PosH : SV_POSITION;
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+    float4 TangentW : TANGENT;
+    float2 Tex : TEXCOORD;
+    
+    float4 VertexIndirectSH[3] : TEXCOORD14;
+};
+
 struct VertexPosHTex
 {
     float4 PosH : SV_POSITION;
@@ -131,3 +143,25 @@ float3 ComputeVolumetricLightmapBrickTextureUVs(float3 WorldPosition)
     float PaddedBrickSize = VLMBrickSize + 1;
     return (BrickOffsetAndSize.xyz * PaddedBrickSize + frac(IndirectionTextureTexelCoordinate / BrickOffsetAndSize.w) * VLMBrickSize + .5f) * VLMBrickTexelSize;
 }
+
+
+float3 NormalSampleToWorldSpace(float3 normalMapSample,
+    float3 unitNormalW,
+    float4 tangentW)
+{
+    // 将读取到法向量中的每个分量从[0, 1]还原到[-1, 1]
+    float3 normalT = 2.0f * normalMapSample - 1.0f;
+
+    // 构建位于世界坐标系的切线空间
+    float3 N = unitNormalW;
+    float3 T = normalize(tangentW.xyz - dot(tangentW.xyz, N) * N); // 施密特正交化
+    float3 B = cross(N, T);
+
+    float3x3 TBN = float3x3(T, B, N);
+
+    // 将凹凸法向量从切线空间变换到世界坐标系
+    float3 bumpedNormalW = mul(normalT, TBN);
+
+    return bumpedNormalW;
+}
+

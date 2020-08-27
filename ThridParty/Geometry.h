@@ -8,7 +8,7 @@
 namespace Geometry
 {
 	// 网格数据
-	template<class VertexType=VertexPosNormalTex, class IndexType = DWORD>
+	template<class VertexType=VertexPosNormalTangentTex, class IndexType = DWORD>
 	struct MeshData
 	{
 		std::vector<VertexType> vertexVec;	// 顶点数组

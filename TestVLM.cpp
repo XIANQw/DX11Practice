@@ -20,7 +20,7 @@ TestVLM::TestVLM(HINSTANCE hInstance)
 	m_isVisulizeVLM(false),
 	m_SphereSpeed(200),
 	m_Text(L""),
-	m_SHRepositoies{L"50_metal", L"200", L"150", L"100", L"50" },
+	m_SHRepositoies{ L"50_metal", L"200", L"150", L"100", L"50" },
 	m_SHFileIndex(0), m_isControlObj(false), m_TargetDistance(100){
 }
 
@@ -187,11 +187,17 @@ void TestVLM::UpdateScene(float dt) {
 			VisualizeVLM();
 		}
 	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::L)) {
+		m_BasicEffect.useNormalmap = !m_BasicEffect.useNormalmap;
+	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::K)) {
 		m_isControlObj = !m_isControlObj;
 		XMFLOAT3 samplePos = m_Sample.GetTransform().GetPosition();
 		cam1st->SetPosition(samplePos.x, samplePos.y + 100, samplePos.z - 100);
 		cam1st->LookAt(cam1st->GetPosition(), samplePos, XMFLOAT3(0.0f, 1.0f, 0.0f));
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::H)) {
+		m_ShowHelp = !m_ShowHelp;
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1)) {
 		m_UseDirLight = !m_UseDirLight;
@@ -221,13 +227,20 @@ void TestVLM::UpdateScene(float dt) {
 		m_SphereSpeed -= 200;
 		m_SphereSpeed = max(0, m_SphereSpeed);
 	}
-
-	_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, dirLight=%d, pointLight=%d, posW(%.1f,%.1f,%.1f), \
-		IsVisulizeVLM=%d, CameraSpeed=%d, SphereSpeed=%d, detailCellSize=%s, VolumeSize(%.1f, %.1f, %.1f), ControlSphere=%d, bricksNum=%d, IndirectionTextureMemory=%.1fKB, VLMTextureMemory=%.1fKB",
-		m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z,
-		m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_SHRepositoies[m_SHFileIndex],
-		m_Importer.VLMSetting.VolumeSize.x, m_Importer.VLMSetting.VolumeSize.y, m_Importer.VLMSetting.VolumeSize.z, m_isControlObj, m_Importer.m_BricksNum, m_Importer.vlmData.indirectionTexture.data.size() / 1024.0f,
-		m_Importer.vlmData.brickData.AmbientVector.data.size() / 1024.0f * 7.0f);
+	if (m_ShowHelp) {
+		_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"控制移动:WASD, VLM可视化:V, 线框模式:R, 控制摄像机速度:UY, 球谐光照开关:F, 纹理贴图开关:T, 阴影贴图开关:L \
+控制小球:K, 增加DetailCellSize:N, 减少DetailCellSize:M, 方向光开关:1, 点光开关:2, 二阶球谐VS计算:3, 二阶球谐PS计算:4, 三阶球谐:5, 控制动态球速度:数字键盘+-");
+	}
+	else {
+		_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, 方向光开关=%d, 点光开关=%d, 位置(%.1f,%.1f,%.1f), \
+VLM可视化=%d, 相机速度=%d, 动态球速度=%d, 阴影贴图=%d, \
+detailCellSize=%s, VolumeSize(%.1f, %.1f, %.1f), 控制小球模式=%d, bricksNum=%d, IndirectionTextureMemory=%.1fKB, VLMTextureMemory=%.1fKB，按H查看按钮事件",
+			m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z,
+			m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_BasicEffect.useNormalmap,
+			m_SHRepositoies[m_SHFileIndex],
+			m_Importer.VLMSetting.VolumeSize.x, m_Importer.VLMSetting.VolumeSize.y, m_Importer.VLMSetting.VolumeSize.z, m_isControlObj, m_Importer.m_BricksNum, m_Importer.vlmData.indirectionTexture.data.size() / 1024.0f,
+			m_Importer.vlmData.brickData.AmbientVector.data.size() / 1024.0f * 7.0f);
+	}
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);

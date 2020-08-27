@@ -56,6 +56,7 @@ protected:
 	bool m_isVisulizeVLM;
 	int m_SHMode;
 
+	bool m_ShowHelp;
 	bool m_isControlObj;
 
 	wchar_t m_Text[1024];

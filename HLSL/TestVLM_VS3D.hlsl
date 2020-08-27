@@ -1,11 +1,10 @@
 #include "TestVLM.hlsli"
 
-VertexPosHWNormalTex VS_3D(VertexPosNormalTangentTex vIn)
-{
-    VertexPosHWNormalTex vOut;
+VertexPosHWNormalTangentTex VS_3D(VertexPosNormalTangentTex vIn) {
+    VertexPosHWNormalTangentTex vOut;
     matrix viewProj = mul(g_View, g_Proj);
     float4 posW = mul(float4(vIn.PosL, 1.0f), g_World);
-
+    
     if (g_SHMode==0 && g_UseSH) {
         // Compute indirection UVs from world position
         float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs(posW);
@@ -26,6 +25,7 @@ VertexPosHWNormalTex VS_3D(VertexPosNormalTangentTex vIn)
     vOut.PosH = mul(posW, viewProj);
     vOut.PosW = posW.xyz;
     vOut.NormalW = mul(vIn.NormalL, (float3x3) g_WorldInvTranspose);
+    vOut.TangentW = mul(vIn.TangentL, g_World);
     vOut.Tex = vIn.Tex;
     return vOut;
 }

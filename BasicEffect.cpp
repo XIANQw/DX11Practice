@@ -41,7 +41,8 @@ public:
 		int SHMode;
 
 		int sphereSpeed;
-		DirectX::XMFLOAT3 pad;
+		int useNormalmap;
+		DirectX::XMFLOAT2 pad;
 	};
 
 	struct CBChangesEveryFrame
@@ -595,6 +596,18 @@ void BasicEffect::SetMaterial(const Material& material) {
 void BasicEffect::SetNormalMap(ID3D11ShaderResourceView* normalMap) {
 	pImpl->m_pNormalMap = normalMap;
 }
+
+void BasicEffect::UseNormalMap(bool isUsed) {
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.useNormalmap = isUsed;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+bool BasicEffect::GetUseNormalMap() {
+	auto& cBuffer = pImpl->m_CBStates;
+	return cBuffer.data.useNormalmap;
+}
+
 
 void BasicEffect::SetTexture(ID3D11ShaderResourceView* texture)
 {

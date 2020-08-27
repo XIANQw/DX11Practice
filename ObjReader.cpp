@@ -149,6 +149,8 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			ZeroMemory(&vertex, sizeof(vertex));
 			DWORD vpi[3], vni[3], vti[3];
 			wchar_t ignore;
+
+			UINT32 validVertex = 0;
 			// 原来右手坐标系下顶点顺序是逆时针排布
 			// 现在需要转变为左手坐标系就需要将三角形顶点反过来输入
 			for (int i = 2; i >= 0; --i)
@@ -159,47 +161,42 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 				bool hasTexture = false;
 				// 顶点索引/纹理索引/法向量索引
 				size_t indexSep = tmp.find(L"//");
-				if (indexSep == std::wstring::npos) {
-					hasTexture = true;
-				}
-				// 11/20/30
-				if (hasTexture) {
-					ULONG index1 = tmp.find(L"/");
-					std::wstring svpi = tmp.substr(0, index1);
-					vpi[i] = std::stoul(svpi);
-					ULONG index2 = tmp.find(L"/", index1 + 1);
-					std::wstring svti = tmp.substr(index1 + 1, index2 - index1 - 1);
-					vti[i] = std::stoul(svti);
-					std::wstring svni = tmp.substr(index2 + 1);
-					vni[i] = std::stoul(svni);
-				}
-				else {
-					std::wstring svpi = tmp.substr(0, indexSep);
-					vpi[i] = std::stoul(svpi);
-					vti[i] = MAXDWORD;
-					std::wstring svni = tmp.substr(indexSep + 2);
-					vni[i] = std::stoul(svni);
+				if (indexSep != std::wstring::npos) {
+					continue;
 				}
 
+				ULONG index1 = tmp.find(L"/");
+				std::wstring svpi = tmp.substr(0, index1);
+				vpi[i] = std::stoul(svpi);
+				ULONG index2 = tmp.find(L"/", index1 + 1);
+				std::wstring svti = tmp.substr(index1 + 1, index2 - index1 - 1);
+				vti[i] = std::stoul(svti);
+				std::wstring svni = tmp.substr(index2 + 1);
+				vni[i] = std::stoul(svni);
+				validVertex++;
 			}
 
-			for (int i = 0; i < 3; ++i)
-			{
+			if (validVertex != 3) {
+				std::cout << "objRead warning: validVertex !=3 on a same surface" << std::endl;
+				continue;
+			}
+
+			std::vector<VertexPosNormalTangentTex> triangle;
+			for (int i = 0; i < 3; ++i) {
 				vertex.pos = positions[vpi[i] - 1];
 				vertex.normal = normals[vni[i] - 1];
-				if (vti[i] != MAXDWORD)
-					vertex.tex = texCoords[vti[i] - 1];
-				else
-					vertex.tex = DirectX::XMFLOAT2(0.0f, 0.0f);
-				AddVertex(vertex, vpi[i], vti[i], vni[i]);
+				vertex.tex = texCoords[vti[i] - 1];
+				triangle.push_back(vertex);
+			}
+			CalculeTangent(triangle);
+			for (int i = 0; i < 3; i++) {
+				AddVertex(triangle[i], vpi[i], vti[i], vni[i]);
 			}
 
 
-			while (iswblank(wfin.peek()))
-				wfin.get();
+			while (iswblank(wfin.peek())) wfin.get();
 			// 几何面顶点数可能超过了3，不支持该格式
-			if (wfin.peek() != '\n')
-				return false;
+			if (wfin.peek() != '\n') return false;
 		}
 	}
 

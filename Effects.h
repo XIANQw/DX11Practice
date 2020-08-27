@@ -103,6 +103,7 @@ public:
 	static const int maxPointLights = 22;
 	static const int maxSpotLights = 2;
 	bool isShadow;
+	bool useNormalmap;
 
 	void SetDirLight(size_t pos, const DirectionalLight& dirLight);
 	void SetPointLight(size_t pos, const PointLight& pointLight);
@@ -114,6 +115,8 @@ public:
 	void SetMaterial(const Material& material);
 
 	void SetNormalMap(ID3D11ShaderResourceView* normalMap);
+	void UseNormalMap(bool isUsed);
+	bool GetUseNormalMap();
 	void SetTexture(ID3D11ShaderResourceView* texture);
 	void SetTexture2D(ID3D11ShaderResourceView* texture);
 	void SetTexture3D(ID3D11ShaderResourceView* texture);

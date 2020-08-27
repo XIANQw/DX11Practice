@@ -84,9 +84,11 @@ void GameObject::Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect) {
 		if (m_Model.NormalmapMap.count(part.normalMap)) {
 			auto& normalMap = m_Model.NormalmapMap.find(part.normalMap)->second;
 			effect.SetNormalMap(normalMap.Get());
+			effect.UseNormalMap(effect.useNormalmap);
 		}
 		else {
 			effect.SetNormalMap(part.pNormalmap.Get());
+			effect.UseNormalMap(effect.useNormalmap && part.pNormalmap.Get() != nullptr);
 		}
 
 		effect.SetMaterial(part.material);
