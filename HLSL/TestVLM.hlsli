@@ -71,6 +71,14 @@ struct VertexPosNormalTex
     float2 Tex : TEXCOORD;
 };
 
+struct VertexPosNormalTangentTex
+{
+    float3 PosL : POSITION;
+    float3 NormalL : NORMAL;
+    float4 TangentL : TANGENT;
+    float2 Tex : TEXCOORD;
+};
+
 struct InstancesPosNormalTex
 {
     float3 PosL : POSITION;

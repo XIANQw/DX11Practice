@@ -1,6 +1,6 @@
 #include "TestVLM.hlsli"
 
-VertexPosHWNormalTex VS_3D(VertexPosNormalTex vIn)
+VertexPosHWNormalTex VS_3D(VertexPosNormalTangentTex vIn)
 {
     VertexPosHWNormalTex vOut;
     matrix viewProj = mul(g_View, g_Proj);

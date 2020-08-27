@@ -31,7 +31,7 @@
 
 struct ObjPart {
 	Material material;							// 材质
-	std::vector<VertexPosNormalTex> vertices;  // 顶点集合
+	std::vector<VertexPosNormalTangentTex> vertices;  // 顶点集合
 	std::vector<WORD> indices16;				// 顶点数不超过65535时使用
 	std::vector<DWORD> indices32;				// 顶点数超过65535时使用
 	std::wstring texStrDiffuse;
@@ -55,7 +55,7 @@ public:
 	DirectX::XMFLOAT3 vMin, vMax; // AABB盒双顶点
 
 private:
-	void AddVertex(const VertexPosNormalTex& vertex, DWORD vpi, DWORD vti, DWORD vni);
+	void AddVertex(const VertexPosNormalTangentTex& vertex, DWORD vpi, DWORD vti, DWORD vni);
 
 	// 储存 v/vt/vn 顶点信息
 	std::unordered_map<std::wstring, DWORD> vertexCache;

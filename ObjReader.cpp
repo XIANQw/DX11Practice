@@ -145,7 +145,8 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			//
 			// 几何面
 			//
-			VertexPosNormalTex vertex;
+			VertexPosNormalTangentTex vertex;
+			ZeroMemory(&vertex, sizeof(vertex));
 			DWORD vpi[3], vni[3], vti[3];
 			wchar_t ignore;
 			// 原来右手坐标系下顶点顺序是逆时针排布
@@ -272,7 +273,7 @@ bool ObjReader::ReadMbo(const wchar_t* mboFileName)
 		fin.read(reinterpret_cast<char*>(&indexCount), sizeof(UINT));
 		// [顶点]32*顶点数 字节
 		objParts[i].vertices.resize(vertexCount);
-		fin.read(reinterpret_cast<char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTex));
+		fin.read(reinterpret_cast<char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTangentTex));
 
 		if (vertexCount > 65535)
 		{
@@ -348,7 +349,7 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 			// [索引数]4字节
 			fout.write(reinterpret_cast<const char*>(&indexCount), sizeof(UINT));
 			// [顶点]32*顶点数 字节
-			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTex));
+			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTangentTex));
 			// [索引]4*索引数 字节
 			fout.write(reinterpret_cast<const char*>(objParts[i].indices32.data()), indexCount * sizeof(DWORD));
 		}
@@ -358,7 +359,7 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 			// [索引数]4字节
 			fout.write(reinterpret_cast<const char*>(&indexCount), sizeof(UINT));
 			// [顶点]32*顶点数 字节
-			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTex));
+			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTangentTex));
 			// [索引]2*索引数 字节
 			fout.write(reinterpret_cast<const char*>(objParts[i].indices16.data()), indexCount * sizeof(WORD));
 		}
@@ -369,7 +370,7 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 	return true;
 }
 
-void ObjReader::AddVertex(const VertexPosNormalTex& vertex, DWORD vpi, DWORD vti, DWORD vni)
+void ObjReader::AddVertex(const VertexPosNormalTangentTex& vertex, DWORD vpi, DWORD vti, DWORD vni)
 {
 	std::wstring idxStr = std::to_wstring(vpi) + L"/" + std::to_wstring(vti) + L"/" + std::to_wstring(vni);
 

@@ -26,7 +26,7 @@ Model::Model(ID3D11Device* device,
 	将读取出的ObjParts 转存到modelParts中
 */
 void Model::SetModel(ID3D11Device* device, const ObjReader& model) {
-	vertexStride = sizeof(VertexPosNormalTex);
+	vertexStride = sizeof(VertexPosNormalTangentTex);
 	modelParts.resize(model.objParts.size());
 
 	// 创建包围盒
@@ -43,7 +43,7 @@ void Model::SetModel(ID3D11Device* device, const ObjReader& model) {
 		ZeroMemory(&vbd, sizeof(vbd));
 		vbd.Usage = D3D11_USAGE_IMMUTABLE;
 		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vbd.ByteWidth = (UINT)sizeof(VertexPosNormalTex) * modelParts[i].vertexCount;
+		vbd.ByteWidth = (UINT)sizeof(VertexPosNormalTangentTex) * modelParts[i].vertexCount;
 		vbd.CPUAccessFlags = 0;
 		// 新建顶点缓冲区
 		D3D11_SUBRESOURCE_DATA InitData;

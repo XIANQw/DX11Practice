@@ -189,7 +189,7 @@ bool BasicEffect::SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile) {
 	ComPtr<ID3DBlob> blob;
 	HR(CreateShaderFromFile(csoFile, hlslFile, "VS_3D", "vs_5_0", blob.GetAddressOf()));
 	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pVertexShader3D.GetAddressOf()));
-	HR(device->CreateInputLayout(VertexPosNormalTex::inputLayout, ARRAYSIZE(VertexPosNormalTex::inputLayout),
+	HR(device->CreateInputLayout(VertexPosNormalTangentTex::inputLayout, ARRAYSIZE(VertexPosNormalTangentTex::inputLayout),
 		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexLayout3D.GetAddressOf()));
 	return true;
 }
