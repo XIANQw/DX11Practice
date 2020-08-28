@@ -100,6 +100,7 @@ public:
 	std::vector<CBufferBase*> m_pCBuffers;					    // 统一管理上面所有的常量缓冲区
 
 	ComPtr<ID3D11VertexShader> m_pVertexInstanceShader;
+	ComPtr<ID3D11PixelShader> m_pPixelInstanceShader;
 	ComPtr<ID3D11VertexShader> m_pVertexShader3D;				// 用于3D的顶点着色器
 	ComPtr<ID3D11PixelShader>  m_pPixelShader3D;				// 用于3D的像素着色器
 	ComPtr<ID3D11VertexShader> m_pVertexShader2D;				// 用于2D的顶点着色器
@@ -207,6 +208,16 @@ bool BasicEffect::SetInstanceVS(ID3D11Device* device, const WCHAR* hlslFile) {
 	return true;
 }
 
+bool BasicEffect::SetInstancePS(ID3D11Device* device, const WCHAR* hlslFile) {
+	WCHAR csoFile[64];
+	ZeroMemory(csoFile, sizeof(csoFile));
+	GET_CSO_FILENAME(hlslFile, csoFile);
+	ComPtr<ID3DBlob> blob;
+	HR(CreateShaderFromFile(csoFile, hlslFile, "PS_3D", "ps_5_0", blob.GetAddressOf()));
+	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pPixelInstanceShader.GetAddressOf()));
+	return true;
+}
+
 bool BasicEffect::SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile) {
 	WCHAR csoFile[64];
 	ZeroMemory(csoFile, sizeof(csoFile));
@@ -294,7 +305,7 @@ void BasicEffect::SetRenderInstanceDefault(ID3D11DeviceContext* deviceContext) {
 	deviceContext->IASetInputLayout(pImpl->m_pInstancesLayout.Get());
 	deviceContext->VSSetShader(pImpl->m_pVertexInstanceShader.Get(), nullptr, 0);
 	deviceContext->RSSetState(nullptr);
-	deviceContext->PSSetShader(pImpl->m_pPixelShader3D.Get(), nullptr, 0);
+	deviceContext->PSSetShader(pImpl->m_pPixelInstanceShader.Get(), nullptr, 0);
 	if (pImpl->m_CBStates.data.SHMode == 0 == 0)
 		deviceContext->VSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
 	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());

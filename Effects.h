@@ -54,6 +54,7 @@ public:
 	bool SetVSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
 	bool SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
 	bool SetInstanceVS(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetInstancePS(ID3D11Device* device, const WCHAR* hlslFile);
 
 	bool SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
 	bool SetPSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
