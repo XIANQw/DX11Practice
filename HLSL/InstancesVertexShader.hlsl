@@ -1,16 +1,16 @@
 #include "RenderSponza.hlsli"
 
 
-VertexPosHWNormalTex InstancesVS(InstancesPosNormalTex vIn)
+InstancesVertexPosHWNormal InstancesVS(InstancesPosNormal vIn)
 {
-    VertexPosHWNormalTex vOut;
+    InstancesVertexPosHWNormal vOut;
     matrix viewProj = mul(g_View, g_Proj);
     float4 posW = mul(float4(vIn.PosL, 1.0f), vIn.World);
 
     if (g_SHMode == 0 && g_UseSH)
     {
         // Compute indirection UVs from world position
-        float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs(posW);
+        float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs((float3)posW);
 
         SHCoefs2BandRGB IrradianceSH = GetVolumetricLightmapSH2(BrickUV);
         vOut.VertexIndirectSH[0] = IrradianceSH.R.coefs1_4;
@@ -28,6 +28,5 @@ VertexPosHWNormalTex InstancesVS(InstancesPosNormalTex vIn)
     vOut.PosH = mul(posW, viewProj);
     vOut.PosW = posW.xyz;
     vOut.NormalW = mul(vIn.NormalL, (float3x3) vIn.WorldInvTranspose);
-    vOut.Tex = vIn.Tex;
     return vOut;
 }

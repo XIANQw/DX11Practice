@@ -1,13 +1,13 @@
 #include "RenderSponza.hlsli"
 
 VertexPosHWNormalTangentTex VS_3D(VertexPosNormalTangentTex vIn) {
-    VertexPosHWNormalTangentTex vOut;
+    VertexPosHWNormalTangentTex vOut = (VertexPosHWNormalTangentTex)0;
     matrix viewProj = mul(g_View, g_Proj);
     float4 posW = mul(float4(vIn.PosL, 1.0f), g_World);
     
     if (g_SHMode==0 && g_UseSH) {
         // Compute indirection UVs from world position
-        float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs(posW);
+        float3 BrickUV = ComputeVolumetricLightmapBrickTextureUVs((float3)posW);
 
         SHCoefs2BandRGB IrradianceSH = GetVolumetricLightmapSH2(BrickUV);
         vOut.VertexIndirectSH[0] = IrradianceSH.R.coefs1_4;

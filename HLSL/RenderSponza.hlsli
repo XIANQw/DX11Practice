@@ -1,4 +1,5 @@
-#include "SHLight.hlsli"
+#include "LightHelper.hlsli"
+#include "SHComputer.hlsli"
 
 Texture2D g_Tex2D: register(t0);
 Texture2D g_NormalMap : register(t1);
@@ -80,13 +81,21 @@ struct VertexPosNormalTangentTex
     float2 Tex : TEXCOORD;
 };
 
-struct InstancesPosNormalTex
+struct InstancesPosNormal
 {
     float3 PosL : POSITION;
     float3 NormalL : NORMAL;
-    float2 Tex : TEXCOORD;
     matrix World : WORLD;
     matrix WorldInvTranspose : WORLDINVTRANSPOSE;
+};
+
+struct InstancesVertexPosHWNormal
+{
+    float4 PosH : SV_POSITION;
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+
+    float4 VertexIndirectSH[3] : TEXCOORD14;
 };
 
 struct VertexPosTex
