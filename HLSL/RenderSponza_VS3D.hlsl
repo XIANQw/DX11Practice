@@ -1,4 +1,4 @@
-#include "TestVLM.hlsli"
+#include "RenderSponza.hlsli"
 
 VertexPosHWNormalTangentTex VS_3D(VertexPosNormalTangentTex vIn) {
     VertexPosHWNormalTangentTex vOut;

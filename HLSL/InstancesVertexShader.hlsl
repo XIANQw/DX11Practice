@@ -1,4 +1,4 @@
-#include "TestVLM.hlsli"
+#include "RenderSponza.hlsli"
 
 
 VertexPosHWNormalTex InstancesVS(InstancesPosNormalTex vIn)

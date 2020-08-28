@@ -1,4 +1,4 @@
-#include "TestVLM.hlsli"
+#include "RenderSponza.hlsli"
 
 // ÏñËØ×ÅÉ«Æ÷(3D)
 float4 PS_3D(VertexPosHWNormalTangentTex pIn) : SV_Target

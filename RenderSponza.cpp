@@ -1,8 +1,8 @@
-﻿#include "TestVLM.h"
+﻿#include "RenderSponza.h"
 
 using namespace DirectX;
 
-TestVLM::TestVLM(HINSTANCE hInstance)
+RenderSponza::RenderSponza(HINSTANCE hInstance)
 	:D3DApp(hInstance),
 	m_ShadowMat(),
 	m_Material(),
@@ -25,18 +25,18 @@ TestVLM::TestVLM(HINSTANCE hInstance)
 }
 
 
-TestVLM::~TestVLM() {
+RenderSponza::~RenderSponza() {
 
 }
 
 
-bool TestVLM::Init() {
+bool RenderSponza::Init() {
 
 	if (!D3DApp::Init()) return false;
 	RenderStates::InitAll(m_pd3dDevice.Get());
 
-	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_VS3D.hlsl")) return false;
-	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\TestVLM_PS3D.hlsl")) return false;
+	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\RenderSponza_VS3D.hlsl")) return false;
+	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\RenderSponza_PS3D.hlsl")) return false;
 	if (!m_BasicEffect.SetInstanceVS(m_pd3dDevice.Get(), L"HLSL\\InstancesVertexShader.hlsl")) return false;
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get())) return false;
 
@@ -53,7 +53,7 @@ bool TestVLM::Init() {
 }
 
 
-void TestVLM::OnResize() {
+void RenderSponza::OnResize() {
 	assert(m_pd2dFactory);
 	assert(m_pdwriteFactory);
 	// 释放D2D的相关资源
@@ -88,7 +88,10 @@ void TestVLM::OnResize() {
 }
 
 
-void TestVLM::UpdateScene(float dt) {
+/*
+	每帧都会调用, 用于更新场景中各种变量
+*/
+void RenderSponza::UpdateScene(float dt) {
 	// 获取鼠标状态
 	Mouse::State mouseState = m_pMouse->GetState();
 	// 获取键盘状态
@@ -247,7 +250,10 @@ detailCellSize=%s, VolumeSize(%.1f, %.1f, %.1f), 控制小球模式=%d, bricksNu
 	}
 }
 
-void TestVLM::DrawScene() {
+/*
+	每帧都会调用, 用于绘制画面
+*/
+void RenderSponza::DrawScene() {
 	assert(m_pd3dImmediateContext);
 	assert(m_pSwapChain);
 	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&m_BackGroundColor));
@@ -292,6 +298,9 @@ void TestVLM::DrawScene() {
 
 }
 
+/*
+	将indirectionTexturePosition 转成 WorldPosition
+*/
 XMFLOAT3 IndTexPosToWorldPos(const XMINT3& indTexPos, const FVolumetricLightmapSettings& vlmSetting, const XMINT3& indTexDimension) {
 	XMVECTOR volumeMinVec = XMLoadFloat3(&vlmSetting.VolumeMin);
 	XMVECTOR volumeSizeVec = XMLoadFloat3(&vlmSetting.VolumeSize);
@@ -304,7 +313,7 @@ XMFLOAT3 IndTexPosToWorldPos(const XMINT3& indTexPos, const FVolumetricLightmapS
 	return worldPos;
 }
 
-void TestVLM::VisualizeVLM() {
+void RenderSponza::VisualizeVLM() {
 
 	INT32 SampleIndex = 0;
 	m_TransformData.resize(m_Importer.m_BricksByDepth.size());
@@ -349,7 +358,7 @@ void CreateTexture3D(ID3D11Device* device, ID3D11DeviceContext* context, INT32 d
 	HR(device->CreateShaderResourceView(*pTex3D, &tex3DViewDesc, outSRV));
 }
 
-bool TestVLM::InitVLM() {
+bool RenderSponza::InitVLM() {
 
 	wchar_t VLMSettingRepo[128], brickByDepthRepo[128], indTexRepo[128], AmbientVecRepo[128], SH0Repo[128],
 		SH1Repo[128], SH2Repo[128], SH3Repo[128], SH4Repo[128], SH5Repo[128];
@@ -513,7 +522,7 @@ bool TestVLM::InitVLM() {
 }
 
 
-bool TestVLM::InitResource() {
+bool RenderSponza::InitResource() {
 	const XMFLOAT3& VolumeSize = m_Importer.VLMSetting.VolumeSize;
 	const XMFLOAT3& VolumeMin = m_Importer.VLMSetting.VolumeMin;
 	XMVECTOR VolumeMinVec = XMLoadFloat3(&VolumeMin);

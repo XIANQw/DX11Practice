@@ -1,12 +1,11 @@
 ﻿#pragma once
 #include "d3dApp.h"
 #include "Transform.h"
-#include "CBuffer.h"
 #include "Camera.h"
 #include "GameObject.h"
 #include "Importer.h"
 
-class TestVLM :public D3DApp
+class RenderSponza :public D3DApp
 {
 public:
 	// 摄像机模式
@@ -14,8 +13,8 @@ public:
 
 
 public:
-	TestVLM(HINSTANCE hInstance);
-	virtual ~TestVLM();
+	RenderSponza(HINSTANCE hInstance);
+	virtual ~RenderSponza();
 
 	bool Init();
 	void OnResize();

@@ -126,10 +126,7 @@
     <ClInclude Include="Ex19ReadObj.h">
       <Filter>Instances</Filter>
     </ClInclude>
-    <ClInclude Include="TestSponza.h">
-      <Filter>Instances</Filter>
-    </ClInclude>
-    <ClInclude Include="TestVLM.h">
+    <ClInclude Include="RenderSponza.h">
       <Filter>Instances</Filter>
     </ClInclude>
   </ItemGroup>
@@ -206,10 +203,7 @@
     <ClCompile Include="Ex19ReadObj.cpp">
       <Filter>Instances</Filter>
     </ClCompile>
-    <ClCompile Include="TestSponza.cpp">
-      <Filter>Instances</Filter>
-    </ClCompile>
-    <ClCompile Include="TestVLM.cpp">
+    <ClCompile Include="RenderSponza.cpp">
       <Filter>Instances</Filter>
     </ClCompile>
   </ItemGroup>
@@ -227,9 +221,6 @@
     <None Include="HLSL\CBuffer.hlsli">
       <Filter>shader\Ex10</Filter>
     </None>
-    <None Include="HLSL\TestVLM.hlsli">
-      <Filter>shader</Filter>
-    </None>
     <None Include="HLSL\LightHelper.hlsli">
       <Filter>shader\Ex13</Filter>
     </None>
@@ -237,6 +228,9 @@
       <Filter>shader</Filter>
     </None>
     <None Include="HLSL\SHLight.hlsli">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="HLSL\RenderSponza.hlsli">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
@@ -271,13 +265,13 @@
     <FxCompile Include="HLSL\Basic_VS_3D.hlsl">
       <Filter>shader\Ex10</Filter>
     </FxCompile>
-    <FxCompile Include="HLSL\TestVLM_PS3D.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\TestVLM_VS3D.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
     <FxCompile Include="HLSL\InstancesVertexShader.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\RenderSponza_PS3D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\RenderSponza_VS3D.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
