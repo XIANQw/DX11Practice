@@ -221,9 +221,6 @@
     <None Include="HLSL\CBuffer.hlsli">
       <Filter>shader\Ex10</Filter>
     </None>
-    <None Include="HLSL\LightHelper.hlsli">
-      <Filter>shader\Ex13</Filter>
-    </None>
     <None Include="HLSL\SHComputer.hlsli">
       <Filter>shader</Filter>
     </None>
@@ -231,6 +228,9 @@
       <Filter>shader</Filter>
     </None>
     <None Include="HLSL\RenderSponza.hlsli">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="HLSL\LightHelper.hlsli">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
@@ -272,6 +272,9 @@
       <Filter>shader</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\RenderSponza_VS3D.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\InstancesPixelShader.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>

@@ -38,6 +38,7 @@ bool RenderSponza::Init() {
 	if (!m_BasicEffect.SetVSShader3D(m_pd3dDevice.Get(), L"HLSL\\RenderSponza_VS3D.hlsl")) return false;
 	if (!m_BasicEffect.SetPSShader3D(m_pd3dDevice.Get(), L"HLSL\\RenderSponza_PS3D.hlsl")) return false;
 	if (!m_BasicEffect.SetInstanceVS(m_pd3dDevice.Get(), L"HLSL\\InstancesVertexShader.hlsl")) return false;
+	if (!m_BasicEffect.SetInstancePS(m_pd3dDevice.Get(), L"HLSL\\InstancesPixelShader.hlsl")) return false;
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get())) return false;
 
 	if (!InitVLM()) return false;
@@ -101,7 +102,7 @@ void RenderSponza::UpdateScene(float dt) {
 	m_KeyboardTracker.Update(keyState);
 
 	auto cam1st = std::dynamic_pointer_cast<FPSCamera>(m_pCamera);
-	auto& sampleTrans = m_Sample.GetTransform();
+	auto& sampleTrans = m_Sphere.GetTransform();
 	XMFLOAT3 curPos;
 	if (m_CameraMode == CameraMode::Free) {
 		// FPS mode
@@ -195,7 +196,7 @@ void RenderSponza::UpdateScene(float dt) {
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::K)) {
 		m_isControlObj = !m_isControlObj;
-		XMFLOAT3 samplePos = m_Sample.GetTransform().GetPosition();
+		XMFLOAT3 samplePos = m_Sphere.GetTransform().GetPosition();
 		cam1st->SetPosition(samplePos.x, samplePos.y + 100, samplePos.z - 100);
 		cam1st->LookAt(cam1st->GetPosition(), samplePos, XMFLOAT3(0.0f, 1.0f, 0.0f));
 	}
@@ -280,16 +281,16 @@ void RenderSponza::DrawScene() {
 
 	// Draw observe Obj
 	m_BasicEffect.SetTextureUsed(false);
-	m_Sample.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_Sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	// Draw dynamic obj
 	m_BasicEffect.SetRenderInstanceDefault(m_pd3dImmediateContext.Get());
 	m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_DynamicTransform);
 
-	if (m_isVisulizeVLM) {
-		for (INT32 depth = 0; depth < m_TransformData.size(); depth++)
-			m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_TransformData[depth]);
-	}
+	//if (m_isVisulizeVLM) {
+	//	for (INT32 depth = 0; depth < m_TransformData.size(); depth++)
+	//		m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_TransformData[depth]);
+	//}
 
 	m_BasicEffect.SetTextureUsed(m_UseTexture);
 	WriteInformation(std::wstring(m_Text));
@@ -648,25 +649,14 @@ bool RenderSponza::InitResource() {
 	m_DynamicTransform[2].SetPosition(-1000, 240, -400);
 
 	// OberveObj
-	m_Sample.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(10.0f)));
-	m_Sample.GetTransform().SetPosition(0, 800, 0);
-	m_Sample.GetTransform().SetScale(3, 3, 3);
-	m_Sample.SetMaterial(material);
+	m_Sphere.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere(10.0f)));
+	m_Sphere.GetTransform().SetPosition(0, 800, 0);
+	m_Sphere.GetTransform().SetScale(3, 3, 3);
 
-	// Reflection plane
-	m_plane.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateBox(100, 100, 10)));
-	m_plane.GetTransform().SetPosition(1210.0f, 235.0f, -390.0f);
+	m_Sample.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere<VertexPosNormal>(10.0f)));
 	m_Sample.SetMaterial(material);
-
 
 	VisualizeVLM();
-
-	/*
-		设置阴影矩阵
-		稍微高一点位置以显示阴影
-	*/
-	//m_BasicEffect.SetShadowMatrix(XMMatrixShadow(XMVectorSet(0.0f, 1.0f, 0.0f, 0.99f),
-	//	XMVectorSet(pointLight.position.x, pointLight.position.y, pointLight.position.z, 1.0f)));
 
 	return true;
 }

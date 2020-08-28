@@ -32,6 +32,7 @@ protected:
 	GameObject m_plane;
 	std::vector<Transform> m_DynamicTransform;
 	GameObject m_Sample;
+	GameObject m_Sphere;
 	std::vector<std::vector<Transform>> m_TransformData;
 
 	Material m_ShadowMat;
