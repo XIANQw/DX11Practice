@@ -11,6 +11,11 @@ struct VertexPosNormalColor {
 	static const D3D11_INPUT_ELEMENT_DESC inputLayout[3];
 };
 
+struct VertexPosNormal {
+	DirectX::XMFLOAT3 pos;
+	DirectX::XMFLOAT3 noraml;
+	static const D3D11_INPUT_ELEMENT_DESC inputLayout[2];
+};
 
 struct VertexPosTex {
 	DirectX::XMFLOAT3 pos;
@@ -30,7 +35,7 @@ struct VertexPosNormalTex {
 struct Instances {
 	DirectX::XMMATRIX world;
 	DirectX::XMMATRIX worldInvTranspose;
-	static const D3D11_INPUT_ELEMENT_DESC inputLayout[11];
+	static const D3D11_INPUT_ELEMENT_DESC inputLayout[10];
 };
 
 
