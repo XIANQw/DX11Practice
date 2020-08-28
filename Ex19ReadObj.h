@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "d3dApp.h"
 #include "Transform.h"
-#include "CBuffer.h"
 #include "Camera.h"
 #include "GameObject.h"
 
