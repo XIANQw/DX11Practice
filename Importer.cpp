@@ -122,11 +122,21 @@ void Importer::CopyBrickToTexture(
 	UINT8* destPtr
 ) {
 	INT32 brickSize = VLMSetting.BrickSize;
-	for (INT32 Z = 0; Z < brickSize; Z++) {
-		for (INT32 Y = 0; Y < brickSize; Y++) {
-			INT32 srcIndex = Z * brickSize * brickSize * formatSize + Y * brickSize * formatSize;
-			INT32 destIndex = (layoutPos.z + Z) * brickDataDimension.y * brickDataDimension.x * formatSize + (layoutPos.y + Y) * brickDataDimension.x * formatSize + layoutPos.x * formatSize;
-			memcpy(destPtr + destIndex, srcPtr + srcIndex, brickSize * formatSize);
+	const INT32 SourcePitch = brickSize * formatSize;
+	const INT32 Pitch = brickDataDimension.x * formatSize;
+	const INT32 DepthPitch = brickDataDimension.x * brickDataDimension.y * formatSize;
+
+	// Copy each row into the correct position in the global volume texture
+	for (INT32 ZIndex = 0; ZIndex < brickSize; ZIndex++)
+	{
+		const INT32 DestZIndex = (layoutPos.z + ZIndex) * DepthPitch + layoutPos.x * formatSize;
+		const INT32 SourceZIndex = ZIndex * brickSize * SourcePitch;
+
+		for (INT32 YIndex = 0; YIndex < brickSize; YIndex++)
+		{
+			const INT32 DestIndex = DestZIndex + (layoutPos.y + YIndex) * Pitch;
+			const INT32 SourceIndex = SourceZIndex + YIndex * SourcePitch;
+			memcpy(destPtr + DestIndex, srcPtr + SourceIndex, SourcePitch);
 		}
 	}
 }
@@ -228,15 +238,6 @@ void Importer::TransformData() {
 	vlmData.brickData.DirectionalLightShadowing.Format = DXGI_FORMAT_A8_UNORM;
 	vlmData.brickData.DirectionalLightShadowing.Resize(TotalBrickData);
 
-	vlmData.brickData.LQLightColor.FormatSize = sizeof(DirectX::PackedVector::XMFLOAT3PK);
-	vlmData.brickData.LQLightColor.Format = DXGI_FORMAT_R11G11B10_FLOAT;
-	vlmData.brickData.LQLightColor.Resize(TotalBrickData);
-
-	vlmData.brickData.LQLightDirection.FormatSize = sizeof(DirectX::PackedVector::XMCOLOR);
-	vlmData.brickData.LQLightDirection.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	vlmData.brickData.LQLightDirection.Resize(TotalBrickData);
-
-
 	if (hasAllSHCoefsTextures) {
 		pIndirectionTextureImporter->read(reinterpret_cast<char*>(inTexture.data.data()), TotalTextureSize * inTexture.FormatSize);
 		pAmbientVectorImporter->read(reinterpret_cast<char*>(vlmData.brickData.AmbientVector.data.data()), vlmData.brickData.AmbientVector.data.size());
@@ -279,7 +280,6 @@ void Importer::TransformData() {
 		ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.SkyBentNormal);
 		for (int i = 0; i < 6; i++)
 			ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.SHCoefficients[i]);
-		ConvertB8G8R8A8ToR8G8B8A8(vlmData.brickData.LQLightDirection);
 	}
 	
 }

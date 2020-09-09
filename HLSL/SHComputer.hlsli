@@ -1,12 +1,21 @@
-Texture3D<uint4> g_IndirectionTexture: register(t1);
 
-Texture3D g_AmbientVector: register(t2);
-Texture3D g_SHCoef0: register(t3);
-Texture3D g_SHCoef1: register(t4);
-Texture3D g_SHCoef2: register(t5);
-Texture3D g_SHCoef3: register(t6);
-Texture3D g_SHCoef4: register(t7);
-Texture3D g_SHCoef5: register(t8);
+Texture3D<uint4> g_IndirectionTexture: register(t2);
+Texture3D g_AmbientVector: register(t3);
+Texture3D g_SHCoef0: register(t4);
+Texture3D g_SHCoef1: register(t5);
+Texture3D g_SHCoef2: register(t6);
+Texture3D g_SHCoef3: register(t7);
+Texture3D g_SHCoef4: register(t8);
+Texture3D g_SHCoef5: register(t9);
+
+
+/*
+Texture3D g_SHCoef0Phase1 : register(t9);
+Texture3D g_SHCoef0Phase2 : register(t10);
+Texture3D g_SHCoef0Phase3 : register(t11);
+Texture3D g_SHCoef0Phase4 : register(t12);
+Texture3D g_SHCoef0Phase5 : register(t13);
+*/
 
 SamplerState g_Sam : register(s0);
 

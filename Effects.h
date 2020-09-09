@@ -53,12 +53,16 @@ public:
 
 	bool SetVSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
 	bool SetVSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetInstanceVS(ID3D11Device* device, const WCHAR* hlslFile);
+	bool SetInstancePS(ID3D11Device* device, const WCHAR* hlslFile);
+
 	bool SetPSShader2D(ID3D11Device* device, const WCHAR* hlslFile);
 	bool SetPSShader3D(ID3D11Device* device, const WCHAR* hlslFile);
 
 	//
 	// 渲染模式的变更
 	//
+	void SetRenderInstanceDefault(ID3D11DeviceContext* deviceContext);
 
 	// 默认状态来绘制
 	void SetRenderDefault(ID3D11DeviceContext* deviceContext);
@@ -96,8 +100,11 @@ public:
 	//
 
 	// 各种类型灯光允许的最大数目
-	static const int maxLights = 20;
+	static const int maxDirLights = 1;
+	static const int maxPointLights = 22;
+	static const int maxSpotLights = 2;
 	bool isShadow;
+	bool useNormalmap;
 
 	void SetDirLight(size_t pos, const DirectionalLight& dirLight);
 	void SetPointLight(size_t pos, const PointLight& pointLight);
@@ -108,6 +115,9 @@ public:
 
 	void SetMaterial(const Material& material);
 
+	void SetNormalMap(ID3D11ShaderResourceView* normalMap);
+	void UseNormalMap(bool isUsed);
+	bool GetUseNormalMap();
 	void SetTexture(ID3D11ShaderResourceView* texture);
 	void SetTexture2D(ID3D11ShaderResourceView* texture);
 	void SetTexture3D(ID3D11ShaderResourceView* texture);

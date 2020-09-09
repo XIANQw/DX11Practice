@@ -28,26 +28,20 @@
 #include "Vertex.h"
 #include "light.h"
 
+
+struct ObjPart {
+	Material material;							// 材质
+	std::vector<VertexPosNormalTangentTex> vertices;  // 顶点集合
+	std::vector<WORD> indices16;				// 顶点数不超过65535时使用
+	std::vector<DWORD> indices32;				// 顶点数超过65535时使用
+	std::wstring texStrDiffuse;
+	std::wstring normalMap;
+	ObjPart() = default;
+};
+
 class ObjReader
 {
 public:
-	struct ObjPart {
-		Material material;							// 材质
-		std::vector<VertexPosNormalTex> vertices;  // 顶点集合
-		std::vector<WORD> indices16;				// 顶点数不超过65535时使用
-		std::vector<DWORD> indices32;				// 顶点数超过65535时使用
-		std::wstring texStrDiffuse;			
-		// 漫射光纹理文件名，需为相对路径，在mbo必须为32字节
-		ObjPart() = default;
-		//ObjPart(ObjPart& orther) {
-		//	material = orther.material;
-		//	vertices.assign(orther.vertices.begin(), orther.vertices.end());
-		//	if (orther.indices16.empty()) indices32.assign(orther.indices32.begin(), orther.indices32.end());
-		//	else indices16.assign(orther.indices16.begin(), orther.indices16.end());
-		//	texStrDiffuse.assign(orther.texStrDiffuse.c_str());
-		//}
-
-	};
 
 	// 有指定.mbo文件时直接读取.mbo， 否则得先都.obj
 	bool Read(const wchar_t* mboFilename, const wchar_t* objFileName);
@@ -61,8 +55,8 @@ public:
 	DirectX::XMFLOAT3 vMin, vMax; // AABB盒双顶点
 
 private:
-	void AddVertex(const VertexPosNormalTex& vertex, DWORD vpi, DWORD vti, DWORD vni);
-	
+	void AddVertex(const VertexPosNormalTangentTex& vertex, DWORD vpi, DWORD vti, DWORD vni);
+
 	// 储存 v/vt/vn 顶点信息
 	std::unordered_map<std::wstring, DWORD> vertexCache;
 

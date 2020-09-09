@@ -354,12 +354,12 @@ bool Ex10Camera::InitResource()
 
 	// 读取木箱
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
-	m_WoodCrate.SetBuffer<VertexPosNormalTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreateBox());
+	m_WoodCrate.SetBuffer<VertexPosNormalTangentTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreateBox());
 	m_WoodCrate.SetTexture(texture.Get());
 
 	// 初始化地板
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\floor.dds", nullptr, texture.GetAddressOf()));
-	m_Floor.SetBuffer<VertexPosNormalTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(20.0f, 20.0f), XMFLOAT2(5.0f, 5.0f)));
+	m_Floor.SetBuffer<VertexPosNormalTangentTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(20.0f, 20.0f), XMFLOAT2(5.0f, 5.0f)));
 	m_Floor.SetTexture(texture.Get());
 	m_Floor.GetTransform().SetPosition(0.0f, -1.0f, 0.0f);
 
@@ -380,7 +380,7 @@ bool Ex10Camera::InitResource()
 	m_Walls.resize(4);
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\brick.dds", nullptr, texture.GetAddressOf()));
 	for (int i = 0; i < m_Walls.size(); i++) {
-		m_Walls[i].SetBuffer<VertexPosNormalTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f)));
+		m_Walls[i].SetBuffer<VertexPosNormalTangentTex, DWORD>(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(20.0f, 8.0f), XMFLOAT2(5.0f, 1.5f)));
 		Transform & transform = m_Walls[i].GetTransform();
 		transform.SetRotation(-XM_PIDIV2, XM_PIDIV2 * i, 0.0f);
 		transform.SetPosition(i % 2 ? -10.0f * (i - 2) : 0.0f, 3.0f, i % 2 == 0 ? -10.0f * (i - 1) : 0.0f);

@@ -26,7 +26,7 @@ Model::Model(ID3D11Device* device,
 	将读取出的ObjParts 转存到modelParts中
 */
 void Model::SetModel(ID3D11Device* device, const ObjReader& model) {
-	vertexStride = sizeof(VertexPosNormalTex);
+	vertexStride = sizeof(VertexPosNormalTangentTex);
 	modelParts.resize(model.objParts.size());
 
 	// 创建包围盒
@@ -43,7 +43,7 @@ void Model::SetModel(ID3D11Device* device, const ObjReader& model) {
 		ZeroMemory(&vbd, sizeof(vbd));
 		vbd.Usage = D3D11_USAGE_IMMUTABLE;
 		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vbd.ByteWidth = (UINT)sizeof(VertexPosNormalTex) * modelParts[i].vertexCount;
+		vbd.ByteWidth = (UINT)sizeof(VertexPosNormalTangentTex) * modelParts[i].vertexCount;
 		vbd.CPUAccessFlags = 0;
 		// 新建顶点缓冲区
 		D3D11_SUBRESOURCE_DATA InitData;
@@ -76,18 +76,42 @@ void Model::SetModel(ID3D11Device* device, const ObjReader& model) {
 			读取Texture
 		*************/
 		auto& strD = part.texStrDiffuse;
-		if (strD.size() > 4) {
+		modelParts[i].texDiffuse = part.texStrDiffuse;
+		if (strD.size() > 4 && TexDiffuseMap.count(part.texStrDiffuse) == 0) {
+			TexDiffuseMap.insert(std::pair<std::wstring, ComPtr<ID3D11ShaderResourceView>>(part.texStrDiffuse, ComPtr<ID3D11ShaderResourceView>()));
+			auto& ptexDiffuse = TexDiffuseMap.find(part.texStrDiffuse)->second;
 			// Read texture from .dds file
 			if (strD.substr(strD.size() - 3, 3) == L"dds") {
 				HR(CreateDDSTextureFromFile(device, strD.c_str(), nullptr,
-					modelParts[i].texDiffuse.GetAddressOf()));
+					ptexDiffuse.GetAddressOf()));
 			}
 			// Read texture from .wic file
 			else {
 				HR(CreateWICTextureFromFile(device, strD.c_str(), nullptr,
-					modelParts[i].texDiffuse.GetAddressOf()));
+					ptexDiffuse.GetAddressOf()));
 			}
 		}
+
+		/******************
+			读取NormalMap
+		*******************/
+		auto& normalMap = part.normalMap;
+		modelParts[i].normalMap = part.normalMap;
+		if (normalMap.size() > 0 && NormalmapMap.count(part.normalMap) == 0) {
+			NormalmapMap.insert(std::pair<std::wstring, ComPtr<ID3D11ShaderResourceView>>(part.normalMap, ComPtr<ID3D11ShaderResourceView>()));
+			auto& pNormalmap = NormalmapMap.find(part.normalMap)->second;
+			// Read texture from .dds file
+			if (normalMap.substr(normalMap.size() - 3, 3) == L"dds") {
+				HR(CreateDDSTextureFromFile(device, normalMap.c_str(), nullptr,
+					pNormalmap.GetAddressOf()));
+			}
+			// Read texture from .wic file
+			else {
+				HR(CreateWICTextureFromFile(device, normalMap.c_str(), nullptr,
+					pNormalmap.GetAddressOf()));
+			}
+		}
+
 		modelParts[i].material = part.material;
 	}
 }

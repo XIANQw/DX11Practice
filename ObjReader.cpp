@@ -45,12 +45,14 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			if (objParts.size() > 0 && objParts.back().vertices.size() == 0) {
 				objParts.pop_back();
 			}
-			objParts.emplace_back(ObjPart());
-
+			ObjPart newPart;
 			// 提供默认材质
-			objParts.back().material.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-			objParts.back().material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-			objParts.back().material.specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+			newPart.material.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+			newPart.material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+			newPart.material.specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+			objParts.push_back(newPart);
+
 
 			vertexCache.clear();
 		}
@@ -73,7 +75,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			float u, v;
 			wfin >> u >> v;
 			v = 1.0f - v;
-			texCoords.emplace_back(XMFLOAT2(u, v));
+			texCoords.push_back(XMFLOAT2(u, v));
 		}
 		else if (wstr == L"vn") {
 			/*************************************************
@@ -82,7 +84,7 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			float x, y, z;
 			wfin >> x >> y >> z;
 			z = -z;
-			normals.emplace_back(XMFLOAT3(x, y, z));
+			normals.push_back(XMFLOAT3(x, y, z));
 		}
 		else if (wstr == L"mtllib") {
 			// 指定某一文件的材质
@@ -124,15 +126,31 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 			}
 
 			objParts.back().material = mtlReader.materials[mtlName];
-			objParts.back().texStrDiffuse = mtlReader.mapKdStrs[mtlName];
+			if (mtlReader.mapKdStrs.count(mtlName) > 0) {
+				objParts.back().texStrDiffuse = mtlReader.mapKdStrs[mtlName];
+			}
+			else {
+				objParts.back().texStrDiffuse = L"";
+			}
+			if (mtlReader.mapBumpStrs.count(mtlName) > 0) {
+				objParts.back().normalMap = mtlReader.mapBumpStrs[mtlName];
+			}
+			else {
+				objParts.back().normalMap = L"";
+			}
+
+
 		}
 		else if (wstr == L"f") {
 			//
 			// 几何面
 			//
-			VertexPosNormalTex vertex;
+			VertexPosNormalTangentTex vertex;
+			ZeroMemory(&vertex, sizeof(vertex));
 			DWORD vpi[3], vni[3], vti[3];
 			wchar_t ignore;
+
+			UINT32 validVertex = 0;
 			// 原来右手坐标系下顶点顺序是逆时针排布
 			// 现在需要转变为左手坐标系就需要将三角形顶点反过来输入
 			for (int i = 2; i >= 0; --i)
@@ -143,47 +161,42 @@ bool ObjReader::ReadObj(const wchar_t* objFileName) {
 				bool hasTexture = false;
 				// 顶点索引/纹理索引/法向量索引
 				size_t indexSep = tmp.find(L"//");
-				if (indexSep == std::wstring::npos) {
-					hasTexture = true;
-				}
-				// 11/20/30
-				if (hasTexture) {
-					ULONG index1 = tmp.find(L"/");
-					std::wstring svpi = tmp.substr(0, index1);
-					vpi[i] = std::stoul(svpi);
-					ULONG index2 = tmp.find(L"/", index1 + 1);
-					std::wstring svti = tmp.substr(index1 + 1, index2 - index1 - 1);
-					vti[i] = std::stoul(svti);
-					std::wstring svni = tmp.substr(index2 + 1);
-					vni[i] = std::stoul(svni);
-				}
-				else {
-					std::wstring svpi = tmp.substr(0, indexSep);
-					vpi[i] = std::stoul(svpi);
-					vti[i] = MAXDWORD;
-					std::wstring svni = tmp.substr(indexSep + 2);
-					vni[i] = std::stoul(svni);
+				if (indexSep != std::wstring::npos) {
+					continue;
 				}
 
+				ULONG index1 = tmp.find(L"/");
+				std::wstring svpi = tmp.substr(0, index1);
+				vpi[i] = std::stoul(svpi);
+				ULONG index2 = tmp.find(L"/", index1 + 1);
+				std::wstring svti = tmp.substr(index1 + 1, index2 - index1 - 1);
+				vti[i] = std::stoul(svti);
+				std::wstring svni = tmp.substr(index2 + 1);
+				vni[i] = std::stoul(svni);
+				validVertex++;
 			}
 
-			for (int i = 0; i < 3; ++i)
-			{
+			if (validVertex != 3) {
+				std::cout << "objRead warning: validVertex !=3 on a same surface" << std::endl;
+				continue;
+			}
+
+			std::vector<VertexPosNormalTangentTex> triangle;
+			for (int i = 0; i < 3; ++i) {
 				vertex.pos = positions[vpi[i] - 1];
 				vertex.normal = normals[vni[i] - 1];
-				if (vti[i] != MAXDWORD)
-					vertex.tex = texCoords[vti[i] - 1];
-				else
-					vertex.tex = DirectX::XMFLOAT2(0.0f, 0.0f);
-				AddVertex(vertex, vpi[i], vti[i], vni[i]);
+				vertex.tex = texCoords[vti[i] - 1];
+				triangle.push_back(vertex);
+			}
+			CalculeTangent(triangle);
+			for (int i = 0; i < 3; i++) {
+				AddVertex(triangle[i], vpi[i], vti[i], vni[i]);
 			}
 
 
-			while (iswblank(wfin.peek()))
-				wfin.get();
+			while (iswblank(wfin.peek())) wfin.get();
 			// 几何面顶点数可能超过了3，不支持该格式
-			if (wfin.peek() != '\n')
-				return false;
+			if (wfin.peek() != '\n') return false;
 		}
 	}
 
@@ -208,6 +221,8 @@ bool ObjReader::ReadMbo(const wchar_t* mboFileName)
 	// [AABB盒顶点vMin] 12字节
 	// [Part
 	//   [漫射光材质文件名]520字节
+	//   [hasNormalMap] 1 Byte
+	//   [hasNormalMap ? 520 Bytes : 0 Bytes]
 	//   [材质]64字节
 	//   [顶点数]4字节
 	//   [索引数]4字节
@@ -236,6 +251,16 @@ bool ObjReader::ReadMbo(const wchar_t* mboFileName)
 		// [漫射光材质文件名]520字节
 		fin.read(reinterpret_cast<char*>(filePath), MAX_PATH * sizeof(wchar_t));
 		objParts[i].texStrDiffuse = filePath;
+
+		// hasNormalMap 1 byte
+		UINT8 hasNormalMap;
+		fin.read(reinterpret_cast<char*>(&hasNormalMap), sizeof(UINT8));
+		if (hasNormalMap) {
+			// [NormalMap 520 bytes]
+			ZeroMemory(filePath, MAX_PATH * sizeof(wchar_t));
+			fin.read(reinterpret_cast<char*>(filePath), MAX_PATH * sizeof(wchar_t));
+			objParts[i].normalMap = filePath;
+		}
 		// [材质]64字节
 		fin.read(reinterpret_cast<char*>(&objParts[i].material), sizeof(Material));
 		UINT vertexCount, indexCount;
@@ -245,7 +270,7 @@ bool ObjReader::ReadMbo(const wchar_t* mboFileName)
 		fin.read(reinterpret_cast<char*>(&indexCount), sizeof(UINT));
 		// [顶点]32*顶点数 字节
 		objParts[i].vertices.resize(vertexCount);
-		fin.read(reinterpret_cast<char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTex));
+		fin.read(reinterpret_cast<char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTangentTex));
 
 		if (vertexCount > 65535)
 		{
@@ -272,8 +297,9 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 	// [AABB盒顶点vMax] 12字节
 	// [AABB盒顶点vMin] 12字节
 	// [Part
-	//   [环境光材质文件名]520字节
 	//   [漫射光材质文件名]520字节
+	//   [hasNormalMap] 1 Byte
+	//   [hasNormalMap ? 520 Bytes : 0 Bytes]
 	//   [材质]64字节
 	//   [顶点数]4字节
 	//   [索引数]4字节
@@ -298,6 +324,15 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 		wcscpy_s(filePath, objParts[i].texStrDiffuse.c_str());
 		// [漫射光材质文件名]520字节
 		fout.write(reinterpret_cast<const char*>(filePath), MAX_PATH * sizeof(wchar_t));
+		// hasNormalMap 1 byte
+		UINT8 hasNormalMap = objParts[i].normalMap.size() > 0;
+		fout.write(reinterpret_cast<const char*>(&hasNormalMap), sizeof(UINT8));
+		if (hasNormalMap) {
+			// [NormalMap 520 bytes]
+			ZeroMemory(filePath, MAX_PATH);
+			wcscpy_s(filePath, objParts[i].normalMap.c_str());
+			fout.write(reinterpret_cast<const char*>(filePath), MAX_PATH * sizeof(wchar_t));
+		}
 		// [材质]64字节
 		fout.write(reinterpret_cast<const char*>(&objParts[i].material), sizeof(Material));
 		UINT vertexCount = (UINT)objParts[i].vertices.size();
@@ -311,7 +346,7 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 			// [索引数]4字节
 			fout.write(reinterpret_cast<const char*>(&indexCount), sizeof(UINT));
 			// [顶点]32*顶点数 字节
-			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTex));
+			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTangentTex));
 			// [索引]4*索引数 字节
 			fout.write(reinterpret_cast<const char*>(objParts[i].indices32.data()), indexCount * sizeof(DWORD));
 		}
@@ -321,7 +356,7 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 			// [索引数]4字节
 			fout.write(reinterpret_cast<const char*>(&indexCount), sizeof(UINT));
 			// [顶点]32*顶点数 字节
-			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTex));
+			fout.write(reinterpret_cast<const char*>(objParts[i].vertices.data()), vertexCount * sizeof(VertexPosNormalTangentTex));
 			// [索引]2*索引数 字节
 			fout.write(reinterpret_cast<const char*>(objParts[i].indices16.data()), indexCount * sizeof(WORD));
 		}
@@ -332,7 +367,7 @@ bool ObjReader::WriteMbo(const wchar_t* mboFileName)
 	return true;
 }
 
-void ObjReader::AddVertex(const VertexPosNormalTex& vertex, DWORD vpi, DWORD vti, DWORD vni)
+void ObjReader::AddVertex(const VertexPosNormalTangentTex& vertex, DWORD vpi, DWORD vti, DWORD vni)
 {
 	std::wstring idxStr = std::to_wstring(vpi) + L"/" + std::to_wstring(vti) + L"/" + std::to_wstring(vni);
 
@@ -390,25 +425,20 @@ bool MtlReader::ReadMtl(const wchar_t* mtlFileName)
 
 	std::wstring wstr;
 	std::wstring currMtl;
-	for (;;)
-	{
-		if (!(wfin >> wstr))
-			break;
+	for (;;) {
+		if (!(wfin >> wstr)) break;
 
-		if (wstr[0] == '#')
-		{
+		if (wstr[0] == '#') {
 			//
 			// 忽略注释所在行
 			//
 			while (wfin.get() != '\n')
 				continue;
 		}
-		else if (wstr == L"newmtl")
-		{
+		else if (wstr == L"newmtl") {
 			//
 			// 新材质
 			//
-
 			std::getline(wfin, currMtl);
 			// 去掉前后空格
 			size_t beg = 0, ed = currMtl.size();
