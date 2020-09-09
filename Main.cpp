@@ -1,7 +1,7 @@
 //#include "Ex7Light.h"
 //#include "Ex9Tex.h"
 //#include "Ex10Camera.h"
-#include "Ex13Shadow.h"
+//#include "Ex13Shadow.h"
 //#include "Ex19ReadObj.h"
 #include "RenderSponza.h"
 

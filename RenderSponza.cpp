@@ -64,7 +64,6 @@ void RenderSponza::OnResize() {
 	D3DApp::OnResize();
 
 	// 为D2D创建DXGI表面渲染目标
-	// 为D2D创建DXGI表面渲染目标
 	ComPtr<IDXGISurface> surface;
 	HR(m_pSwapChain->GetBuffer(0, __uuidof(IDXGISurface), reinterpret_cast<void**>(surface.GetAddressOf())));
 	D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
@@ -196,9 +195,11 @@ void RenderSponza::UpdateScene(float dt) {
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::K)) {
 		m_isControlObj = !m_isControlObj;
-		XMFLOAT3 samplePos = m_Sphere.GetTransform().GetPosition();
-		cam1st->SetPosition(samplePos.x, samplePos.y + 100, samplePos.z - 100);
-		cam1st->LookAt(cam1st->GetPosition(), samplePos, XMFLOAT3(0.0f, 1.0f, 0.0f));
+		if (m_isControlObj) {
+			XMFLOAT3 samplePos = m_Sphere.GetTransform().GetPosition();
+			cam1st->SetPosition(samplePos.x, samplePos.y + 100, samplePos.z - 100);
+			cam1st->LookAt(cam1st->GetPosition(), samplePos, XMFLOAT3(0.0f, 1.0f, 0.0f));
+		}
 	}
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::H)) {
 		m_ShowHelp = !m_ShowHelp;
@@ -223,27 +224,27 @@ void RenderSponza::UpdateScene(float dt) {
 		m_SHMode = 2;
 		m_BasicEffect.SetSHMode(m_SHMode);
 	}
-	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Add)) {
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D9)) {
 		m_SphereSpeed += 200;
 		m_SphereSpeed = min(600, m_SphereSpeed);
 	}
-	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Subtract)) {
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D0)) {
 		m_SphereSpeed -= 200;
 		m_SphereSpeed = max(0, m_SphereSpeed);
 	}
 	if (m_ShowHelp) {
-		_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"控制移动:WASD, VLM可视化:V, 线框模式:R, 控制摄像机速度:UY, 球谐光照开关:F, 纹理贴图开关:T, 阴影贴图开关:L \
-控制小球:K, 增加DetailCellSize:N, 减少DetailCellSize:M, 方向光开关:1, 点光开关:2, 二阶球谐VS计算:3, 二阶球谐PS计算:4, 三阶球谐:5, 控制动态球速度:数字键盘+-");
+		_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"控制移动:WASD, VLM可视化:V, 线框模式:R, 控制摄像机速度:UY, 球谐光照开关:F, 纹理贴图开关:T, 法线贴图开关:L \
+控制小球:K, 增加DetailCellSize:N, 减少DetailCellSize:M, 方向光开关:1, 点光开关:2, 二阶球谐VS计算:3, 二阶球谐PS计算:4, 三阶球谐:5, 控制动态球速度:9和0");
 	}
 	else {
 		_snwprintf_s(m_Text, ARRAYSIZE(m_Text), ARRAYSIZE(m_Text) - 1, L"SHMode=%d, 方向光开关=%d, 点光开关=%d, 位置(%.1f,%.1f,%.1f), \
-VLM可视化=%d, 相机速度=%d, 动态球速度=%d, 阴影贴图=%d, \
+VLM可视化=%d, 相机速度=%d, 动态球速度=%d, 法线贴图=%d, \
 detailCellSize=%s, VolumeSize(%.1f, %.1f, %.1f), 控制小球模式=%d, bricksNum=%d, IndirectionTextureMemory=%.1fKB, VLMTextureMemory=%.1fKB，按H查看按钮事件",
-			m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z,
-			m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_BasicEffect.useNormalmap,
-			m_SHRepositoies[m_SHFileIndex],
-			m_Importer.VLMSetting.VolumeSize.x, m_Importer.VLMSetting.VolumeSize.y, m_Importer.VLMSetting.VolumeSize.z, m_isControlObj, m_Importer.m_BricksNum, m_Importer.vlmData.indirectionTexture.data.size() / 1024.0f,
-			m_Importer.vlmData.brickData.AmbientVector.data.size() / 1024.0f * 7.0f);
+m_SHMode, m_UseDirLight, m_UsePointLight, cam1st->GetPosition().x, cam1st->GetPosition().y, cam1st->GetPosition().z,
+m_isVisulizeVLM, m_Speed, m_SphereSpeed, m_BasicEffect.useNormalmap,
+m_SHRepositoies[m_SHFileIndex],
+m_Importer.VLMSetting.VolumeSize.x, m_Importer.VLMSetting.VolumeSize.y, m_Importer.VLMSetting.VolumeSize.z, m_isControlObj, m_Importer.m_BricksNum, m_Importer.vlmData.indirectionTexture.data.size() / 1024.0f,
+m_Importer.vlmData.brickData.AmbientVector.data.size() / 1024.0f * 7.0f);
 	}
 
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape)) {
@@ -287,10 +288,10 @@ void RenderSponza::DrawScene() {
 	m_BasicEffect.SetRenderInstanceDefault(m_pd3dImmediateContext.Get());
 	m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_DynamicTransform);
 
-	//if (m_isVisulizeVLM) {
-	//	for (INT32 depth = 0; depth < m_TransformData.size(); depth++)
-	//		m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_TransformData[depth]);
-	//}
+	if (m_isVisulizeVLM) {
+		for (INT32 depth = 0; depth < m_TransformData.size(); depth++)
+			m_Sample.DrawInstance(m_pd3dImmediateContext.Get(), m_BasicEffect, m_TransformData[depth]);
+	}
 
 	m_BasicEffect.SetTextureUsed(m_UseTexture);
 	WriteInformation(std::wstring(m_Text));
