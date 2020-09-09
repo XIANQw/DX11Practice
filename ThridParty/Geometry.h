@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include "Vertex.h"
+#include "../Vertex.h"
 
 namespace Geometry
 {
